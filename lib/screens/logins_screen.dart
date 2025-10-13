@@ -2,28 +2,6 @@ import 'package:flutter/material.dart';
 import 'portal_do_prof.dart';
 import 'portal_do_aluno.dart';
 
-// Estrutura principal do App para tornar o widget executável
-void main() {
-  runApp(const EducationalApp());
-}
-
-class EducationalApp extends StatelessWidget {
-  const EducationalApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Portal Educacional',
-      theme: ThemeData(
-        colorSchemeSeed: Colors.orange, // Define a cor principal do tema
-        useMaterial3: true,
-      ),
-      home: const LoginScreen(),
-    );
-  }
-}
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
