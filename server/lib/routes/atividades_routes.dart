@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
-import '../database/database.dart';
+import 'package:sistema_professores_server/database/database.dart';
 
 class AtividadesRoutes {
   Router get router {
@@ -12,11 +12,20 @@ class AtividadesRoutes {
       try {
         final db = await Database.getInstance();
         final result = await db.connection.execute(
-          'SELECT * FROM atividades WHERE disciplina_id = @id ORDER BY data_entrega',
-          parameters: {'id': int.parse(id)},
+          'SELECT id, disciplina_id, titulo, descricao, peso, data_entrega, criado_em, atualizado_em FROM atividades WHERE disciplina_id = \$1 ORDER BY data_entrega',
+          parameters: [int.parse(id)],
         );
         
-        final atividades = result.map((row) => row.toColumnMap()).toList();
+        final atividades = result.map((row) => {
+          'id': row[0],
+          'disciplina_id': row[1],
+          'titulo': row[2],
+          'descricao': row[3],
+          'peso': row[4],
+          'data_entrega': row[5]?.toString(),
+          'criado_em': row[6]?.toString(),
+          'atualizado_em': row[7]?.toString(),
+        }).toList();
         
         return Response.ok(
           json.encode(atividades),
@@ -38,20 +47,30 @@ class AtividadesRoutes {
         final result = await db.connection.execute(
           '''
           INSERT INTO atividades (disciplina_id, titulo, descricao, peso, data_entrega)
-          VALUES (@disciplina_id, @titulo, @descricao, @peso, @data_entrega)
-          RETURNING *
+          VALUES (\$1, \$2, \$3, \$4, \$5)
+          RETURNING id, disciplina_id, titulo, descricao, peso, data_entrega, criado_em, atualizado_em
           ''',
-          parameters: {
-            'disciplina_id': payload['disciplina_id'],
-            'titulo': payload['titulo'],
-            'descricao': payload['descricao'],
-            'peso': payload['peso'] ?? 1.0,
-            'data_entrega': payload['data_entrega'],
-          },
+          parameters: [
+            payload['disciplina_id'],
+            payload['titulo'],
+            payload['descricao'],
+            payload['peso'] ?? 1.0,
+            payload['data_entrega'],
+          ],
         );
         
+        final row = result.first;
         return Response.ok(
-          json.encode(result.first.toColumnMap()),
+          json.encode({
+            'id': row[0],
+            'disciplina_id': row[1],
+            'titulo': row[2],
+            'descricao': row[3],
+            'peso': row[4],
+            'data_entrega': row[5]?.toString(),
+            'criado_em': row[6]?.toString(),
+            'atualizado_em': row[7]?.toString(),
+          }),
           headers: {'Content-Type': 'application/json'},
         );
       } catch (e) {

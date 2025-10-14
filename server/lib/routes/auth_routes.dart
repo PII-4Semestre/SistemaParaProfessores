@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
-import '../database/database.dart';
+import 'package:sistema_professores_server/database/database.dart';
 
 class AuthRoutes {
   Router get router {
@@ -20,15 +20,22 @@ class AuthRoutes {
         
         final db = await Database.getInstance();
         final result = await db.connection.execute(
-          'SELECT id, nome, email, tipo, ra FROM usuarios WHERE email = @email',
-          parameters: {'email': email},
+          'SELECT id, nome, email, tipo::text, ra FROM usuarios WHERE email = \$1',
+          parameters: [email],
         );
         
         if (result.isEmpty) {
           return Response(401, body: json.encode({'error': 'Credenciais inválidas'}));
         }
         
-        final usuario = result.first.toColumnMap();
+        final row = result.first;
+        final usuario = {
+          'id': row[0],
+          'nome': row[1],
+          'email': row[2],
+          'tipo': row[3],
+          'ra': row[4],
+        };
         
         // TODO: Verificar senha com bcrypt
         // Por enquanto, aceita qualquer senha para desenvolvimento
@@ -56,20 +63,27 @@ class AuthRoutes {
         final result = await db.connection.execute(
           '''
           INSERT INTO usuarios (nome, email, senha_hash, tipo, ra)
-          VALUES (@nome, @email, @senha_hash, @tipo, @ra)
-          RETURNING id, nome, email, tipo, ra
+          VALUES (\$1, \$2, \$3, \$4::tipo_usuario, \$5)
+          RETURNING id, nome, email, tipo::text, ra
           ''',
-          parameters: {
-            'nome': payload['nome'],
-            'email': payload['email'],
-            'senha_hash': payload['senha'], // TODO: Hash com bcrypt
-            'tipo': payload['tipo'],
-            'ra': payload['ra'],
-          },
+          parameters: [
+            payload['nome'],
+            payload['email'],
+            payload['senha'], // TODO: Hash com bcrypt
+            payload['tipo'],
+            payload['ra'],
+          ],
         );
         
+        final row = result.first;
         return Response.ok(
-          json.encode(result.first.toColumnMap()),
+          json.encode({
+            'id': row[0],
+            'nome': row[1],
+            'email': row[2],
+            'tipo': row[3],
+            'ra': row[4],
+          }),
           headers: {'Content-Type': 'application/json'},
         );
       } catch (e) {

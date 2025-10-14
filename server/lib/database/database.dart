@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:postgres/postgres.dart';
 import 'package:dotenv/dotenv.dart';
 
@@ -30,6 +31,7 @@ class Database {
       endpoint,
       settings: ConnectionSettings(
         sslMode: SslMode.disable,
+        encoding: utf8,
       ),
     );
     

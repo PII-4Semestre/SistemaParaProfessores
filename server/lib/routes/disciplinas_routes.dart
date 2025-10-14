@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
-import '../database/database.dart';
+import 'package:sistema_professores_server/database/database.dart';
 
 class DisciplinasRoutes {
   Router get router {
@@ -12,10 +12,18 @@ class DisciplinasRoutes {
       try {
         final db = await Database.getInstance();
         final result = await db.connection.execute(
-          'SELECT * FROM disciplinas ORDER BY nome',
+          'SELECT id, nome, descricao, professor_id, cor, criado_em, atualizado_em FROM disciplinas ORDER BY nome',
         );
         
-        final disciplinas = result.map((row) => row.toColumnMap()).toList();
+        final disciplinas = result.map((row) => {
+          'id': row[0],
+          'nome': row[1],
+          'descricao': row[2],
+          'professor_id': row[3],
+          'cor': row[4],
+          'criado_em': row[5]?.toString(),
+          'atualizado_em': row[6]?.toString(),
+        }).toList();
         
         return Response.ok(
           json.encode(disciplinas),
@@ -33,11 +41,19 @@ class DisciplinasRoutes {
       try {
         final db = await Database.getInstance();
         final result = await db.connection.execute(
-          'SELECT * FROM disciplinas WHERE professor_id = @id ORDER BY nome',
-          parameters: {'id': int.parse(id)},
+          'SELECT id, nome, descricao, professor_id, cor, criado_em, atualizado_em FROM disciplinas WHERE professor_id = \$1 ORDER BY nome',
+          parameters: [int.parse(id)],
         );
         
-        final disciplinas = result.map((row) => row.toColumnMap()).toList();
+        final disciplinas = result.map((row) => {
+          'id': row[0],
+          'nome': row[1],
+          'descricao': row[2],
+          'professor_id': row[3],
+          'cor': row[4],
+          'criado_em': row[5]?.toString(),
+          'atualizado_em': row[6]?.toString(),
+        }).toList();
         
         return Response.ok(
           json.encode(disciplinas),
@@ -59,19 +75,28 @@ class DisciplinasRoutes {
         final result = await db.connection.execute(
           '''
           INSERT INTO disciplinas (nome, descricao, professor_id, cor)
-          VALUES (@nome, @descricao, @professor_id, @cor)
-          RETURNING *
+          VALUES (\$1, \$2, \$3, \$4)
+          RETURNING id, nome, descricao, professor_id, cor, criado_em, atualizado_em
           ''',
-          parameters: {
-            'nome': payload['nome'],
-            'descricao': payload['descricao'],
-            'professor_id': payload['professor_id'],
-            'cor': payload['cor'] ?? '#FF9800',
-          },
+          parameters: [
+            payload['nome'],
+            payload['descricao'],
+            payload['professor_id'],
+            payload['cor'] ?? '#FF9800',
+          ],
         );
         
+        final row = result.first;
         return Response.ok(
-          json.encode(result.first.toColumnMap()),
+          json.encode({
+            'id': row[0],
+            'nome': row[1],
+            'descricao': row[2],
+            'professor_id': row[3],
+            'cor': row[4],
+            'criado_em': row[5]?.toString(),
+            'atualizado_em': row[6]?.toString(),
+          }),
           headers: {'Content-Type': 'application/json'},
         );
       } catch (e) {
@@ -90,24 +115,33 @@ class DisciplinasRoutes {
         final result = await db.connection.execute(
           '''
           UPDATE disciplinas
-          SET nome = @nome, descricao = @descricao, cor = @cor
-          WHERE id = @id
-          RETURNING *
+          SET nome = \$1, descricao = \$2, cor = \$3
+          WHERE id = \$4
+          RETURNING id, nome, descricao, professor_id, cor, criado_em, atualizado_em
           ''',
-          parameters: {
-            'id': int.parse(id),
-            'nome': payload['nome'],
-            'descricao': payload['descricao'],
-            'cor': payload['cor'],
-          },
+          parameters: [
+            payload['nome'],
+            payload['descricao'],
+            payload['cor'],
+            int.parse(id),
+          ],
         );
         
         if (result.isEmpty) {
           return Response.notFound(json.encode({'error': 'Disciplina não encontrada'}));
         }
         
+        final row = result.first;
         return Response.ok(
-          json.encode(result.first.toColumnMap()),
+          json.encode({
+            'id': row[0],
+            'nome': row[1],
+            'descricao': row[2],
+            'professor_id': row[3],
+            'cor': row[4],
+            'criado_em': row[5]?.toString(),
+            'atualizado_em': row[6]?.toString(),
+          }),
           headers: {'Content-Type': 'application/json'},
         );
       } catch (e) {
@@ -122,8 +156,8 @@ class DisciplinasRoutes {
       try {
         final db = await Database.getInstance();
         await db.connection.execute(
-          'DELETE FROM disciplinas WHERE id = @id',
-          parameters: {'id': int.parse(id)},
+          'DELETE FROM disciplinas WHERE id = \$1',
+          parameters: [int.parse(id)],
         );
         
         return Response.ok(

@@ -3,11 +3,11 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:dotenv/dotenv.dart';
-import 'database/database.dart';
-import 'routes/auth_routes.dart';
-import 'routes/disciplinas_routes.dart';
-import 'routes/atividades_routes.dart';
-import 'routes/notas_routes.dart';
+import 'package:sistema_professores_server/database/database.dart';
+import 'package:sistema_professores_server/routes/auth_routes.dart';
+import 'package:sistema_professores_server/routes/disciplinas_routes.dart';
+import 'package:sistema_professores_server/routes/atividades_routes.dart';
+import 'package:sistema_professores_server/routes/notas_routes.dart';
 
 void main() async {
   // Carregar variáveis de ambiente
@@ -27,6 +27,7 @@ void main() async {
   final handler = Pipeline()
     .addMiddleware(corsHeaders())
     .addMiddleware(logRequests())
+    .addMiddleware(handleErrors())
     .addHandler(router.call);
   
   // Iniciar servidor
@@ -54,5 +55,22 @@ Map<String, String> _corsHeaders() {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Origin, Content-Type, Authorization',
+  };
+}
+
+Middleware handleErrors() {
+  return (Handler handler) {
+    return (Request request) async {
+      try {
+        return await handler(request);
+      } catch (error, stackTrace) {
+        print('❌ Error: $error');
+        print('Stack trace: $stackTrace');
+        return Response.internalServerError(
+          body: '{"error": "Internal server error: $error"}',
+          headers: {'Content-Type': 'application/json'},
+        );
+      }
+    };
   };
 }

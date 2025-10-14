@@ -30,7 +30,7 @@ CREATE TABLE disciplinas (
 -- Tabela de relacionamento Aluno-Disciplina (Many-to-Many)
 CREATE TABLE aluno_disciplina (
     aluno_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
-    disciplina_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    disciplina_id INTEGER NOT NULL REFERENCES disciplinas(id) ON DELETE CASCADE,
     matriculado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (aluno_id, disciplina_id)
 );
