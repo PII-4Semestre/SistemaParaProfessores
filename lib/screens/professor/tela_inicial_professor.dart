@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'teacher_overview_screen.dart';
-import 'teacher_subjects_screen.dart';
-import 'teacher_students_screen.dart';
-import 'teacher_messages_screen.dart';
-import '../auth/login_screen.dart';
+import 'tela_visao_geral_professor.dart';
+import 'tela_disciplinas_professor.dart';
+import 'tela_alunos_professor.dart';
+import 'tela_mensagens_professor.dart';
+import '../autenticacao/tela_login.dart';
 
-class TeacherHomeScreen extends StatefulWidget {
-  const TeacherHomeScreen({super.key});
+class TelaInicialProfessor extends StatefulWidget {
+  const TelaInicialProfessor({super.key});
 
   @override
-  State<TeacherHomeScreen> createState() => _TeacherHomeScreenState();
+  State<TelaInicialProfessor> createState() => _TelaInicialProfessorState();
 }
 
-class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
+class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
   int _selectedIndex = 0;
 
   final List<NavigationDestination> _destinations = const [
@@ -41,15 +41,15 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   Widget _getCurrentScreen() {
     switch (_selectedIndex) {
       case 0:
-        return const TeacherOverviewScreen();
+        return const TelaVisaoGeralProfessor();
       case 1:
-        return const TeacherSubjectsScreen();
+        return const TelaDisciplinasProfessor();
       case 2:
-        return const TeacherStudentsScreen();
+        return const TelaAlunosProfessor();
       case 3:
-        return const TeacherMessagesScreen();
+        return const TelaMensagensProfessor();
       default:
-        return const TeacherOverviewScreen();
+        return const TelaVisaoGeralProfessor();
     }
   }
 
@@ -82,7 +82,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                   icon: const Icon(Icons.logout),
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      MaterialPageRoute(builder: (context) => const TelaLogin()),
                       (route) => false,
                     );
                   },

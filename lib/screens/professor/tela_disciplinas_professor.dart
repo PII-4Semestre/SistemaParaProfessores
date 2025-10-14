@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'teacher_subject_detail_screen.dart';
+import 'tela_detalhes_disciplina_professor.dart';
 
-class TeacherSubjectsScreen extends StatefulWidget {
-  const TeacherSubjectsScreen({super.key});
+class TelaDisciplinasProfessor extends StatefulWidget {
+  const TelaDisciplinasProfessor({super.key});
 
   @override
-  State<TeacherSubjectsScreen> createState() => _TeacherSubjectsScreenState();
+  State<TelaDisciplinasProfessor> createState() => _TelaDisciplinasProfessorState();
 }
 
-class _TeacherSubjectsScreenState extends State<TeacherSubjectsScreen> {
+class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _descricaoController = TextEditingController();
@@ -202,7 +202,7 @@ class _TeacherSubjectsScreenState extends State<TeacherSubjectsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TeacherSubjectDetailScreen(
+                          builder: (context) => TelaDetalhesDisciplinaProfessor(
                             subjectName: 'Disciplina ${index + 1}',
                             subjectColor: color,
                           ),

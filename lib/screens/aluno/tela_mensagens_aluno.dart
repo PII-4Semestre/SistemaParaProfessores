@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class StudentMessagesScreen extends StatefulWidget {
-  const StudentMessagesScreen({super.key});
+class TelaMensagensAluno extends StatefulWidget {
+  const TelaMensagensAluno({super.key});
 
   @override
-  State<StudentMessagesScreen> createState() => _StudentMessagesScreenState();
+  State<TelaMensagensAluno> createState() => _TelaMensagensAlunoState();
 }
 
-class _StudentMessagesScreenState extends State<StudentMessagesScreen> {
+class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   int? _selectedConversationIndex;

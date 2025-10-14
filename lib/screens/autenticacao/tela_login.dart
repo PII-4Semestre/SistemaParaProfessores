@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import '../teacher/teacher_home_screen.dart';
-import '../student/student_home_screen.dart';
+import '../professor/tela_inicial_professor.dart';
+import '../aluno/tela_inicial_aluno.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class TelaLogin extends StatefulWidget {
+  const TelaLogin({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<TelaLogin> createState() => _TelaLoginState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _TelaLoginState extends State<TelaLogin>
     with SingleTickerProviderStateMixin {
   
   late TabController _tabController;
@@ -50,13 +50,13 @@ class _LoginScreenState extends State<LoginScreen>
     if (tipo == 'Professor') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const TeacherHomeScreen(),
+          builder: (context) => const TelaInicialProfessor(),
         ),
       );
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const StudentHomeScreen(),
+          builder: (context) => const TelaInicialAluno(),
         ),
       );
     }

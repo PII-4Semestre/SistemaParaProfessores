@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 
-class TeacherSubjectDetailScreen extends StatefulWidget {
+class TelaDetalhesDisciplinaProfessor extends StatefulWidget {
   final String subjectName;
   final Color subjectColor;
 
-  const TeacherSubjectDetailScreen({
+  const TelaDetalhesDisciplinaProfessor({
     super.key,
     required this.subjectName,
     required this.subjectColor,
   });
 
   @override
-  State<TeacherSubjectDetailScreen> createState() =>
-      _TeacherSubjectDetailScreenState();
+  State<TelaDetalhesDisciplinaProfessor> createState() =>
+      _TelaDetalhesDisciplinaProfessorState();
 }
 
-class _TeacherSubjectDetailScreenState extends State<TeacherSubjectDetailScreen>
+class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplinaProfessor>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();

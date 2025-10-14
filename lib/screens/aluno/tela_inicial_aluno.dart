@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'student_overview_screen.dart';
-import 'student_subjects_screen.dart';
-import 'student_messages_screen.dart';
-import '../auth/login_screen.dart';
+import 'tela_visao_geral_aluno.dart';
+import 'tela_disciplinas_aluno.dart';
+import 'tela_mensagens_aluno.dart';
+import '../autenticacao/tela_login.dart';
 
-class StudentHomeScreen extends StatefulWidget {
-  const StudentHomeScreen({super.key});
+class TelaInicialAluno extends StatefulWidget {
+  const TelaInicialAluno({super.key});
 
   @override
-  State<StudentHomeScreen> createState() => _StudentHomeScreenState();
+  State<TelaInicialAluno> createState() => _TelaInicialAlunoState();
 }
 
-class _StudentHomeScreenState extends State<StudentHomeScreen> {
+class _TelaInicialAlunoState extends State<TelaInicialAluno> {
   int _selectedIndex = 0;
 
   final List<NavigationDestination> _destinations = const [
@@ -40,15 +40,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   Widget _getCurrentScreen() {
     switch (_selectedIndex) {
       case 0:
-        return const StudentOverviewScreen();
+        return const TelaVisaoGeralAluno();
       case 1:
-        return const StudentSubjectsScreen();
+        return const TelaDisciplinasAluno();
       case 2:
-        return const StudentMessagesScreen();
+        return const TelaMensagensAluno();
       case 3:
         return _buildNotasScreen();
       default:
-        return const StudentOverviewScreen();
+        return const TelaVisaoGeralAluno();
     }
   }
 
@@ -263,7 +263,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   icon: const Icon(Icons.logout),
                   onPressed: () {
                     Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      MaterialPageRoute(builder: (context) => const TelaLogin()),
                       (route) => false,
                     );
                   },

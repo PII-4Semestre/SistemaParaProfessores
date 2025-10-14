@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'student_subject_detail_screen.dart';
+import 'tela_detalhes_disciplina_aluno.dart';
 
-class StudentSubjectsScreen extends StatefulWidget {
-  const StudentSubjectsScreen({super.key});
+class TelaDisciplinasAluno extends StatefulWidget {
+  const TelaDisciplinasAluno({super.key});
 
   @override
-  State<StudentSubjectsScreen> createState() => _StudentSubjectsScreenState();
+  State<TelaDisciplinasAluno> createState() => _TelaDisciplinasAlunoState();
 }
 
-class _StudentSubjectsScreenState extends State<StudentSubjectsScreen> {
+class _TelaDisciplinasAlunoState extends State<TelaDisciplinasAluno> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -76,7 +76,7 @@ class _StudentSubjectsScreenState extends State<StudentSubjectsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => StudentSubjectDetailScreen(
+                          builder: (context) => TelaDetalhesDisciplinaAluno(
                             subjectName: 'Disciplina ${index + 1}',
                             subjectColor: color,
                             professorName: 'Prof. Silva',

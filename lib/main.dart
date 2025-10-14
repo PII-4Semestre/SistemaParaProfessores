@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/auth/login_screen.dart';
+import 'screens/autenticacao/tela_login.dart';
 
 void main() {
   runApp(const PoliEducaApp());
@@ -14,7 +14,7 @@ class PoliEducaApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'PoliEduca',
       theme: ThemeData(primarySwatch: Colors.orange),
-      home: const LoginScreen(),
+      home: const TelaLogin(),
     );
   }
 }
@@ -29,7 +29,7 @@ class SomeWidget extends StatelessWidget {
       onPressed: () {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
+            builder: (context) => const TelaLogin(),
           ),
           (route) => false,
         );
