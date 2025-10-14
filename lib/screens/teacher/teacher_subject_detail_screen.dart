@@ -109,7 +109,7 @@ class _TeacherSubjectDetailScreenState extends State<TeacherSubjectDetailScreen>
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: widget.subjectColor.withOpacity(0.2),
+                      backgroundColor: widget.subjectColor.withValues(alpha: 0.2),
                       child: Icon(
                         Icons.person,
                         color: widget.subjectColor,
@@ -194,7 +194,7 @@ class _TeacherSubjectDetailScreenState extends State<TeacherSubjectDetailScreen>
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: widget.subjectColor.withOpacity(0.2),
+                      backgroundColor: widget.subjectColor.withValues(alpha: 0.2),
                       child: Icon(
                         Icons.assignment,
                         color: widget.subjectColor,

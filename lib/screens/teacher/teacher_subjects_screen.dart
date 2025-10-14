@@ -217,7 +217,7 @@ class _TeacherSubjectsScreenState extends State<TeacherSubjectsScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            color.withOpacity(0.7),
+                            color.withValues(alpha: 0.7),
                             color,
                           ],
                         ),
@@ -232,7 +232,7 @@ class _TeacherSubjectsScreenState extends State<TeacherSubjectsScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.3),
+                                  color: Colors.white.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
@@ -284,7 +284,7 @@ class _TeacherSubjectsScreenState extends State<TeacherSubjectsScreen> {
                           Text(
                             'Descrição da disciplina',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 14,
                             ),
                             maxLines: 2,
@@ -299,7 +299,7 @@ class _TeacherSubjectsScreenState extends State<TeacherSubjectsScreen> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -327,7 +327,7 @@ class _TeacherSubjectsScreenState extends State<TeacherSubjectsScreen> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(

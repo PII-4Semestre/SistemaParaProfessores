@@ -176,12 +176,12 @@ class _StudentSubjectDetailScreenState extends State<StudentSubjectDetailScreen>
                 final isPending = index < 2;
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  color: isPending ? Colors.orange.withOpacity(0.05) : null,
+                  color: isPending ? Colors.orange.withValues(alpha: 0.05) : null,
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: isPending
-                          ? Colors.orange.withOpacity(0.2)
-                          : Colors.green.withOpacity(0.2),
+                          ? Colors.orange.withValues(alpha: 0.2)
+                          : Colors.green.withValues(alpha: 0.2),
                       child: Icon(
                         Icons.assignment,
                         color: isPending ? Colors.orange : Colors.green,
@@ -208,8 +208,8 @@ class _StudentSubjectDetailScreenState extends State<StudentSubjectDetailScreen>
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: isPending
-                                ? Colors.orange.withOpacity(0.1)
-                                : Colors.green.withOpacity(0.1),
+                                ? Colors.orange.withValues(alpha: 0.1)
+                                : Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -247,7 +247,7 @@ class _StudentSubjectDetailScreenState extends State<StudentSubjectDetailScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Card(
-            color: widget.subjectColor.withOpacity(0.1),
+            color: widget.subjectColor.withValues(alpha: 0.1),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Row(
@@ -304,8 +304,8 @@ class _StudentSubjectDetailScreenState extends State<StudentSubjectDetailScreen>
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: hasGrade
-                          ? widget.subjectColor.withOpacity(0.2)
-                          : Colors.grey.withOpacity(0.2),
+                          ? widget.subjectColor.withValues(alpha: 0.2)
+                          : Colors.grey.withValues(alpha: 0.2),
                       child: Icon(
                         Icons.assignment,
                         color: hasGrade ? widget.subjectColor : Colors.grey,
@@ -320,7 +320,7 @@ class _StudentSubjectDetailScreenState extends State<StudentSubjectDetailScreen>
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: widget.subjectColor.withOpacity(0.1),
+                              color: widget.subjectColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
@@ -338,7 +338,7 @@ class _StudentSubjectDetailScreenState extends State<StudentSubjectDetailScreen>
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.grey.withOpacity(0.1),
+                              color: Colors.grey.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(

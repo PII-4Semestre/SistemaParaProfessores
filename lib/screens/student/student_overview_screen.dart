@@ -78,7 +78,7 @@ class StudentOverviewScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Colors.orange.withOpacity(0.2),
+                    backgroundColor: Colors.orange.withValues(alpha: 0.2),
                     child: const Icon(Icons.assignment, color: Colors.orange),
                   ),
                   title: Text('Atividade ${index + 1}'),
@@ -86,7 +86,7 @@ class StudentOverviewScreen extends StatelessWidget {
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
@@ -139,7 +139,7 @@ class StudentOverviewScreen extends StatelessWidget {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              colors[index].withOpacity(0.7),
+                              colors[index].withValues(alpha: 0.7),
                               colors[index],
                             ],
                           ),
@@ -151,7 +151,7 @@ class StudentOverviewScreen extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Icon(
@@ -188,7 +188,7 @@ class StudentOverviewScreen extends StatelessWidget {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.3),
+                                    color: Colors.white.withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(

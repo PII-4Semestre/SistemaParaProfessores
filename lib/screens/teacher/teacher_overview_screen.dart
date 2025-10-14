@@ -87,7 +87,7 @@ class TeacherOverviewScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Colors.orange.withOpacity(0.2),
+                    backgroundColor: Colors.orange.withValues(alpha: 0.2),
                     child: const Icon(Icons.assignment, color: Colors.orange),
                   ),
                   title: Text('Atividade ${index + 1}'),
@@ -95,7 +95,7 @@ class TeacherOverviewScreen extends StatelessWidget {
                   trailing: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: index % 2 == 0 ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                      color: index % 2 == 0 ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -162,7 +162,7 @@ class TeacherOverviewScreen extends StatelessWidget {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: colors[index].withOpacity(0.2),
+                                    color: colors[index].withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Icon(

@@ -72,7 +72,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     const Text('Matheus Mattoso', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text('Professor', style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.9))),
+                    Text('Professor', style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.9))),
                   ],
                 ),
                 const SizedBox(width: 12),
@@ -106,7 +106,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                         const CircleAvatar(radius: 30, backgroundColor: Colors.white, child: Icon(Icons.person, size: 35, color: Colors.orange)),
                         const SizedBox(height: 10),
                         const Text('Matheus Mattoso', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('Professor', style: TextStyle(color: Colors.white.withOpacity(0.9))),
+                        Text('Professor', style: TextStyle(color: Colors.white.withValues(alpha: 0.9))),
                       ],
                     ),
                   ),
@@ -114,7 +114,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                     _destinations.length,
                     (index) => ListTile(
                       selected: _selectedIndex == index,
-                      selectedTileColor: Colors.orange.withOpacity(0.1),
+                      selectedTileColor: Colors.orange.withValues(alpha: 0.1),
                       leading: _selectedIndex == index ? _destinations[index].selectedIcon : _destinations[index].icon,
                       title: Text(_destinations[index].label),
                       onTap: () {

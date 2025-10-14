@@ -141,7 +141,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
 
                         return ListTile(
                           selected: isSelected,
-                          selectedTileColor: Colors.orange.withOpacity(0.1),
+                          selectedTileColor: Colors.orange.withValues(alpha: 0.1),
                           leading: Stack(
                             children: [
                               CircleAvatar(
@@ -270,7 +270,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
+                            color: Colors.orange.withValues(alpha: 0.1),
                             border: Border(
                               bottom: BorderSide(color: Colors.grey[300]!),
                             ),
@@ -347,7 +347,7 @@ class _TeacherMessagesScreenState extends State<TeacherMessagesScreen> {
                                         style: TextStyle(
                                           fontSize: 10,
                                           color: isMe
-                                              ? Colors.white.withOpacity(0.8)
+                                              ? Colors.white.withValues(alpha: 0.8)
                                               : Colors.black54,
                                         ),
                                       ),

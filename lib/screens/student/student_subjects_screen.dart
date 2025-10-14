@@ -92,7 +92,7 @@ class _StudentSubjectsScreenState extends State<StudentSubjectsScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            color.withOpacity(0.7),
+                            color.withValues(alpha: 0.7),
                             color,
                           ],
                         ),
@@ -104,7 +104,7 @@ class _StudentSubjectsScreenState extends State<StudentSubjectsScreen> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -134,7 +134,7 @@ class _StudentSubjectsScreenState extends State<StudentSubjectsScreen> {
                               Text(
                                 'Prof. Silva',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: 14,
                                 ),
                               ),
@@ -149,7 +149,7 @@ class _StudentSubjectsScreenState extends State<StudentSubjectsScreen> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -178,7 +178,7 @@ class _StudentSubjectsScreenState extends State<StudentSubjectsScreen> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(

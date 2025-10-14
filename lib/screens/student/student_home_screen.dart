@@ -75,7 +75,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ),
           const SizedBox(height: 24),
           Card(
-            color: Colors.blue.withOpacity(0.1),
+            color: Colors.blue.withValues(alpha: 0.1),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Row(
@@ -133,7 +133,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: colors[index].withOpacity(0.2),
+                        color: colors[index].withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(Icons.book, color: colors[index]),
@@ -146,7 +146,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: colors[index].withOpacity(0.1),
+                        color: colors[index].withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -183,7 +183,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                                           vertical: 4,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: colors[index].withOpacity(0.1),
+                                          color: colors[index].withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
@@ -248,7 +248,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       'RA: 24.00304-2',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ],
@@ -301,7 +301,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                         Text(
                           'RA: 24.00304-2',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
                         ),
                       ],
@@ -311,7 +311,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     _destinations.length,
                     (index) => ListTile(
                       selected: _selectedIndex == index,
-                      selectedTileColor: Colors.orange.withOpacity(0.1),
+                      selectedTileColor: Colors.orange.withValues(alpha: 0.1),
                       leading: _selectedIndex == index
                           ? _destinations[index].selectedIcon
                           : _destinations[index].icon,

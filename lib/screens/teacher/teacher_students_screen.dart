@@ -251,7 +251,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
                                     Colors.blue,
                                     Colors.green,
                                     Colors.purple,
-                                  ][i % 3].withOpacity(0.2),
+                                  ][i % 3].withValues(alpha: 0.2),
                                   deleteIcon: const Icon(Icons.close, size: 16),
                                   onDeleted: () {
                                     // TODO: Remover da disciplina
