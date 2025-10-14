@@ -135,6 +135,7 @@ class _TelaLoginState extends State<TelaLogin>
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
                     decoration: InputDecoration(
                       labelText: 'E-mail',
                       prefixIcon: const Icon(Icons.email_outlined),
@@ -153,6 +154,8 @@ class _TelaLoginState extends State<TelaLogin>
                   TextField(
                     controller: senhaController,
                     obscureText: true,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _performLogin(),
                     decoration: InputDecoration(
                       labelText: 'Senha',
                       prefixIcon: const Icon(Icons.lock_outline),

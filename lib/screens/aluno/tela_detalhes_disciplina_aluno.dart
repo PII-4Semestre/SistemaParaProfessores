@@ -175,59 +175,85 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
               itemBuilder: (context, index) {
                 final isPending = index < 2;
                 return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  color: isPending ? Colors.orange.withValues(alpha: 0.05) : null,
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: isPending
-                          ? Colors.orange.withValues(alpha: 0.2)
-                          : Colors.green.withValues(alpha: 0.2),
-                      child: Icon(
-                        Icons.assignment,
-                        color: isPending ? Colors.orange : Colors.green,
-                      ),
-                    ),
-                    title: Text('Atividade ${index + 1}'),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  color: isPending ? Colors.orange.withValues(alpha: 0.01) : null,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
                       children: [
-                        Text('Peso: ${(index + 1).toDouble()}'),
-                        Text(
-                          'Entrega: 2025-10-${15 + index}',
-                          style: TextStyle(
-                            color: isPending ? Colors.orange : Colors.grey[600],
-                            fontWeight: isPending ? FontWeight.bold : FontWeight.normal,
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: isPending
+                              ? Colors.orange.withValues(alpha: 0.2)
+                              : Colors.green.withValues(alpha: 0.2),
+                          child: Icon(
+                            Icons.assignment,
+                            color: isPending ? Colors.orange : Colors.green,
                           ),
                         ),
-                      ],
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isPending
-                                ? Colors.orange.withValues(alpha: 0.1)
-                                : Colors.green.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Atividade ${index + 1}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Peso: ${(index + 1).toDouble()}',
+                                style: TextStyle(color: Colors.grey[600]),
+                              ),
+                              Text(
+                                'Entrega: 2025-10-${15 + index}',
+                                style: TextStyle(
+                                  color: isPending ? Colors.orange : Colors.grey[600],
+                                  fontWeight: isPending ? FontWeight.bold : FontWeight.normal,
+                                ),
+                              ),
+                            ],
                           ),
-                          child: Text(
-                            isPending ? 'Pendente' : 'Entregue',
-                            style: TextStyle(
-                              color: isPending ? Colors.orange : Colors.green,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                        ),
+                        Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isPending
+                                    ? Colors.orange.withValues(alpha: 0.1)
+                                    : Colors.green.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                isPending ? 'Pendente' : 'Entregue',
+                                style: TextStyle(
+                                  color: isPending ? Colors.orange : Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
                             ),
-                          ),
+                            if (isPending) ...[
+                              const SizedBox(height: 8),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  // TODO: Enviar atividade
+                                },
+                                icon: const Icon(Icons.upload, size: 18),
+                                label: const Text('Enviar'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
-                        if (isPending)
-                          TextButton(
-                            onPressed: () {
-                              // TODO: Enviar atividade
-                            },
-                            child: const Text('Enviar'),
-                          ),
                       ],
                     ),
                   ),

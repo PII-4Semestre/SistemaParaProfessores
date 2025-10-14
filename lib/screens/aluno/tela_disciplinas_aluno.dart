@@ -54,12 +54,12 @@ class _TelaDisciplinasAlunoState extends State<TelaDisciplinasAluno> {
           Expanded(
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
+                crossAxisCount: 5,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.5,
               ),
-              itemCount: 4, // Exemplo com 4 disciplinas
+              itemCount: 5, // Exemplo com 5 disciplinas
               itemBuilder: (context, index) {
                 final colors = [
                   Colors.blue,
