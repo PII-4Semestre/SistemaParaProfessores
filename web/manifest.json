@@ -1,6 +1,6 @@
 {
-    "name": "novo_projeto_polieduca",
-    "short_name": "novo_projeto_polieduca",
+    "name": "PoliEduca",
+    "short_name": "PoliEduca",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
