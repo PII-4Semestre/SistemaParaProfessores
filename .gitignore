@@ -43,3 +43,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Server environment variables
+server/.env
+server/.env.local
+server/.env.production
+
+# Server build
+server/build/
+server/.dart_tool/
+server/.packages
+server/pubspec.lock
