@@ -1,5 +1,5 @@
-name: novo_projeto_polieduca
-description: "A new Flutter project."
+name: portal_polieduca
+description: "Portal educacional para gestão acadêmica entre professores e alunos do sistema Poliedro."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

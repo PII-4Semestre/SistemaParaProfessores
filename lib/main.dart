@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:novo_projeto_polieduca/screens/logins_screen.dart';
+import 'screens/auth/login_screen.dart';
 
 void main() {
   runApp(const PoliEducaApp());

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class PortalAluno extends StatefulWidget {
-  const PortalAluno({super.key});
+class StudentHomeScreen extends StatefulWidget {
+  const StudentHomeScreen({super.key});
 
   @override
-  State<PortalAluno> createState() => _PortalAlunoState();
+  State<StudentHomeScreen> createState() => _StudentHomeScreenState();
 }
 
-class _PortalAlunoState extends State<PortalAluno> {
+class _StudentHomeScreenState extends State<StudentHomeScreen> {
   int _selectedIndex = 0;
   final TextEditingController _searchController = TextEditingController();
 
@@ -522,7 +522,7 @@ class _PortalAlunoState extends State<PortalAluno> {
                   ),
                   Text(
                     'RA: 24.00304-2',
-                    style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
                   ),
                 ],
               ),

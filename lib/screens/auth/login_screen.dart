@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'portal_do_prof.dart';
-import 'portal_do_aluno.dart';
+import '../teacher/teacher_home_screen.dart';
+import '../student/student_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -50,13 +50,13 @@ class _LoginScreenState extends State<LoginScreen>
     if (tipo == 'Professor') {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const PortalProfessor(),
+          builder: (context) => const TeacherHomeScreen(),
         ),
       );
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => const PortalAluno(),
+          builder: (context) => const StudentHomeScreen(),
         ),
       );
     }
@@ -71,7 +71,6 @@ class _LoginScreenState extends State<LoginScreen>
 
     return Scaffold(
       body: Container(
-        // Substituindo o Image.asset por um Gradient simples para rodar o código
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/background.jpg'),
@@ -98,9 +97,8 @@ class _LoginScreenState extends State<LoginScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Substituindo Image.asset('assets/images/logo.jpg') por FlutterLogo
                   Image.asset(
-                    'assets/images/logo.jpg', // Voltando para logo.jpg
+                    'assets/images/logo.jpg',
                     width: 150,
                     height: 150,
                   ),
@@ -110,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen>
                     style: TextStyle(
                       fontSize: 28, 
                       fontWeight: FontWeight.w900,
-                      color: Colors.orange, // Mesma cor do botão entrar
+                      color: Colors.orange,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -176,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen>
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
-                          foregroundColor: Colors.white, // Garante que o texto seja branco
+                          foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),

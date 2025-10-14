@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class PortalProfessor extends StatefulWidget {
-  const PortalProfessor({super.key});
+class TeacherHomeScreen extends StatefulWidget {
+  const TeacherHomeScreen({super.key});
 
   @override
-  State<PortalProfessor> createState() => _PortalProfessorState();
+  State<TeacherHomeScreen> createState() => _TeacherHomeScreenState();
 }
 
-class _PortalProfessorState extends State<PortalProfessor> {
+class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   int _selectedIndex = 0;
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _nomeController = TextEditingController();
