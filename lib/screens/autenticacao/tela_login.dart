@@ -10,26 +10,15 @@ class TelaLogin extends StatefulWidget {
   State<TelaLogin> createState() => _TelaLoginState();
 }
 
-class _TelaLoginState extends State<TelaLogin>
-    with SingleTickerProviderStateMixin {
+class _TelaLoginState extends State<TelaLogin> {
   
-  late TabController _tabController;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
   final ApiService _apiService = ApiService();
   bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    // Inicializa o TabController com 2 abas
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
   void dispose() {
-    // Garante que o controller seja descartado para evitar vazamentos de memória
-    _tabController.dispose();
     emailController.dispose();
     senhaController.dispose();
     super.dispose();
@@ -145,26 +134,15 @@ class _TelaLoginState extends State<TelaLogin>
                       color: Colors.orange,
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  // TabBar para seleção Aluno/Professor
-                  TabBar(
-                    controller: _tabController,
-                    labelColor: Colors.orange,
-                    unselectedLabelColor: Colors.grey.shade600,
-                    indicatorColor: Colors.orange,
-                    indicatorWeight: 4,
-                    tabs: const [
-                      Tab(
-                        text: 'ALUNO', 
-                        icon: Icon(Icons.school_outlined)
-                      ),
-                      Tab(
-                        text: 'PROFESSOR', 
-                        icon: Icon(Icons.person_outline)
-                      ),
-                    ],
+                  const SizedBox(height: 8),
+                  Text(
+                    'Faça login para acessar o sistema',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                   // Campo de E-mail
                   TextField(
                     controller: emailController,
