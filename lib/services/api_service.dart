@@ -124,16 +124,49 @@ class ApiService {
         'cor': cor,
       }),
     );
-    
+
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
       throw Exception('Erro ao criar disciplina');
     }
   }
-  
+
+  Future<Map<String, dynamic>> updateDisciplina({
+    required int id,
+    required String nome,
+    required String descricao,
+    required String cor,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/disciplinas/$id'),
+      headers: _headers(needsAuth: true),
+      body: json.encode({
+        'nome': nome,
+        'descricao': descricao,
+        'cor': cor,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Erro ao atualizar disciplina');
+    }
+  }
+
+  Future<void> deleteDisciplina(int id) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/disciplinas/$id'),
+      headers: _headers(needsAuth: true),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao deletar disciplina');
+    }
+  }
+
   // ATIVIDADES ENDPOINTS
-  
   Future<List<dynamic>> getAtividadesDisciplina(int disciplinaId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/atividades/disciplina/$disciplinaId'),
@@ -249,6 +282,19 @@ class ApiService {
   }
 
   // ALUNOS ENDPOINTS
+
+  Future<List<dynamic>> getTodosAlunos() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/alunos'),
+      headers: _headers(),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Erro ao buscar alunos');
+    }
+  }
 
   Future<List<dynamic>> getAlunosDisciplina(int disciplinaId) async {
     final response = await http.get(

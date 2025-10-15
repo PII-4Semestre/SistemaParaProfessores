@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
 
 class TelaAlunosProfessor extends StatefulWidget {
   const TelaAlunosProfessor({super.key});
@@ -12,6 +13,19 @@ class _TelaAlunosProfessorState extends State<TelaAlunosProfessor> {
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _raController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final ApiService _apiService = ApiService();
+
+  List<dynamic> _alunos = [];
+  List<dynamic> _alunosFiltrados = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAlunos();
+    _searchController.addListener(_filterAlunos);
+  }
 
   @override
   void dispose() {
@@ -22,7 +36,48 @@ class _TelaAlunosProfessorState extends State<TelaAlunosProfessor> {
     super.dispose();
   }
 
+  Future<void> _loadAlunos() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final alunos = await _apiService.getTodosAlunos();
+      setState(() {
+        _alunos = alunos;
+        _alunosFiltrados = alunos;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _filterAlunos() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _alunosFiltrados = _alunos;
+      } else {
+        _alunosFiltrados = _alunos.where((aluno) {
+          final nome = (aluno['nome'] ?? '').toString().toLowerCase();
+          final email = (aluno['email'] ?? '').toString().toLowerCase();
+          final ra = (aluno['ra'] ?? '').toString().toLowerCase();
+          return nome.contains(query) || email.contains(query) || ra.contains(query);
+        }).toList();
+      }
+    });
+  }
+
   void _showAddAlunoDialog() {
+    _nomeController.clear();
+    _raController.clear();
+    _emailController.clear();
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -62,56 +117,20 @@ class _TelaAlunosProfessorState extends State<TelaAlunosProfessor> {
           ),
           ElevatedButton(
             onPressed: () {
-              // TODO: Implementar lógica de adicionar aluno
+              // TODO: Implementar criação de aluno no backend
               Navigator.pop(context);
-              _nomeController.clear();
-              _raController.clear();
-              _emailController.clear();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Funcionalidade em desenvolvimento'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
             ),
             child: const Text('Adicionar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAddToDisciplinaDialog(String alunoNome) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Adicionar $alunoNome a uma disciplina'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(
-            5,
-            (index) => CheckboxListTile(
-              title: Text('Disciplina ${index + 1}'),
-              value: index % 2 == 0,
-              onChanged: (value) {
-                // TODO: Implementar toggle de disciplina
-              },
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // TODO: Salvar alterações
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Salvar'),
           ),
         ],
       ),
@@ -173,100 +192,120 @@ class _TelaAlunosProfessorState extends State<TelaAlunosProfessor> {
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: ListView.builder(
-              itemCount: 12,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ExpansionTile(
-                    leading: const CircleAvatar(
-                      backgroundColor: Colors.orange,
-                      child: Icon(Icons.person, color: Colors.white),
-                    ),
-                    title: Text('Aluno ${index + 1}'),
-                    subtitle: Text('RA: 24.003${index.toString().padLeft(2, '0')}-2'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () {
-                            // TODO: Editar aluno
-                          },
-                          tooltip: 'Editar',
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () {
-                            // TODO: Excluir aluno
-                          },
-                          tooltip: 'Excluir',
-                        ),
-                      ],
-                    ),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                    ? Center(
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Row(
+                            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                            const SizedBox(height: 16),
+                            Text('Erro ao carregar alunos'),
+                            const SizedBox(height: 8),
+                            Text(_error!, style: TextStyle(color: Colors.grey[600])),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadAlunos,
+                              child: const Text('Tentar novamente'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _alunosFiltrados.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.email, size: 16, color: Colors.grey[600]),
-                                const SizedBox(width: 8),
+                                const Icon(Icons.person_off, size: 48, color: Colors.grey),
+                                const SizedBox(height: 16),
                                 Text(
-                                  'aluno${index + 1}@email.com',
+                                  _searchController.text.isEmpty
+                                      ? 'Nenhum aluno cadastrado'
+                                      : 'Nenhum aluno encontrado',
                                   style: TextStyle(color: Colors.grey[600]),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            const Divider(),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Disciplinas:',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                          )
+                        : ListView.builder(
+                            itemCount: _alunosFiltrados.length,
+                            itemBuilder: (context, index) {
+                              final aluno = _alunosFiltrados[index];
+                              final disciplinas = aluno['disciplinas'] as List? ?? [];
+                              
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: ExpansionTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: Colors.orange,
+                                    child: Text(
+                                      (aluno['nome'] ?? '?')[0].toUpperCase(),
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  title: Text(aluno['nome'] ?? 'Sem nome'),
+                                  subtitle: Text('RA: ${aluno['ra'] ?? 'N/A'}'),
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(Icons.email, size: 16, color: Colors.grey[600]),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                aluno['email'] ?? 'N/A',
+                                                style: TextStyle(color: Colors.grey[600]),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 12),
+                                          const Divider(),
+                                          const SizedBox(height: 12),
+                                          const Text(
+                                            'Disciplinas:',
+                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          disciplinas.isEmpty
+                                              ? Text(
+                                                  'Não matriculado em nenhuma disciplina',
+                                                  style: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontStyle: FontStyle.italic,
+                                                  ),
+                                                )
+                                              : Wrap(
+                                                  spacing: 8,
+                                                  runSpacing: 8,
+                                                  children: disciplinas.map<Widget>((disc) {
+                                                    Color chipColor;
+                                                    try {
+                                                      final corString = disc['cor'] ?? '#2196F3';
+                                                      chipColor = Color(int.parse(
+                                                        corString.replaceFirst('#', '0xFF'),
+                                                      ));
+                                                    } catch (e) {
+                                                      chipColor = Colors.blue;
+                                                    }
+                                                    
+                                                    return Chip(
+                                                      label: Text(disc['nome'] ?? 'Sem nome'),
+                                                      backgroundColor: chipColor.withValues(alpha: 0.2),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                TextButton.icon(
-                                  onPressed: () {
-                                    _showAddToDisciplinaDialog('Aluno ${index + 1}');
-                                  },
-                                  icon: const Icon(Icons.add, size: 16),
-                                  label: const Text('Gerenciar'),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: List.generate(
-                                (index % 3) + 1,
-                                (i) => Chip(
-                                  label: Text('Disciplina ${i + 1}'),
-                                  backgroundColor: [
-                                    Colors.blue,
-                                    Colors.green,
-                                    Colors.purple,
-                                  ][i % 3].withValues(alpha: 0.2),
-                                  deleteIcon: const Icon(Icons.close, size: 16),
-                                  onDeleted: () {
-                                    // TODO: Remover da disciplina
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                              );
+                            },
+                          ),
           ),
         ],
       ),

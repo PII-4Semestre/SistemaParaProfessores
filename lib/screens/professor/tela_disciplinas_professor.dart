@@ -208,6 +208,209 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
     );
   }
 
+  void _showEditDisciplinaDialog(Map<String, dynamic> disciplina) {
+    _nomeController.text = disciplina['nome'] ?? '';
+    _descricaoController.text = disciplina['descricao'] ?? '';
+    
+    // Parse color from database
+    final corString = disciplina['cor'] ?? '#2196F3';
+    try {
+      _selectedColor = Color(int.parse(corString.replaceFirst('#', '0xFF')));
+    } catch (e) {
+      _selectedColor = Colors.blue;
+    }
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Editar Disciplina'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _nomeController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome da Disciplina',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _descricaoController,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Descrição',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Escolha uma cor:',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    Colors.blue,
+                    Colors.red,
+                    Colors.green,
+                    Colors.orange,
+                    Colors.purple,
+                    Colors.teal,
+                    Colors.pink,
+                    Colors.indigo,
+                  ].map((color) {
+                    return GestureDetector(
+                      onTap: () {
+                        setDialogState(() {
+                          _selectedColor = color;
+                        });
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _selectedColor == color
+                                ? Colors.black
+                                : Colors.transparent,
+                            width: 3,
+                          ),
+                        ),
+                        child: _selectedColor == color
+                            ? const Icon(Icons.check, color: Colors.white)
+                            : null,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (_nomeController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Nome da disciplina é obrigatório'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                try {
+                  await _apiService.updateDisciplina(
+                    id: disciplina['id'],
+                    nome: _nomeController.text,
+                    descricao: _descricaoController.text,
+                    cor: '#${_selectedColor.value.toRadixString(16).substring(2).toUpperCase()}',
+                  );
+
+                  if (!context.mounted) return;
+                  
+                  Navigator.pop(context);
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Disciplina atualizada com sucesso!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+
+                  _loadDisciplinas();
+                } catch (e) {
+                  if (!context.mounted) return;
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erro ao atualizar disciplina: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Salvar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteDisciplina(Map<String, dynamic> disciplina) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar Exclusão'),
+        content: Text(
+          'Tem certeza que deseja excluir a disciplina "${disciplina['nome']}"?\n\n'
+          'Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await _apiService.deleteDisciplina(disciplina['id']);
+
+                if (!context.mounted) return;
+                
+                Navigator.pop(context);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Disciplina excluída com sucesso!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                _loadDisciplinas();
+              } catch (e) {
+                if (!context.mounted) return;
+                
+                Navigator.pop(context);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Erro ao excluir disciplina: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -298,7 +501,7 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                           )
                         : GridView.builder(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
+                              crossAxisCount: 5,
                               crossAxisSpacing: 16,
                               mainAxisSpacing: 16,
                               childAspectRatio: 1.5,
@@ -404,7 +607,11 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                       ),
                     ],
                     onSelected: (value) {
-                      // TODO: Implementar ações de editar/excluir
+                      if (value == 'edit') {
+                        _showEditDisciplinaDialog(disciplina);
+                      } else if (value == 'delete') {
+                        _confirmDeleteDisciplina(disciplina);
+                      }
                     },
                   ),
                 ],

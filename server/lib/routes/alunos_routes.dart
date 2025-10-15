@@ -7,6 +7,65 @@ class AlunosRoutes {
   Router get router {
     final router = Router();
     
+    // GET /api/alunos - Listar todos os alunos com suas disciplinas
+    router.get('/', (Request request) async {
+      try {
+        final db = await Database.getInstance();
+        
+        // Buscar todos os alunos
+        final alunosResult = await db.connection.execute(
+          '''
+          SELECT id, nome, email, ra, criado_em
+          FROM usuarios
+          WHERE tipo = 'aluno'
+          ORDER BY nome
+          ''',
+        );
+        
+        final alunos = <Map<String, dynamic>>[];
+        
+        for (final alunoRow in alunosResult) {
+          final alunoId = alunoRow[0] as int;
+          
+          // Buscar disciplinas do aluno
+          final disciplinasResult = await db.connection.execute(
+            '''
+            SELECT d.id, d.nome, d.cor
+            FROM disciplinas d
+            INNER JOIN aluno_disciplina ad ON d.id = ad.disciplina_id
+            WHERE ad.aluno_id = \$1
+            ORDER BY d.nome
+            ''',
+            parameters: [alunoId],
+          );
+          
+          final disciplinas = disciplinasResult.map((row) => {
+            'id': row[0],
+            'nome': row[1],
+            'cor': row[2],
+          }).toList();
+          
+          alunos.add({
+            'id': alunoId,
+            'nome': alunoRow[1],
+            'email': alunoRow[2],
+            'ra': alunoRow[3],
+            'criado_em': alunoRow[4]?.toString(),
+            'disciplinas': disciplinas,
+          });
+        }
+        
+        return Response.ok(
+          json.encode(alunos),
+          headers: {'Content-Type': 'application/json'},
+        );
+      } catch (e) {
+        return Response.internalServerError(
+          body: json.encode({'error': 'Erro ao buscar alunos: $e'}),
+        );
+      }
+    });
+    
     // GET /api/alunos/disciplina/<id> - Listar alunos matriculados em uma disciplina
     router.get('/disciplina/<id>', (Request request, String id) async {
       try {
