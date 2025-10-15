@@ -80,6 +80,81 @@ class AtividadesRoutes {
       }
     });
     
+    // PUT /api/atividades/<id> - Atualizar atividade
+    router.put('/<id>', (Request request, String id) async {
+      try {
+        final payload = json.decode(await request.readAsString());
+        
+        final db = await Database.getInstance();
+        final result = await db.connection.execute(
+          '''
+          UPDATE atividades
+          SET titulo = \$1, descricao = \$2, peso = \$3, data_entrega = \$4
+          WHERE id = \$5
+          RETURNING id, disciplina_id, titulo, descricao, peso, data_entrega, criado_em, atualizado_em
+          ''',
+          parameters: [
+            payload['titulo'],
+            payload['descricao'],
+            payload['peso'] ?? 1.0,
+            payload['data_entrega'],
+            int.parse(id),
+          ],
+        );
+        
+        if (result.isEmpty) {
+          return Response.notFound(
+            json.encode({'error': 'Atividade não encontrada'}),
+          );
+        }
+        
+        final row = result.first;
+        return Response.ok(
+          json.encode({
+            'id': row[0],
+            'disciplina_id': row[1],
+            'titulo': row[2],
+            'descricao': row[3],
+            'peso': row[4],
+            'data_entrega': row[5]?.toString(),
+            'criado_em': row[6]?.toString(),
+            'atualizado_em': row[7]?.toString(),
+          }),
+          headers: {'Content-Type': 'application/json'},
+        );
+      } catch (e) {
+        return Response.internalServerError(
+          body: json.encode({'error': 'Erro ao atualizar atividade: $e'}),
+        );
+      }
+    });
+    
+    // DELETE /api/atividades/<id> - Deletar atividade
+    router.delete('/<id>', (Request request, String id) async {
+      try {
+        final db = await Database.getInstance();
+        final result = await db.connection.execute(
+          'DELETE FROM atividades WHERE id = \$1 RETURNING id',
+          parameters: [int.parse(id)],
+        );
+        
+        if (result.isEmpty) {
+          return Response.notFound(
+            json.encode({'error': 'Atividade não encontrada'}),
+          );
+        }
+        
+        return Response.ok(
+          json.encode({'message': 'Atividade deletada com sucesso'}),
+          headers: {'Content-Type': 'application/json'},
+        );
+      } catch (e) {
+        return Response.internalServerError(
+          body: json.encode({'error': 'Erro ao deletar atividade: $e'}),
+        );
+      }
+    });
+    
     return router;
   }
 }

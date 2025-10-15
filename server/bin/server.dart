@@ -8,6 +8,7 @@ import 'package:sistema_professores_server/routes/auth_routes.dart';
 import 'package:sistema_professores_server/routes/disciplinas_routes.dart';
 import 'package:sistema_professores_server/routes/atividades_routes.dart';
 import 'package:sistema_professores_server/routes/notas_routes.dart';
+import 'package:sistema_professores_server/routes/alunos_routes.dart';
 
 void main() async {
   // Carregar variáveis de ambiente
@@ -18,10 +19,11 @@ void main() async {
   
   // Configurar rotas
   final router = Router()
-    ..mount('/api/auth', AuthRoutes().router)
-    ..mount('/api/disciplinas', DisciplinasRoutes().router)
-    ..mount('/api/atividades', AtividadesRoutes().router)
-    ..mount('/api/notas', NotasRoutes().router);
+    ..mount('/api/auth', AuthRoutes().router.call)
+    ..mount('/api/disciplinas', DisciplinasRoutes().router.call)
+    ..mount('/api/atividades', AtividadesRoutes().router.call)
+    ..mount('/api/notas', NotasRoutes().router.call)
+    ..mount('/api/alunos', AlunosRoutes().router.call);
   
   // Middleware para CORS
   final handler = Pipeline()

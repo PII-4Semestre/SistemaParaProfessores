@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'screens/autenticacao/tela_login.dart';
+import 'services/api_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ApiService().init();
   runApp(const PoliEducaApp());
 }
 

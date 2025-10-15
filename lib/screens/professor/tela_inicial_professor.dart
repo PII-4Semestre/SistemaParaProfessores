@@ -4,6 +4,7 @@ import 'tela_disciplinas_professor.dart';
 import 'tela_alunos_professor.dart';
 import 'tela_mensagens_professor.dart';
 import '../autenticacao/tela_login.dart';
+import '../../services/api_service.dart';
 
 class TelaInicialProfessor extends StatefulWidget {
   const TelaInicialProfessor({super.key});
@@ -14,6 +15,7 @@ class TelaInicialProfessor extends StatefulWidget {
 
 class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
   int _selectedIndex = 0;
+  final ApiService _apiService = ApiService();
 
   final List<NavigationDestination> _destinations = const [
     NavigationDestination(
@@ -71,7 +73,7 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text('Matheus Mattoso', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text(_apiService.currentUser?['nome'] ?? 'Professor', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                     Text('Professor', style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.9))),
                   ],
                 ),
@@ -80,7 +82,9 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.logout),
-                  onPressed: () {
+                  onPressed: () async {
+                    await _apiService.logout();
+                    if (!mounted) return;
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (context) => const TelaLogin()),
                       (route) => false,
@@ -105,7 +109,7 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
                       children: [
                         const CircleAvatar(radius: 30, backgroundColor: Colors.white, child: Icon(Icons.person, size: 35, color: Colors.orange)),
                         const SizedBox(height: 10),
-                        const Text('Matheus Mattoso', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text(_apiService.currentUser?['nome'] ?? 'Professor', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                         Text('Professor', style: TextStyle(color: Colors.white.withValues(alpha: 0.9))),
                       ],
                     ),

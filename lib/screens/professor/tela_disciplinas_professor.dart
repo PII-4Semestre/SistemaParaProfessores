@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'tela_detalhes_disciplina_professor.dart';
+import '../../services/api_service.dart';
 
 class TelaDisciplinasProfessor extends StatefulWidget {
   const TelaDisciplinasProfessor({super.key});
@@ -13,6 +14,17 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _descricaoController = TextEditingController();
   Color _selectedColor = Colors.blue;
+  final ApiService _apiService = ApiService();
+  
+  List<dynamic> _disciplinas = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDisciplinas();
+  }
 
   @override
   void dispose() {
@@ -22,7 +34,41 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
     super.dispose();
   }
 
+  Future<void> _loadDisciplinas() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final professorId = _apiService.currentUser?['id'];
+      if (professorId == null) {
+        throw Exception('Professor ID não encontrado');
+      }
+
+      final disciplinas = await _apiService.getDisciplinasProfessor(professorId);
+      
+      if (mounted) {
+        setState(() {
+          _disciplinas = disciplinas;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   void _showAddDisciplinaDialog() {
+    _nomeController.clear();
+    _descricaoController.clear();
+    _selectedColor = Colors.blue;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -104,11 +150,52 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () {
-              // TODO: Implementar lógica de adicionar disciplina
-              Navigator.pop(context);
-              _nomeController.clear();
-              _descricaoController.clear();
+            onPressed: () async {
+              if (_nomeController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Nome da disciplina é obrigatório'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              try {
+                final professorId = _apiService.currentUser?['id'];
+                if (professorId == null) {
+                  throw Exception('Professor ID não encontrado');
+                }
+
+                await _apiService.createDisciplina(
+                  nome: _nomeController.text,
+                  descricao: _descricaoController.text,
+                  professorId: professorId,
+                  cor: '#${_selectedColor.value.toRadixString(16).substring(2).toUpperCase()}',
+                );
+
+                if (!context.mounted) return;
+                
+                Navigator.pop(context);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Disciplina criada com sucesso!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                _loadDisciplinas();
+              } catch (e) {
+                if (!context.mounted) return;
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Erro ao criar disciplina: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
@@ -176,189 +263,174 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.5,
-              ),
-              itemCount: 6, // Exemplo com 6 disciplinas
-              itemBuilder: (context, index) {
-                final colors = [
-                  Colors.blue,
-                  Colors.green,
-                  Colors.orange,
-                  Colors.purple,
-                  Colors.red,
-                  Colors.cyan,
-                ];
-                final color = colors[index % colors.length];
-
-                return Card(
-                  elevation: 2,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TelaDetalhesDisciplinaProfessor(
-                            subjectName: 'Disciplina ${index + 1}',
-                            subjectColor: color,
-                          ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                            const SizedBox(height: 16),
+                            Text('Erro ao carregar disciplinas', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+                            const SizedBox(height: 8),
+                            Text(_error!, style: TextStyle(color: Colors.grey[600])),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadDisciplinas,
+                              child: const Text('Tentar novamente'),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            color.withValues(alpha: 0.7),
-                            color,
+                      )
+                    : _disciplinas.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.school_outlined, size: 64, color: Colors.grey),
+                                const SizedBox(height: 16),
+                                Text('Nenhuma disciplina cadastrada', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+                                const SizedBox(height: 8),
+                                Text('Clique em "Nova Disciplina" para começar', style: TextStyle(color: Colors.grey[600])),
+                              ],
+                            ),
+                          )
+                        : GridView.builder(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: 1.5,
+                            ),
+                            itemCount: _disciplinas.length,
+                            itemBuilder: (context, index) {
+                              final disciplina = _disciplinas[index];
+                              final cor = _parseColor(disciplina['cor'] ?? '#2196F3');
+                              
+                              return _buildDisciplinaCard(
+                                disciplina['nome'] ?? 'Sem nome',
+                                disciplina['descricao'] ?? 'Sem descrição',
+                                cor,
+                                disciplina,
+                              );
+                            },
+                          ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _parseColor(String hexColor) {
+    try {
+      final hex = hexColor.replaceAll('#', '');
+      return Color(int.parse('FF$hex', radix: 16));
+    } catch (e) {
+      return Colors.blue;
+    }
+  }
+
+  Widget _buildDisciplinaCard(String nome, String descricao, Color cor, Map<String, dynamic> disciplina) {
+    return Card(
+      elevation: 2,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TelaDetalhesDisciplinaProfessor(
+                subjectName: nome,
+                subjectColor: cor,
+                disciplinaId: disciplina['id'],
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                cor.withValues(alpha: 0.7),
+                cor,
+              ],
+            ),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.book,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert, color: Colors.white),
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, size: 20),
+                            SizedBox(width: 8),
+                            Text('Editar'),
                           ],
                         ),
                       ),
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.book,
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
-                              ),
-                              PopupMenuButton<String>(
-                                icon: const Icon(Icons.more_vert, color: Colors.white),
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.edit, size: 20),
-                                        SizedBox(width: 8),
-                                        Text('Editar'),
-                                      ],
-                                    ),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.delete, size: 20),
-                                        SizedBox(width: 8),
-                                        Text('Excluir'),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                                onSelected: (value) {
-                                  // TODO: Implementar ações
-                                },
-                              ),
-                            ],
-                          ),
-                          const Spacer(),
-                          Text(
-                            'Disciplina ${index + 1}',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Descrição da disciplina',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 14,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.people,
-                                      size: 16,
-                                      color: Colors.white,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${20 + index * 5} alunos',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.assignment,
-                                      size: 16,
-                                      color: Colors.white,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${3 + index}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, size: 20),
+                            SizedBox(width: 8),
+                            Text('Excluir'),
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
+                    onSelected: (value) {
+                      // TODO: Implementar ações de editar/excluir
+                    },
                   ),
-                );
-              },
-            ),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                nome,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                descricao,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 14,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

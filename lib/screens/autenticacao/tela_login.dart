@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../professor/tela_inicial_professor.dart';
 import '../aluno/tela_inicial_aluno.dart';
+import '../../services/api_service.dart';
 
 class TelaLogin extends StatefulWidget {
   const TelaLogin({super.key});
@@ -15,6 +16,8 @@ class _TelaLoginState extends State<TelaLogin>
   late TabController _tabController;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
+  final ApiService _apiService = ApiService();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -33,7 +36,7 @@ class _TelaLoginState extends State<TelaLogin>
   }
 
   // Função chamada ao pressionar o botão de login
-  void _performLogin() {
+  void _performLogin() async {
     // Validação básica
     if (emailController.text.isEmpty || senhaController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -45,20 +48,51 @@ class _TelaLoginState extends State<TelaLogin>
       return;
     }
 
-    final String tipo = _tabController.index == 0 ? 'Aluno' : 'Professor';
-    
-    if (tipo == 'Professor') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const TelaInicialProfessor(),
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Chamar API de login
+      final response = await _apiService.login(
+        emailController.text.trim(),
+        senhaController.text,
+      );
+
+      if (!mounted) return;
+
+      final user = response['user'];
+      final tipo = user['tipo'];
+      
+      // Navegar para a tela apropriada
+      if (tipo == 'professor') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const TelaInicialProfessor(),
+          ),
+        );
+      } else {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const TelaInicialAluno(),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao fazer login: $e'),
+          backgroundColor: Colors.red,
         ),
       );
-    } else {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const TelaInicialAluno(),
-        ),
-      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -183,14 +217,23 @@ class _TelaLoginState extends State<TelaLogin>
                           ),
                           elevation: 5,
                       ),
-                      onPressed: _performLogin,
-                      child: const Text(
-                        'ENTRAR',
-                        style: TextStyle(
-                            fontSize: 18, 
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
+                      onPressed: _isLoading ? null : _performLogin,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'ENTRAR',
+                              style: TextStyle(
+                                  fontSize: 18, 
+                                  fontWeight: FontWeight.bold
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 12),
