@@ -68,7 +68,7 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
         title: const Text('Portal do Professor', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
-        actions: [
+        actions: isWideScreen ? [
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -99,22 +99,24 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
               ],
             ),
           ),
-        ],
+        ] : null,
       ),
       drawer: !isWideScreen
           ? Drawer(
               child: Column(
                 children: [
-                  DrawerHeader(
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
                     decoration: const BoxDecoration(color: Colors.orange),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         const CircleAvatar(radius: 30, backgroundColor: Colors.white, child: Icon(Icons.person, size: 35, color: Colors.orange)),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 12),
                         Text(_apiService.currentUser?['nome'] ?? 'Professor', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('Professor', style: TextStyle(color: Colors.white.withValues(alpha: 0.9))),
+                        const SizedBox(height: 4),
+                        Text('Professor', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 14)),
                       ],
                     ),
                   ),
@@ -130,6 +132,20 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
                         Navigator.pop(context);
                       },
                     ),
+                  ),
+                  const Spacer(),
+                  const Divider(),
+                  ListTile(
+                    leading: const Icon(Icons.logout),
+                    title: const Text('Sair'),
+                    onTap: () async {
+                      await _apiService.logout();
+                      if (!mounted) return;
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => const TelaLogin()),
+                        (route) => false,
+                      );
+                    },
                   ),
                 ],
               ),

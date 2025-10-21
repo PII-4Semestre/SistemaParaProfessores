@@ -644,11 +644,14 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
   double _getCardAspectRatio(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     // More conservative (taller) aspect ratios to prevent overflow
-    if (width > 1400) return 1.3;
-    if (width > 1100) return 1.25;
-    if (width > 800) return 1.2;
-    if (width > 600) return 1.15;
-    return 1.0; // Mobile - square-ish cards
+    if (width > 1400) return 1.0;
+    if (width > 1100) return 0.95;
+    if (width > 800) return 0.9;
+    if (width > 600) return 0.85;
+    // Telas muito estreitas (Galaxy Fold, etc)
+    if (width < 350) return 2.5;
+    // Mobile normal: cards retangulares horizontais
+    return 2.0;
   }
 
   Color _parseColor(String hexColor) {
@@ -697,30 +700,36 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
             ],
           ),
           child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(12),
           child: LayoutBuilder(
             builder: (context, constraints) {
+              // Detectar se é tela muito pequena
+              final isVerySmall = constraints.maxHeight < 120;
+              final iconSize = isVerySmall ? 20.0 : 24.0;
+              final titleSize = isVerySmall ? 14.0 : 16.0;
+              final subtitleSize = isVerySmall ? 10.0 : 12.0;
+              final spacing = isVerySmall ? 4.0 : 8.0;
+              
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: EdgeInsets.all(isVerySmall ? 6 : 10),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.book,
                           color: Colors.white,
-                          size: 24,
+                          size: iconSize,
                         ),
                       ),
                       PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert, color: Colors.white),
+                        icon: Icon(Icons.more_vert, color: Colors.white, size: isVerySmall ? 20 : 24),
                         itemBuilder: (context) => [
                           const PopupMenuItem(
                             value: 'edit',
@@ -753,29 +762,31 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                       ),
                     ],
                   ),
-                  SizedBox(height: constraints.maxHeight > 150 ? 8 : 4),
+                  SizedBox(height: spacing),
                   Text(
                     nome,
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: TextStyle(
+                      fontSize: titleSize,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  Flexible(
-                    child: Text(
-                      descricao,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 13,
+                  if (!isVerySmall) ...[
+                    SizedBox(height: spacing / 2),
+                    Expanded(
+                      child: Text(
+                        descricao,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: subtitleSize,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+                  ],
                 ],
               );
             },

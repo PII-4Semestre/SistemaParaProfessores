@@ -376,6 +376,7 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.grade,
@@ -384,7 +385,7 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
                   ),
                   const SizedBox(width: 20),
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Text(
                         'Sua Média',

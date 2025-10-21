@@ -201,11 +201,14 @@ class _TelaDisciplinasAlunoState extends State<TelaDisciplinasAluno> {
 
   double _getCardAspectRatio(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    if (width > 1400) return 1.3;
-    if (width > 1100) return 1.25;
-    if (width > 800) return 1.2;
-    if (width > 600) return 1.15;
-    return 1.0;
+    if (width > 1400) return 1.0;
+    if (width > 1100) return 0.95;
+    if (width > 800) return 0.9;
+    if (width > 600) return 0.85;
+    // Telas muito estreitas (Galaxy Fold, etc)
+    if (width < 350) return 2.5;
+    // Mobile normal: cards retangulares horizontais
+    return 2.0;
   }
 
   Widget _buildDisciplinaCard(Map<String, dynamic> disciplina) {
@@ -220,6 +223,7 @@ class _TelaDisciplinasAlunoState extends State<TelaDisciplinasAluno> {
 
     final nome = disciplina['nome'] ?? 'Sem nome';
     final professor = disciplina['professor_nome'] ?? 'Sem professor';
+    final descricao = disciplina['descricao'] ?? '';
 
     // Calcular média da disciplina
     final notasDisciplina = _notas.where((n) => 
@@ -268,100 +272,118 @@ class _TelaDisciplinasAlunoState extends State<TelaDisciplinasAluno> {
             ],
           ),
           child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(12),
           child: LayoutBuilder(
             builder: (context, constraints) {
+              // Detectar se é tela muito pequena
+              final isVerySmall = constraints.maxHeight < 120;
+              final iconSize = isVerySmall ? 20.0 : 24.0;
+              final titleSize = isVerySmall ? 14.0 : 16.0;
+              final subtitleSize = isVerySmall ? 10.0 : 12.0;
+              final spacing = isVerySmall ? 4.0 : 8.0;
+              
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(isVerySmall ? 6 : 10),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.book, color: Colors.white, size: 24),
+                    child: Icon(Icons.book, color: Colors.white, size: iconSize),
                   ),
-                  SizedBox(height: constraints.maxHeight > 150 ? 8 : 4),
+                  SizedBox(height: spacing),
                   Text(
                     nome,
-                    style: const TextStyle(
-                        fontSize: 18,
+                    style: TextStyle(
+                        fontSize: titleSize,
                         fontWeight: FontWeight.bold,
                         color: Colors.white),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  if (descricao.isNotEmpty && !isVerySmall) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      descricao,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: subtitleSize,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  SizedBox(height: spacing / 2),
                   Row(
                     children: [
-                      const Icon(Icons.person, size: 16, color: Colors.white),
+                      Icon(Icons.person, size: isVerySmall ? 12 : 14, color: Colors.white),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
                           professor,
                           style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 13),
+                              fontSize: subtitleSize),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: constraints.maxHeight > 150 ? 8 : 4),
-                  Flexible(
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        if (mediaDisciplina != null)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.grade,
-                                    size: 14, color: Colors.white),
-                                const SizedBox(width: 4),
-                                Text(
-                                    'Média: ${mediaDisciplina.toStringAsFixed(1)}',
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.assignment,
-                                  size: 14, color: Colors.white),
-                              const SizedBox(width: 4),
-                              Text('${notasDisciplina.length} notas',
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 11)),
-                            ],
-                          ),
+                  const Spacer(),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    if (mediaDisciplina != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.grade,
+                                size: 12, color: Colors.white),
+                            const SizedBox(width: 4),
+                            Text(
+                                'Média: ${mediaDisciplina.toStringAsFixed(1)}',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.assignment,
+                              size: 12, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text('${notasDisciplina.length} notas',
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 10)),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              );
+                  ],
+                ),
+              ),
+            ],
+          );
             },
           ),
           ),
