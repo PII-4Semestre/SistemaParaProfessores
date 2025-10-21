@@ -119,20 +119,33 @@ class _TelaLoginState extends State<TelaLogin> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-            child: Container(
-              width: cardWidth,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 10,
-                    offset: Offset(0, 5),
+            child: TweenAnimationBuilder(
+              duration: const Duration(milliseconds: 800),
+              tween: Tween<double>(begin: 0, end: 1),
+              builder: (context, double value, child) {
+                return Transform.scale(
+                  scale: value,
+                  child: Opacity(
+                    opacity: value,
+                    child: child,
                   ),
-                ],
-              ),
+                );
+              },
+              child: Container(
+                width: cardWidth,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 40,
+                      offset: const Offset(0, 20),
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -240,7 +253,8 @@ class _TelaLoginState extends State<TelaLogin> {
                     ),
                   ),
                 ], 
-              ), 
+              ),
+              ),
             ), 
           ), 
         ), 

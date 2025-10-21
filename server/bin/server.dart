@@ -19,11 +19,11 @@ void main() async {
   
   // Configurar rotas
   final router = Router()
-    ..mount('/api/auth', AuthRoutes().router.call)
-    ..mount('/api/disciplinas', DisciplinasRoutes().router.call)
-    ..mount('/api/atividades', AtividadesRoutes().router.call)
-    ..mount('/api/notas', NotasRoutes().router.call)
-    ..mount('/api/alunos', AlunosRoutes().router.call);
+    ..mount('/api/auth', AuthRoutes().router)
+    ..mount('/api/disciplinas', DisciplinasRoutes().router)
+    ..mount('/api/atividades', AtividadesRoutes().router)
+    ..mount('/api/notas', NotasRoutes().router)
+    ..mount('/api/alunos', AlunosRoutes().router);
   
   // Middleware para CORS
   final handler = Pipeline()
@@ -35,7 +35,6 @@ void main() async {
   // Iniciar servidor
   final port = int.parse(env['PORT'] ?? '8080');
   final server = await shelf_io.serve(handler, InternetAddress.anyIPv4, port);
-  
   print('🚀 Servidor rodando em http://${server.address.host}:${server.port}');
 }
 

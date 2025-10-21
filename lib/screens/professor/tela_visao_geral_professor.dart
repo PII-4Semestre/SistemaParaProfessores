@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import '../../services/api_service.dart';
 import 'tela_detalhes_disciplina_professor.dart';
 
@@ -15,7 +16,6 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
   final ApiService _apiService = ApiService();
   
   List<dynamic> _disciplinas = [];
-  List<dynamic> _atividades = [];
   List<dynamic> _alunos = [];
   bool _isLoading = true;
   String? _error;
@@ -46,14 +46,6 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
 
       _disciplinas = results[0];
       _alunos = results[1];
-
-      // Load activities for each discipline
-      List<dynamic> allAtividades = [];
-      for (var disciplina in _disciplinas) {
-        final atividades = await _apiService.getAtividadesDisciplina(disciplina['id']);
-        allAtividades.addAll(atividades);
-      }
-      _atividades = allAtividades;
 
       if (mounted) {
         setState(() {
@@ -96,10 +88,11 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
       );
     }
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           const Text(
             'Visão Geral',
             style: TextStyle(
@@ -115,10 +108,38 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
               color: Colors.grey[600],
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
 
           // Cards de estatísticas com dados reais
-          Row(
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 600;
+              return isNarrow
+                ? Column(
+                    children: [
+                      _buildStatCard(
+                        title: 'Disciplinas',
+                        value: '${_disciplinas.length}',
+                        icon: Icons.book,
+                        color: Colors.blue,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildStatCard(
+                        title: 'Total de Alunos',
+                        value: '${_alunos.length}',
+                        icon: Icons.people,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildStatCard(
+                        title: 'Mensagens',
+                        value: '0',
+                        icon: Icons.mail,
+                        color: Colors.purple,
+                      ),
+                    ],
+                  )
+                : Row(
             children: [
               Expanded(
                 child: _buildStatCard(
@@ -140,15 +161,6 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
               const SizedBox(width: 16),
               Expanded(
                 child: _buildStatCard(
-                  title: 'Atividades Ativas',
-                  value: '${_atividades.length}',
-                  icon: Icons.assignment,
-                  color: Colors.cyan,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildStatCard(
                   title: 'Mensagens',
                   value: '0',
                   icon: Icons.mail,
@@ -156,79 +168,10 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                 ),
               ),
             ],
+          );
+            },
           ),
-          const SizedBox(height: 32),
-
-          // Seção de atividades recentes com dados reais
-          const Text(
-            'Atividades Recentes',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (_atividades.isEmpty)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(Icons.assignment_outlined, size: 48, color: Colors.grey[400]),
-                      const SizedBox(height: 8),
-                      Text('Nenhuma atividade cadastrada', style: TextStyle(color: Colors.grey[600])),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          else
-            Card(
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _atividades.length > 5 ? 5 : _atividades.length,
-                separatorBuilder: (context, index) => const Divider(height: 1),
-                itemBuilder: (context, index) {
-                  final atividade = _atividades[index];
-                  final dataEntrega = atividade['data_entrega'] != null
-                      ? DateTime.parse(atividade['data_entrega'])
-                      : null;
-                  final isVencida = dataEntrega != null && dataEntrega.isBefore(DateTime.now());
-                  
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.orange.withValues(alpha: 0.2),
-                      child: const Icon(Icons.assignment, color: Colors.orange),
-                    ),
-                    title: Text(atividade['titulo'] ?? 'Sem título'),
-                    subtitle: Text(
-                      dataEntrega != null
-                          ? 'Entrega: ${dataEntrega.day}/${dataEntrega.month}/${dataEntrega.year}'
-                          : 'Sem data de entrega',
-                    ),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isVencida 
-                            ? Colors.red.withValues(alpha: 0.1) 
-                            : Colors.green.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        isVencida ? 'Vencida' : 'Ativa',
-                        style: TextStyle(
-                          color: isVencida ? Colors.red : Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
 
           // Seção de disciplinas com dados reais
           Row(
@@ -259,6 +202,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                 padding: const EdgeInsets.all(32.0),
                 child: Center(
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.school_outlined, size: 48, color: Colors.grey[400]),
                       const SizedBox(height: 8),
@@ -273,10 +217,17 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
           else
             SizedBox(
               height: 200,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _disciplinas.length,
-                itemBuilder: (context, index) {
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(
+                  dragDevices: {
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.mouse,
+                  },
+                ),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _disciplinas.length,
+                  itemBuilder: (context, index) {
                   final disciplina = _disciplinas[index];
                   final corString = disciplina['cor'] ?? '#2196F3';
                   Color cor;
@@ -287,7 +238,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                   }
 
                   return Container(
-                    width: 250,
+                    width: 220,
                     margin: const EdgeInsets.only(right: 16),
                     child: Card(
                       elevation: 2,
@@ -379,8 +330,10 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                   );
                 },
               ),
+              ),
             ),
         ],
+      ),
       ),
     );
   }
@@ -391,40 +344,85 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
     required IconData icon,
     required Color color,
   }) {
-    return Card(
-      elevation: 2,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                Icon(
-                  icon,
-                  color: color,
-                  size: 28,
-                ),
+    return TweenAnimationBuilder(
+      duration: const Duration(milliseconds: 600),
+      tween: Tween<double>(begin: 0, end: 1),
+      builder: (context, double animValue, child) {
+        return Transform.scale(
+          scale: 0.8 + (animValue * 0.2),
+          child: Opacity(
+            opacity: animValue,
+            child: child,
+          ),
+        );
+      },
+      child: Card(
+        elevation: 0,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withOpacity(0.1),
+                color.withOpacity(0.05),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: color.withOpacity(0.2),
+              width: 1,
             ),
-          ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                    letterSpacing: -1,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -662,7 +662,7 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
 
   Widget _buildDisciplinaCard(String nome, String descricao, Color cor, Map<String, dynamic> disciplina) {
     return Card(
-      elevation: 2,
+      elevation: 0,
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -676,20 +676,28 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
+        borderRadius: BorderRadius.circular(16),
+        child: Ink(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                cor.withValues(alpha: 0.7),
+                cor.withValues(alpha: 0.8),
                 cor,
               ],
             ),
+            boxShadow: [
+              BoxShadow(
+                color: cor.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          padding: const EdgeInsets.all(16),
+          child: Container(
+          padding: const EdgeInsets.all(20),
           child: LayoutBuilder(
             builder: (context, constraints) {
               return Column(
@@ -771,6 +779,7 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                 ],
               );
             },
+          ),
           ),
         ),
       ),

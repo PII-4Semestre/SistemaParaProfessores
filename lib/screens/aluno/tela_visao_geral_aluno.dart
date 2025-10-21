@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import '../../services/api_service.dart';
 import 'tela_detalhes_disciplina_aluno.dart';
 
@@ -98,10 +99,11 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
       );
     }
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           const Text(
             'Visão Geral',
             style: TextStyle(
@@ -117,11 +119,39 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
               color: Colors.grey[600],
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
 
           // Cards de estatísticas com dados reais
-          Row(
-            children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 600;
+              return isNarrow
+                ? Column(
+                    children: [
+                      _buildStatCard(
+                        title: 'Média Geral',
+                        value: _notas.isEmpty ? '-' : _calcularMediaGeral().toStringAsFixed(1),
+                        icon: Icons.grade,
+                        color: Colors.blue,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildStatCard(
+                        title: 'Disciplinas',
+                        value: '${_disciplinas.length}',
+                        icon: Icons.book,
+                        color: Colors.green,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildStatCard(
+                        title: 'Mensagens',
+                        value: '0',
+                        icon: Icons.mail,
+                        color: Colors.purple,
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
               Expanded(
                 child: _buildStatCard(
                   title: 'Média Geral',
@@ -149,9 +179,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                 ),
               ),
             ],
+          );
+            },
           ),
-          const SizedBox(height: 32),
-
+          const SizedBox(height: 24),
           // Seção de atividades recentes com dados reais
           const Text(
             'Notas Recentes',
@@ -222,15 +253,29 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                 },
               ),
             ),
-          const SizedBox(height: 32),
+          
+          const SizedBox(height: 24),
 
           // Seção de disciplinas com dados reais
-          const Text(
-            'Minhas Disciplinas',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Minhas Disciplinas',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (_disciplinas.isNotEmpty)
+                TextButton.icon(
+                  onPressed: () {
+                    widget.onNavigateToTab?.call(1);
+                  },
+                  icon: const Icon(Icons.arrow_forward),
+                  label: const Text('Ver Todas'),
+                ),
+            ],
           ),
           const SizedBox(height: 16),
           if (_disciplinas.isEmpty)
@@ -239,6 +284,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                 padding: const EdgeInsets.all(32.0),
                 child: Center(
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.school_outlined, size: 48, color: Colors.grey[400]),
                       const SizedBox(height: 8),
@@ -250,11 +296,18 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
             )
           else
             SizedBox(
-              height: 180,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _disciplinas.length,
-                itemBuilder: (context, index) {
+              height: 200,
+              child: ScrollConfiguration(
+                behavior: ScrollConfiguration.of(context).copyWith(
+                  dragDevices: {
+                    PointerDeviceKind.touch,
+                    PointerDeviceKind.mouse,
+                  },
+                ),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _disciplinas.length,
+                  itemBuilder: (context, index) {
                   final disciplina = _disciplinas[index];
                   final corString = disciplina['cor'] ?? '#2196F3';
                   Color cor;
@@ -264,7 +317,6 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                     cor = Colors.blue;
                   }
 
-                  // Calcular média da disciplina
                   final notasDisciplina = _notas.where((n) => n['disciplina_nome'] == disciplina['nome']).toList();
                   double mediaDisciplina = 0.0;
                   if (notasDisciplina.isNotEmpty) {
@@ -324,7 +376,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                   size: 24,
                                 ),
                               ),
-                              const Spacer(),
+                              const SizedBox(height: 12),
                               Text(
                                 disciplina['nome'] ?? 'Sem nome',
                                 style: const TextStyle(
@@ -336,6 +388,16 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 8),
+                              Text(
+                                disciplina['descricao'] ?? 'Sem descrição',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 13,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const Spacer(),
                               Row(
                                 children: [
                                   const Icon(Icons.person, size: 16, color: Colors.white),
@@ -345,7 +407,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                       disciplina['professor_nome'] ?? 'Sem professor',
                                       style: const TextStyle(
                                         color: Colors.white,
-                                        fontSize: 12,
+                                        fontSize: 13,
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -365,7 +427,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                         'Média: ${mediaDisciplina.toStringAsFixed(1)}',
                                         style: const TextStyle(
                                           color: Colors.white,
-                                          fontSize: 11,
+                                          fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -380,8 +442,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                   );
                 },
               ),
+              ),
             ),
         ],
+      ),
       ),
     );
   }
@@ -392,40 +456,85 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
     required IconData icon,
     required Color color,
   }) {
-    return Card(
-      elevation: 2,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                Icon(
-                  icon,
-                  color: color,
-                  size: 28,
-                ),
+    return TweenAnimationBuilder(
+      duration: const Duration(milliseconds: 600),
+      tween: Tween<double>(begin: 0, end: 1),
+      builder: (context, double animValue, child) {
+        return Transform.scale(
+          scale: 0.8 + (animValue * 0.2),
+          child: Opacity(
+            opacity: animValue,
+            child: child,
+          ),
+        );
+      },
+      child: Card(
+        elevation: 0,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withOpacity(0.1),
+                color.withOpacity(0.05),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: color.withOpacity(0.2),
+              width: 1,
             ),
-          ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Flexible(
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: 24,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                    letterSpacing: -1,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
