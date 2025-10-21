@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class TelaDetalhesDisciplinaAluno extends StatefulWidget {
   final String subjectName;
@@ -20,7 +20,6 @@ class TelaDetalhesDisciplinaAluno extends StatefulWidget {
 class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAluno>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -31,123 +30,178 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
   @override
   void dispose() {
     _tabController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.subjectName),
-            Text(
-              widget.professorName,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ],
-        ),
-        backgroundColor: widget.subjectColor,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          tabs: const [
-            Tab(icon: Icon(Icons.book), text: 'Materiais'),
-            Tab(icon: Icon(Icons.assignment), text: 'Atividades'),
-            Tab(icon: Icon(Icons.grade), text: 'Notas'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _buildMateriaisTab(),
-          _buildAtividadesTab(),
-          _buildNotasTab(),
+          // Custom gradient header
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  widget.subjectColor.withValues(alpha: 0.7),
+                  widget.subjectColor,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  // Header with back button and title
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.subjectName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.person, color: Colors.white70, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    widget.professorName,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // TabBar
+                  TabBar(
+                    controller: _tabController,
+                    indicatorColor: Colors.white,
+                    indicatorWeight: 3,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white70,
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    tabs: const [
+                      Tab(icon: Icon(Icons.book), text: 'Materiais'),
+                      Tab(icon: Icon(Icons.assignment), text: 'Atividades'),
+                      Tab(icon: Icon(Icons.grade), text: 'Notas'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Body
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildMateriaisTab(),
+                _buildAtividadesTab(),
+                _buildNotasTab(),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildMateriaisTab() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: 'Buscar materiais...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(48.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: widget.subjectColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.folder_open,
+                size: 80,
+                color: widget.subjectColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Materiais em Desenvolvimento',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'A funcionalidade de materiais didáticos estará disponível em breve.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Aqui você poderá acessar PDFs, slides, apostilas e outros recursos disponibilizados pelo professor.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(color: widget.subjectColor.withValues(alpha: 0.3)),
                 borderRadius: BorderRadius.circular(8),
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: _getMaterialsCrossAxisCount(context),
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1,
-              ),
-              itemCount: 6,
-              itemBuilder: (context, index) {
-                return Card(
-                  elevation: 2,
-                  child: InkWell(
-                    onTap: () {
-                      // TODO: Abrir/baixar material
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          index % 2 == 0 ? Icons.picture_as_pdf : Icons.image,
-                          size: 48,
-                          color: widget.subjectColor,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Material ${index + 1}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                        Text(
-                          index % 2 == 0 ? 'PDF - 2.5 MB' : 'IMG - 1.2 MB',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            // TODO: Download
-                          },
-                          icon: const Icon(Icons.download, size: 16),
-                          label: const Text('Baixar'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: widget.subjectColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          ),
-                        ),
-                      ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.info_outline, color: widget.subjectColor, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Integração com MongoDB em progresso',
+                    style: TextStyle(
+                      color: widget.subjectColor,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -155,113 +209,158 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
   Widget _buildAtividadesTab() {
     return Padding(
       padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: 'Buscar atividades...',
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                final isPending = index < 2;
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  color: isPending ? Colors.orange.withValues(alpha: 0.01) : null,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: isPending
-                              ? Colors.orange.withValues(alpha: 0.2)
-                              : Colors.green.withValues(alpha: 0.2),
-                          child: Icon(
-                            Icons.assignment,
-                            color: isPending ? Colors.orange : Colors.green,
-                          ),
+      child: ListView.builder(
+        itemCount: 5,
+        itemBuilder: (context, index) {
+          final isPending = index < 2;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: widget.subjectColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Atividade ${index + 1}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Peso: ${(index + 1).toDouble()}',
-                                style: TextStyle(color: Colors.grey[600]),
-                              ),
-                              Text(
-                                'Entrega: 2025-10-${15 + index}',
-                                style: TextStyle(
-                                  color: isPending ? Colors.orange : Colors.grey[600],
-                                  fontWeight: isPending ? FontWeight.bold : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
+                        child: Icon(
+                          Icons.assignment,
+                          color: widget.subjectColor,
+                          size: 24,
                         ),
-                        Column(
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isPending
-                                    ? Colors.orange.withValues(alpha: 0.1)
-                                    : Colors.green.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                isPending ? 'Pendente' : 'Entregue',
-                                style: TextStyle(
-                                  color: isPending ? Colors.orange : Colors.green,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
+                            Text(
+                              'Atividade ${index + 1}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            if (isPending) ...[
-                              const SizedBox(height: 8),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: Enviar atividade
-                                },
-                                icon: const Icon(Icons.upload, size: 18),
-                                label: const Text('Enviar'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Lista de exercícios sobre conceitos avançados da disciplina.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
                               ),
-                            ],
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                );
-              },
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: widget.subjectColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.fitness_center, size: 14, color: widget.subjectColor),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Peso: ${(index + 1).toDouble()}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: widget.subjectColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isPending
+                              ? Colors.orange.withValues(alpha: 0.1)
+                              : Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isPending ? Icons.event_busy : Icons.event,
+                              size: 14,
+                              color: isPending ? Colors.orange : Colors.green,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Entrega: 2025-10-${15 + index}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isPending ? Colors.orange : Colors.green,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isPending
+                              ? Colors.orange.withValues(alpha: 0.1)
+                              : Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isPending ? Icons.hourglass_empty : Icons.check_circle,
+                              size: 14,
+                              color: isPending ? Colors.orange : Colors.green,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isPending ? 'Pendente' : 'Entregue',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isPending ? Colors.orange : Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -291,14 +390,14 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
                         'Sua Média',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '8.5',
+                        '7.5',
                         style: TextStyle(
-                          fontSize: 36,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                           color: widget.subjectColor,
                         ),
@@ -310,71 +409,41 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Notas por Atividade',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
               itemCount: 5,
               itemBuilder: (context, index) {
-                final hasGrade = index < 3;
-                final grade = hasGrade ? (7.0 + index * 0.5) : null;
+                final nota = 7.0 + index * 0.5;
+                final Color notaColor = nota < 6 ? Colors.red : nota < 7 ? Colors.orange : Colors.green;
                 
                 return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  elevation: 2,
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: hasGrade
-                          ? widget.subjectColor.withValues(alpha: 0.2)
-                          : Colors.grey.withValues(alpha: 0.2),
+                      backgroundColor: notaColor.withValues(alpha: 0.2),
                       child: Icon(
-                        Icons.assignment,
-                        color: hasGrade ? widget.subjectColor : Colors.grey,
+                        Icons.assignment_turned_in,
+                        color: notaColor,
                       ),
                     ),
                     title: Text('Atividade ${index + 1}'),
                     subtitle: Text('Peso: ${(index + 1).toDouble()}'),
-                    trailing: hasGrade
-                        ? Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: widget.subjectColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              grade!.toStringAsFixed(1),
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: widget.subjectColor,
-                              ),
-                            ),
-                          )
-                        : Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              'Aguardando',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: notaColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        nota.toStringAsFixed(1),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: notaColor,
+                        ),
+                      ),
+                    ),
                   ),
                 );
               },
@@ -383,13 +452,5 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
         ],
       ),
     );
-  }
-
-  int _getMaterialsCrossAxisCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    if (width > 1200) return 6;
-    if (width > 900) return 4;
-    if (width > 600) return 3;
-    return 2;
   }
 }

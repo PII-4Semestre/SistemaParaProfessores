@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'tela_detalhes_disciplina_professor.dart';
 import '../../services/api_service.dart';
 
@@ -102,44 +103,97 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                 ),
               ),
               const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  Colors.blue,
-                  Colors.red,
-                  Colors.green,
-                  Colors.orange,
-                  Colors.purple,
-                  Colors.cyan,
-                  Colors.pink,
-                  Colors.teal,
-                ].map((color) {
-                  return InkWell(
-                    onTap: () {
-                      setState(() {
-                        _selectedColor = color;
-                      });
-                    },
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: _selectedColor == color
-                              ? Colors.black
-                              : Colors.transparent,
-                          width: 3,
+              // Botão para abrir o seletor de cores avançado
+              InkWell(
+                onTap: () async {
+                  final Color? newColor = await showDialog<Color>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Selecione uma cor'),
+                      content: SingleChildScrollView(
+                        child: ColorPicker(
+                          color: _selectedColor,
+                          onColorChanged: (Color color) {
+                            setState(() {
+                              _selectedColor = color;
+                            });
+                          },
+                          width: 44,
+                          height: 44,
+                          borderRadius: 8,
+                          spacing: 5,
+                          runSpacing: 5,
+                          wheelDiameter: 200,
+                          heading: const Text(
+                            'Cores Pré-definidas',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          subheading: const Text(
+                            'Cores Recentes',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          wheelSubheading: const Text(
+                            'Roda de Cores',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          showMaterialName: true,
+                          showColorName: true,
+                          showColorCode: true,
+                          copyPasteBehavior: const ColorPickerCopyPasteBehavior(
+                            longPressMenu: true,
+                          ),
+                          materialNameTextStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          colorNameTextStyle: const TextStyle(fontSize: 12),
+                          colorCodeTextStyle: const TextStyle(fontSize: 11),
+                          pickersEnabled: const <ColorPickerType, bool>{
+                            ColorPickerType.both: false,
+                            ColorPickerType.primary: true,
+                            ColorPickerType.accent: true,
+                            ColorPickerType.bw: false,
+                            ColorPickerType.custom: true,
+                            ColorPickerType.wheel: true,
+                          },
                         ),
                       ),
-                      child: _selectedColor == color
-                          ? const Icon(Icons.check, color: Colors.white)
-                          : null,
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('OK'),
+                        ),
+                      ],
                     ),
                   );
-                }).toList(),
+                  if (newColor != null) {
+                    setState(() {
+                      _selectedColor = newColor;
+                    });
+                  }
+                },
+                child: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: _selectedColor,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.palette, color: Colors.white),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Clique para escolher cor',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -250,48 +304,101 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'Escolha uma cor:',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    Colors.blue,
-                    Colors.red,
-                    Colors.green,
-                    Colors.orange,
-                    Colors.purple,
-                    Colors.teal,
-                    Colors.pink,
-                    Colors.indigo,
-                  ].map((color) {
-                    return GestureDetector(
-                      onTap: () {
-                        setDialogState(() {
-                          _selectedColor = color;
-                        });
-                      },
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: _selectedColor == color
-                                ? Colors.black
-                                : Colors.transparent,
-                            width: 3,
+                const SizedBox(height: 12),
+                // Botão para abrir o seletor de cores avançado
+                InkWell(
+                  onTap: () async {
+                    final Color? newColor = await showDialog<Color>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Selecione uma cor'),
+                        content: SingleChildScrollView(
+                          child: ColorPicker(
+                            color: _selectedColor,
+                            onColorChanged: (Color color) {
+                              setDialogState(() {
+                                _selectedColor = color;
+                              });
+                            },
+                            width: 44,
+                            height: 44,
+                            borderRadius: 8,
+                            spacing: 5,
+                            runSpacing: 5,
+                            wheelDiameter: 200,
+                            heading: const Text(
+                              'Cores Pré-definidas',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            subheading: const Text(
+                              'Cores Recentes',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            wheelSubheading: const Text(
+                              'Roda de Cores',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            showMaterialName: true,
+                            showColorName: true,
+                            showColorCode: true,
+                            copyPasteBehavior: const ColorPickerCopyPasteBehavior(
+                              longPressMenu: true,
+                            ),
+                            materialNameTextStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            colorNameTextStyle: const TextStyle(fontSize: 12),
+                            colorCodeTextStyle: const TextStyle(fontSize: 11),
+                            pickersEnabled: const <ColorPickerType, bool>{
+                              ColorPickerType.both: false,
+                              ColorPickerType.primary: true,
+                              ColorPickerType.accent: true,
+                              ColorPickerType.bw: false,
+                              ColorPickerType.custom: true,
+                              ColorPickerType.wheel: true,
+                            },
                           ),
                         ),
-                        child: _selectedColor == color
-                            ? const Icon(Icons.check, color: Colors.white)
-                            : null,
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('OK'),
+                          ),
+                        ],
                       ),
                     );
-                  }).toList(),
+                    if (newColor != null) {
+                      setDialogState(() {
+                        _selectedColor = newColor;
+                      });
+                    }
+                  },
+                  child: Container(
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: _selectedColor,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.palette, color: Colors.white),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Clique para escolher cor',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),

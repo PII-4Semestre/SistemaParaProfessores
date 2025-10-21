@@ -100,27 +100,88 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.subjectName),
-        backgroundColor: widget.subjectColor,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          tabs: const [
-            Tab(icon: Icon(Icons.people), text: 'Alunos'),
-            Tab(icon: Icon(Icons.assignment), text: 'Atividades'),
-            Tab(icon: Icon(Icons.book), text: 'Materiais'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _buildAlunosTab(),
-          _buildAtividadesTab(),
-          _buildMateriaisTab(),
+          // Header com gradiente e informações da disciplina
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  widget.subjectColor.withValues(alpha: 0.8),
+                  widget.subjectColor,
+                ],
+              ),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  // AppBar customizada
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.subjectName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '${_alunos.length} alunos • ${_atividades.length} atividades',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // TabBar
+                  TabBar(
+                    controller: _tabController,
+                    indicatorColor: Colors.white,
+                    indicatorWeight: 3,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
+                    labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    tabs: const [
+                      Tab(icon: Icon(Icons.people), text: 'Alunos'),
+                      Tab(icon: Icon(Icons.assignment), text: 'Atividades'),
+                      Tab(icon: Icon(Icons.book), text: 'Materiais'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Conteúdo das tabs
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildAlunosTab(),
+                _buildAtividadesTab(),
+                _buildMateriaisTab(),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -215,22 +276,83 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                   final email = aluno['email'] ?? '';
                   
                   return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: widget.subjectColor.withValues(alpha: 0.2),
-                        child: Icon(
-                          Icons.person,
-                          color: widget.subjectColor,
-                        ),
-                      ),
-                      title: Text(nome),
-                      subtitle: Text('RA: $ra${email.isNotEmpty ? ' - $email' : ''}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
                         children: [
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundColor: widget.subjectColor.withValues(alpha: 0.2),
+                            child: Text(
+                              nome.isNotEmpty ? nome[0].toUpperCase() : '?',
+                              style: TextStyle(
+                                color: widget.subjectColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  nome,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: widget.subjectColor.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        'RA: $ra',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: widget.subjectColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (email.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.email, size: 14, color: Colors.grey[600]),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          email,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
                           IconButton(
-                            icon: const Icon(Icons.remove_circle_outline),
+                            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
                             onPressed: () {
                               _confirmRemoveAluno(aluno);
                             },
@@ -333,6 +455,7 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                 itemBuilder: (context, index) {
                   final atividade = _atividades[index];
                   final titulo = atividade['titulo'] ?? 'Sem título';
+                  final descricao = atividade['descricao'] ?? '';
                   final peso = atividade['peso'];
                   final dataEntrega = atividade['data_entrega'] != null 
                       ? DateTime.parse(atividade['data_entrega'])
@@ -348,34 +471,142 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                     }
                   }
                   
+                  // Check if activity is expired
+                  final isExpired = dataEntrega != null && dataEntrega.isBefore(DateTime.now());
+                  
                   return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: widget.subjectColor.withValues(alpha: 0.2),
-                        child: Icon(
-                          Icons.assignment,
-                          color: widget.subjectColor,
-                        ),
-                      ),
-                      title: Text(titulo),
-                      subtitle: Text(
-                        'Peso: ${pesoDouble?.toStringAsFixed(1) ?? '1.0'}${dataEntrega != null ? ' - Entrega: ${dataEntrega.day.toString().padLeft(2, '0')}/${dataEntrega.month.toString().padLeft(2, '0')}/${dataEntrega.year}' : ''}',
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    elevation: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              _showEditAtividadeDialog(atividade);
-                            },
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: widget.subjectColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  Icons.assignment,
+                                  color: widget.subjectColor,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      titulo,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    if (descricao.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        descricao,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.blue),
+                                    onPressed: () {
+                                      _showEditAtividadeDialog(atividade);
+                                    },
+                                    tooltip: 'Editar',
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () {
+                                      _confirmDeleteAtividade(atividade);
+                                    },
+                                    tooltip: 'Excluir',
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              _confirmDeleteAtividade(atividade);
-                            },
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: widget.subjectColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.fitness_center, size: 14, color: widget.subjectColor),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Peso: ${pesoDouble?.toStringAsFixed(1) ?? '1.0'}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: widget.subjectColor,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (dataEntrega != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isExpired 
+                                        ? Colors.red.withValues(alpha: 0.1)
+                                        : Colors.green.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        isExpired ? Icons.event_busy : Icons.event,
+                                        size: 14,
+                                        color: isExpired ? Colors.red : Colors.green,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${dataEntrega.day.toString().padLeft(2, '0')}/${dataEntrega.month.toString().padLeft(2, '0')}/${dataEntrega.year}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isExpired ? Colors.red : Colors.green,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
                           ),
                         ],
                       ),
@@ -390,96 +621,74 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
   }
 
   Widget _buildMateriaisTab() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar materiais...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(48.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: widget.subjectColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Upload de material
-                },
-                icon: const Icon(Icons.upload_file),
-                label: const Text('Novo Material'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.subjectColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 20,
-                  ),
-                ),
+              child: Icon(
+                Icons.folder_open,
+                size: 80,
+                color: widget.subjectColor,
               ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: _getMaterialsCrossAxisCount(context),
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1,
-              ),
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return Card(
-                  elevation: 2,
-                  child: InkWell(
-                    onTap: () {
-                      // TODO: Abrir material
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          index % 2 == 0 ? Icons.picture_as_pdf : Icons.image,
-                          size: 48,
-                          color: widget.subjectColor,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Material ${index + 1}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                        Text(
-                          index % 2 == 0 ? 'PDF - 2.5 MB' : 'IMG - 1.2 MB',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        IconButton(
-                          icon: const Icon(Icons.delete, size: 20),
-                          onPressed: () {
-                            // TODO: Excluir material
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            const Text(
+              'Materiais em Desenvolvimento',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'A funcionalidade de materiais didáticos estará disponível em breve.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Aqui você poderá fazer upload e gerenciar PDFs, slides, apostilas e outros recursos.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(color: widget.subjectColor.withValues(alpha: 0.3)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.info_outline, color: widget.subjectColor, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Integração com MongoDB em progresso',
+                    style: TextStyle(
+                      color: widget.subjectColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -886,11 +1095,4 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
     );
   }
 
-  int _getMaterialsCrossAxisCount(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    if (width > 1200) return 6;
-    if (width > 900) return 4;
-    if (width > 600) return 3;
-    return 2;
-  }
 }
