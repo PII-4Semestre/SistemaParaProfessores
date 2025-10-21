@@ -23,16 +23,25 @@ A solução centraliza informações como **disciplinas, notas, atividades e avi
 ## ⚙️ Funcionalidades Principais
 
 ### 👨‍🏫 Professores
-- Criar, renomear e excluir disciplinas.  
-- Cadastrar e gerenciar alunos.  
-- Registrar atividades, provas e notas.  
-- Enviar e receber mensagens em chat privado.  
-- Publicar avisos e interagir por meio de comentários.  
+- ✅ Criar, editar e excluir disciplinas com cores personalizadas
+- ✅ Cadastrar e gerenciar alunos
+- ✅ Criar, editar e deletar atividades com datas de entrega
+- ✅ Registrar notas e comentários para os alunos
+- ✅ Matricular e desmatricular alunos em disciplinas
+- ✅ Visualizar estatísticas em tempo real (dashboard)
+- ✅ Buscar alunos por nome, RA ou email
+- 🚧 Enviar e receber mensagens (em desenvolvimento)
+- 🚧 Gerenciar materiais (aguardando MongoDB)
 
 ### 👨‍🎓 Alunos
-- Visualizar notas e atividades atribuídas.  
-- Ler posts e avisos das disciplinas.  
-- Comentar publicações e conversar com professores via chat.  
+- ✅ Visualizar todas as disciplinas matriculadas
+- ✅ Ver notas e médias calculadas automaticamente
+- ✅ Acompanhar atividades por disciplina
+- ✅ Dashboard com estatísticas pessoais
+- ✅ Visualizar detalhes de cada disciplina
+- 🚧 Ler posts e avisos das disciplinas (em desenvolvimento)
+- 🚧 Mensagens com professores (em desenvolvimento)
+- 🚧 Download de materiais (aguardando MongoDB)  
 
 ---
 
@@ -40,18 +49,19 @@ A solução centraliza informações como **disciplinas, notas, atividades e avi
 
 | Categoria | Ferramenta / Linguagem |
 |------------|------------------------|
-| **Frontend / Mobile** | [Flutter](https://flutter.dev) |
-| **Backend / Database** | [Firebase (Firestore, Auth)](https://firebase.google.com) |
+| **Frontend / Mobile** | [Flutter](https://flutter.dev) 3.35.6 |
+| **Backend** | [Dart Shelf](https://pub.dev/packages/shelf) 1.4.2 |
+| **Database** | [PostgreSQL](https://www.postgresql.org) 18.0 |
 | **Controle de versão** | [GitHub](https://github.com) |
 | **Design e prototipagem** | [Figma](https://www.figma.com) |
 | **Gerenciamento ágil** | [Trello](https://trello.com) |
 
-### 🔒 Motivos da Escolha do Firebase
-- Integração nativa com Flutter.  
-- Banco de dados **em tempo real**.  
-- **Autenticação integrada** e segura.  
-- **Escalabilidade** e baixo custo inicial.  
-- **Backend como serviço (BaaS)** — sem necessidade de servidor próprio.  
+### � Arquitetura Atual
+- **Backend RESTful** com Dart Shelf
+- **Banco de dados relacional** PostgreSQL com schema completo
+- **Autenticação** em desenvolvimento (dev mode implementado)
+- **API endpoints** completos para CRUD de todas as entidades
+- **Design responsivo** com suporte a múltiplos tamanhos de tela  
 
 ---
 
@@ -96,6 +106,97 @@ O projeto segue o framework **SCRUM**, com sprints quinzenais e entregas increme
 | **4** | Interface do aluno |
 | **5** | Envio de materiais e chat |
 | **6** | Testes finais e documentação |
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### Pré-requisitos
+- Flutter SDK 3.35.6 ou superior
+- Dart SDK 3.6.0 ou superior
+- PostgreSQL 18.0
+- Git
+
+### Configuração do Backend
+
+1. **Clone o repositório:**
+```bash
+git clone https://github.com/PII-4Semestre/SistemaParaProfessores.git
+cd SistemaParaProfessores
+```
+
+2. **Configure o PostgreSQL:**
+```bash
+# Crie o banco de dados
+psql -U postgres
+CREATE DATABASE sistema_professores;
+```
+
+3. **Configure as variáveis de ambiente:**
+```bash
+cd server
+# Crie o arquivo .env
+cp .env.example .env
+# Edite com suas credenciais do PostgreSQL
+```
+
+4. **Execute o schema e seed:**
+```bash
+psql -U postgres -d sistema_professores -f database/schema.sql
+psql -U postgres -d sistema_professores -f database/seed.sql
+```
+
+5. **Inicie o servidor:**
+```bash
+dart run bin/server.dart
+```
+O servidor estará rodando em `http://localhost:8080`
+
+### Configuração do Frontend
+
+1. **Instale as dependências:**
+```bash
+flutter pub get
+```
+
+2. **Execute o app:**
+```bash
+flutter run -d chrome  # Para web
+# ou
+flutter run -d windows  # Para Windows
+```
+
+### Login de Desenvolvimento
+- Digite "professor" ou "aluno" no campo de login
+- Sem senha necessária (modo dev)
+
+---
+
+## 📦 Estrutura do Projeto
+
+```
+SistemaParaProfessores/
+├── lib/
+│   ├── main.dart
+│   ├── models/
+│   ├── screens/
+│   │   ├── aluno/
+│   │   ├── professor/
+│   │   └── autenticacao/
+│   ├── services/
+│   │   └── api_service.dart
+│   └── widgets/
+├── server/
+│   ├── bin/
+│   │   └── server.dart
+│   ├── lib/
+│   │   ├── database/
+│   │   └── routes/
+│   └── database/
+│       ├── schema.sql
+│       └── seed.sql
+└── README.md
+```
 
 ---
 

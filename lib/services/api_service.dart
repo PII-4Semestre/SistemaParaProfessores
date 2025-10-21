@@ -48,6 +48,16 @@ class ApiService {
     await prefs.remove('user');
   }
   
+  // DEV MODE: Mock login for development/testing
+  Future<void> devLogin(String tipo, Map<String, dynamic> userData) async {
+    _token = 'dev-token-${tipo}';
+    _currentUser = userData;
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', _token!);
+    await prefs.setString('user', json.encode(userData));
+  }
+  
   // Headers
   Map<String, String> _headers({bool needsAuth = false}) {
     final headers = {
@@ -293,6 +303,19 @@ class ApiService {
       return json.decode(response.body);
     } else {
       throw Exception('Erro ao buscar alunos');
+    }
+  }
+
+  Future<List<dynamic>> getDisciplinasAluno(int alunoId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/alunos/$alunoId/disciplinas'),
+      headers: _headers(),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Erro ao buscar disciplinas do aluno');
     }
   }
 

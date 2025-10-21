@@ -13,24 +13,22 @@ class TelaLogin extends StatefulWidget {
 class _TelaLoginState extends State<TelaLogin> {
   
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController senhaController = TextEditingController();
   final ApiService _apiService = ApiService();
   bool _isLoading = false;
 
   @override
   void dispose() {
     emailController.dispose();
-    senhaController.dispose();
     super.dispose();
   }
 
   // Função chamada ao pressionar o botão de login
   void _performLogin() async {
     // Validação básica
-    if (emailController.text.isEmpty || senhaController.text.isEmpty) {
+    if (emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, preencha todos os campos'),
+          content: Text('Por favor, digite "aluno" ou "professor"'),
           backgroundColor: Colors.red,
         ),
       );
@@ -42,31 +40,49 @@ class _TelaLoginState extends State<TelaLogin> {
     });
 
     try {
-      // Chamar API de login
-      final response = await _apiService.login(
-        emailController.text.trim(),
-        senhaController.text,
-      );
-
-      if (!mounted) return;
-
-      final user = response['user'];
-      final tipo = user['tipo'];
+      final inputText = emailController.text.trim().toLowerCase();
       
-      // Navegar para a tela apropriada
-      if (tipo == 'professor') {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const TelaInicialProfessor(),
-          ),
-        );
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const TelaInicialAluno(),
-          ),
-        );
+      // DEV MODE: Login simplificado para testes
+      if (inputText == 'aluno' || inputText == 'professor') {
+        // Simular mock user data
+        final userData = {
+          'id': inputText == 'professor' ? 1 : 3,
+          'nome': inputText == 'professor' ? 'Carlos Mendes' : 'João Silva',
+          'email': inputText == 'professor' ? 'carlos.mendes@email.com' : 'joao.silva@email.com',
+          'tipo': inputText,
+        };
+        
+        await _apiService.devLogin(inputText, userData);
+        
+        if (!mounted) return;
+        
+        // Navegar para a tela apropriada
+        if (inputText == 'professor') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const TelaInicialProfessor(),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const TelaInicialAluno(),
+            ),
+          );
+        }
+        return;
       }
+      
+      // Se não for "aluno" ou "professor", mostrar erro
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Digite "aluno" ou "professor" para fazer login'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      
     } catch (e) {
       if (!mounted) return;
       
@@ -135,47 +151,56 @@ class _TelaLoginState extends State<TelaLogin> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Faça login para acessar o sistema',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange.shade200),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.developer_mode, size: 16, color: Colors.orange.shade700),
+                            const SizedBox(width: 8),
+                            Text(
+                              'MODO DESENVOLVIMENTO',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Digite "aluno" ou "professor"',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  // Campo de E-mail
+                  const SizedBox(height: 24),
+                  // Campo de Login
                   TextField(
                     controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
+                    keyboardType: TextInputType.text,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _performLogin(),
                     decoration: InputDecoration(
-                      labelText: 'E-mail',
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      hintText: 'Digite seu e-mail',
+                      labelText: 'Login Rápido',
+                      prefixIcon: const Icon(Icons.person_outline),
+                      hintText: 'Digite "aluno" ou "professor"',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.orange, width: 2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  // Campo de Senha
-                  TextField(
-                    controller: senhaController,
-                    obscureText: true,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _performLogin(),
-                    decoration: InputDecoration(
-                      labelText: 'Senha',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      hintText: 'Digite sua senha',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(color: Colors.orange, width: 2),
                       ),
@@ -212,22 +237,6 @@ class _TelaLoginState extends State<TelaLogin> {
                                   fontWeight: FontWeight.bold
                               ),
                             ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Botão Esqueceu a Senha
-                  TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Funcionalidade de recuperação de senha não implementada.'),
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      'Esqueceu sua senha?',
-                      style: TextStyle(color: Colors.grey.shade700),
                     ),
                   ),
                 ], 

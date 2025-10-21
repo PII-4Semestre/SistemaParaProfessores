@@ -430,8 +430,8 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
           const SizedBox(height: 24),
           Expanded(
             child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: _getMaterialsCrossAxisCount(context),
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 childAspectRatio: 1,
@@ -884,5 +884,13 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
         ],
       ),
     );
+  }
+
+  int _getMaterialsCrossAxisCount(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    if (width > 1200) return 6;
+    if (width > 900) return 4;
+    if (width > 600) return 3;
+    return 2;
   }
 }

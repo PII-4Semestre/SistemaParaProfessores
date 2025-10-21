@@ -66,6 +66,42 @@ class AlunosRoutes {
       }
     });
     
+    // GET /api/alunos/<id>/disciplinas - Listar disciplinas de um aluno específico
+    router.get('/<id>/disciplinas', (Request request, String id) async {
+      try {
+        final db = await Database.getInstance();
+        final result = await db.connection.execute(
+          '''
+          SELECT d.id, d.nome, d.descricao, d.cor, d.professor_id, u.nome as professor_nome
+          FROM disciplinas d
+          INNER JOIN aluno_disciplina ad ON d.id = ad.disciplina_id
+          LEFT JOIN usuarios u ON d.professor_id = u.id
+          WHERE ad.aluno_id = \$1
+          ORDER BY d.nome
+          ''',
+          parameters: [int.parse(id)],
+        );
+        
+        final disciplinas = result.map((row) => {
+          'id': row[0],
+          'nome': row[1],
+          'descricao': row[2],
+          'cor': row[3],
+          'professor_id': row[4],
+          'professor_nome': row[5],
+        }).toList();
+        
+        return Response.ok(
+          json.encode(disciplinas),
+          headers: {'Content-Type': 'application/json'},
+        );
+      } catch (e) {
+        return Response.internalServerError(
+          body: json.encode({'error': 'Erro ao buscar disciplinas do aluno: $e'}),
+        );
+      }
+    });
+    
     // GET /api/alunos/disciplina/<id> - Listar alunos matriculados em uma disciplina
     router.get('/disciplina/<id>', (Request request, String id) async {
       try {

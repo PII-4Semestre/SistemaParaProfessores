@@ -82,7 +82,11 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
   Widget _getCurrentScreen() {
     switch (_selectedIndex) {
       case 0:
-        return const TelaVisaoGeralAluno();
+        return TelaVisaoGeralAluno(
+          onNavigateToTab: (index) {
+            setState(() => _selectedIndex = index);
+          },
+        );
       case 1:
         return const TelaDisciplinasAluno();
       case 2:
