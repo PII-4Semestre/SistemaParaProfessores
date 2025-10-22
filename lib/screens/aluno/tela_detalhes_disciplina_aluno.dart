@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 class TelaDetalhesDisciplinaAluno extends StatefulWidget {
   final String subjectName;
@@ -17,7 +17,8 @@ class TelaDetalhesDisciplinaAluno extends StatefulWidget {
       _TelaDetalhesDisciplinaAlunoState();
 }
 
-class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAluno>
+class _TelaDetalhesDisciplinaAlunoState
+    extends State<TelaDetalhesDisciplinaAluno>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -60,7 +61,10 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const SizedBox(width: 8),
@@ -79,7 +83,11 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Icon(Icons.person, color: Colors.white70, size: 16),
+                                  const Icon(
+                                    Icons.person,
+                                    color: Colors.white70,
+                                    size: 16,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     widget.professorName,
@@ -155,40 +163,37 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
             const SizedBox(height: 24),
             const Text(
               'Materiais em Desenvolvimento',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'A funcionalidade de materiais didáticos estará disponível em breve.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Aqui você poderá acessar PDFs, slides, apostilas e outros recursos disponibilizados pelo professor.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: widget.subjectColor.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: widget.subjectColor.withValues(alpha: 0.3),
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.info_outline, color: widget.subjectColor, size: 20),
+                  Icon(
+                    Icons.info_outline,
+                    color: widget.subjectColor,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Integração com MongoDB em progresso',
@@ -279,7 +284,11 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.fitness_center, size: 14, color: widget.subjectColor),
+                            Icon(
+                              Icons.fitness_center,
+                              size: 14,
+                              color: widget.subjectColor,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'Peso: ${(index + 1).toDouble()}',
@@ -338,7 +347,9 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              isPending ? Icons.hourglass_empty : Icons.check_circle,
+                              isPending
+                                  ? Icons.hourglass_empty
+                                  : Icons.check_circle,
                               size: 14,
                               color: isPending ? Colors.orange : Colors.green,
                             ),
@@ -378,21 +389,14 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.grade,
-                    size: 48,
-                    color: widget.subjectColor,
-                  ),
+                  Icon(Icons.grade, size: 48, color: widget.subjectColor),
                   const SizedBox(width: 20),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Text(
                         'Sua Média',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                        ),
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -415,23 +419,27 @@ class _TelaDetalhesDisciplinaAlunoState extends State<TelaDetalhesDisciplinaAlun
               itemCount: 5,
               itemBuilder: (context, index) {
                 final nota = 7.0 + index * 0.5;
-                final Color notaColor = nota < 6 ? Colors.red : nota < 7 ? Colors.orange : Colors.green;
-                
+                final Color notaColor = nota < 6
+                    ? Colors.red
+                    : nota < 7
+                    ? Colors.orange
+                    : Colors.green;
+
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   elevation: 2,
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: notaColor.withValues(alpha: 0.2),
-                      child: Icon(
-                        Icons.assignment_turned_in,
-                        color: notaColor,
-                      ),
+                      child: Icon(Icons.assignment_turned_in, color: notaColor),
                     ),
                     title: Text('Atividade ${index + 1}'),
                     subtitle: Text('Peso: ${(index + 1).toDouble()}'),
                     trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: notaColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),

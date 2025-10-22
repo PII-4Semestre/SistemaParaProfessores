@@ -18,7 +18,7 @@ void main() {
         'nome': 'Professor Notas',
         'email': 'prof.notas@escola.com',
         'senha': 'senha123',
-        'tipo': 'professor'
+        'tipo': 'professor',
       }),
     );
     professorId = jsonDecode(profResponse.body)['usuario']['id'];
@@ -31,7 +31,7 @@ void main() {
         'nome': 'Aluno Notas',
         'email': 'aluno.notas@escola.com',
         'senha': 'senha123',
-        'tipo': 'aluno'
+        'tipo': 'aluno',
       }),
     );
     alunoId = jsonDecode(alunoResponse.body)['usuario']['id'];
@@ -43,7 +43,7 @@ void main() {
       body: jsonEncode({
         'nome': 'Matemática Notas',
         'cor': '#FF0000',
-        'professor_id': professorId
+        'professor_id': professorId,
       }),
     );
     disciplinaId = jsonDecode(discResponse.body)['id'];
@@ -55,7 +55,7 @@ void main() {
       body: jsonEncode({
         'titulo': 'Prova 1',
         'peso': 3.0,
-        'disciplina_id': disciplinaId
+        'disciplina_id': disciplinaId,
       }),
     );
     atividadeId = jsonDecode(atividadeResponse.body)['id'];
@@ -70,7 +70,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': atividadeId,
-          'nota': 8.5
+          'nota': 8.5,
         }),
       );
 
@@ -79,11 +79,11 @@ void main() {
       );
 
       expect(response.statusCode, equals(200));
-      
+
       final data = jsonDecode(response.body);
       expect(data, isA<List>());
       expect(data.length, greaterThan(0));
-      
+
       // Verificar estrutura da nota
       final nota = data[0];
       expect(nota['aluno_id'], equals(alunoId));
@@ -93,51 +93,55 @@ void main() {
       expect(nota['peso'], isNotNull);
     });
 
-    test('GET /notas/aluno/:id - deve retornar lista vazia para aluno sem notas', () async {
-      // Criar novo aluno sem notas
-      final novoAlunoResponse = await http.post(
-        Uri.parse('$baseUrl/auth/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'nome': 'Aluno Sem Notas',
-          'email': 'aluno.semnotas@escola.com',
-          'senha': 'senha123',
-          'tipo': 'aluno'
-        }),
-      );
-      
-      final novoAlunoId = jsonDecode(novoAlunoResponse.body)['usuario']['id'];
+    test(
+      'GET /notas/aluno/:id - deve retornar lista vazia para aluno sem notas',
+      () async {
+        // Criar novo aluno sem notas
+        final novoAlunoResponse = await http.post(
+          Uri.parse('$baseUrl/auth/register'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'nome': 'Aluno Sem Notas',
+            'email': 'aluno.semnotas@escola.com',
+            'senha': 'senha123',
+            'tipo': 'aluno',
+          }),
+        );
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/notas/aluno/$novoAlunoId'),
-      );
+        final novoAlunoId = jsonDecode(novoAlunoResponse.body)['usuario']['id'];
 
-      expect(response.statusCode, equals(200));
-      final data = jsonDecode(response.body);
-      expect(data, equals([]));
-    });
+        final response = await http.get(
+          Uri.parse('$baseUrl/notas/aluno/$novoAlunoId'),
+        );
 
-    test('GET /notas/aluno/:id - deve retornar notas com JOIN correto', () async {
-      final response = await http.get(
-        Uri.parse('$baseUrl/notas/aluno/$alunoId'),
-      );
+        expect(response.statusCode, equals(200));
+        final data = jsonDecode(response.body);
+        expect(data, equals([]));
+      },
+    );
 
-      final data = jsonDecode(response.body) as List;
-      if (data.isNotEmpty) {
-        final nota = data[0];
-        
-        // Verificar campos do JOIN
-        expect(nota.containsKey('atividade_titulo'), isTrue);
-        expect(nota.containsKey('disciplina_nome'), isTrue);
-        expect(nota.containsKey('peso'), isTrue);
-        expect(nota.containsKey('disciplina_cor'), isTrue);
-      }
-    });
+    test(
+      'GET /notas/aluno/:id - deve retornar notas com JOIN correto',
+      () async {
+        final response = await http.get(
+          Uri.parse('$baseUrl/notas/aluno/$alunoId'),
+        );
+
+        final data = jsonDecode(response.body) as List;
+        if (data.isNotEmpty) {
+          final nota = data[0];
+
+          // Verificar campos do JOIN
+          expect(nota.containsKey('atividade_titulo'), isTrue);
+          expect(nota.containsKey('disciplina_nome'), isTrue);
+          expect(nota.containsKey('peso'), isTrue);
+          expect(nota.containsKey('disciplina_cor'), isTrue);
+        }
+      },
+    );
 
     test('GET /notas/aluno/:id - deve rejeitar ID inválido', () async {
-      final response = await http.get(
-        Uri.parse('$baseUrl/notas/aluno/abc'),
-      );
+      final response = await http.get(Uri.parse('$baseUrl/notas/aluno/abc'));
 
       expect(response.statusCode, equals(400));
     });
@@ -152,7 +156,7 @@ void main() {
         body: jsonEncode({
           'titulo': 'Trabalho 1',
           'peso': 2.0,
-          'disciplina_id': disciplinaId
+          'disciplina_id': disciplinaId,
         }),
       );
       final novaAtividadeId = jsonDecode(atividadeResponse.body)['id'];
@@ -163,12 +167,12 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': novaAtividadeId,
-          'nota': 9.5
+          'nota': 9.5,
         }),
       );
 
       expect(response.statusCode, equals(201));
-      
+
       final data = jsonDecode(response.body);
       expect(data['mensagem'], contains('atribuída'));
       expect(data['nota']['aluno_id'], equals(alunoId));
@@ -183,7 +187,7 @@ void main() {
         body: jsonEncode({
           'titulo': 'Quiz Nota Zero',
           'peso': 1.0,
-          'disciplina_id': disciplinaId
+          'disciplina_id': disciplinaId,
         }),
       );
       final novaAtividadeId = jsonDecode(atividadeResponse.body)['id'];
@@ -194,7 +198,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': novaAtividadeId,
-          'nota': 0
+          'nota': 0,
         }),
       );
 
@@ -210,7 +214,7 @@ void main() {
         body: jsonEncode({
           'titulo': 'Nota Máxima',
           'peso': 1.0,
-          'disciplina_id': disciplinaId
+          'disciplina_id': disciplinaId,
         }),
       );
       final novaAtividadeId = jsonDecode(atividadeResponse.body)['id'];
@@ -221,7 +225,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': novaAtividadeId,
-          'nota': 10
+          'nota': 10,
         }),
       );
 
@@ -237,7 +241,7 @@ void main() {
         body: jsonEncode({
           'titulo': 'Nota Decimal',
           'peso': 1.0,
-          'disciplina_id': disciplinaId
+          'disciplina_id': disciplinaId,
         }),
       );
       final novaAtividadeId = jsonDecode(atividadeResponse.body)['id'];
@@ -248,7 +252,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': novaAtividadeId,
-          'nota': 7.75
+          'nota': 7.75,
         }),
       );
 
@@ -264,7 +268,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': atividadeId,
-          'nota': -1
+          'nota': -1,
         }),
       );
 
@@ -278,7 +282,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': atividadeId,
-          'nota': 11
+          'nota': 11,
         }),
       );
 
@@ -289,10 +293,7 @@ void main() {
       final response = await http.post(
         Uri.parse('$baseUrl/notas'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'atividade_id': atividadeId,
-          'nota': 8.0
-        }),
+        body: jsonEncode({'atividade_id': atividadeId, 'nota': 8.0}),
       );
 
       expect(response.statusCode, equals(400));
@@ -302,10 +303,7 @@ void main() {
       final response = await http.post(
         Uri.parse('$baseUrl/notas'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'aluno_id': alunoId,
-          'nota': 8.0
-        }),
+        body: jsonEncode({'aluno_id': alunoId, 'nota': 8.0}),
       );
 
       expect(response.statusCode, equals(400));
@@ -315,10 +313,7 @@ void main() {
       final response = await http.post(
         Uri.parse('$baseUrl/notas'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'aluno_id': alunoId,
-          'atividade_id': atividadeId
-        }),
+        body: jsonEncode({'aluno_id': alunoId, 'atividade_id': atividadeId}),
       );
 
       expect(response.statusCode, equals(400));
@@ -331,7 +326,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': 99999,
           'atividade_id': atividadeId,
-          'nota': 8.0
+          'nota': 8.0,
         }),
       );
 
@@ -345,7 +340,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': 99999,
-          'nota': 8.0
+          'nota': 8.0,
         }),
       );
 
@@ -362,7 +357,7 @@ void main() {
         body: jsonEncode({
           'titulo': 'UPSERT Test',
           'peso': 1.0,
-          'disciplina_id': disciplinaId
+          'disciplina_id': disciplinaId,
         }),
       );
       final testAtividadeId = jsonDecode(atividadeResponse.body)['id'];
@@ -374,7 +369,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': testAtividadeId,
-          'nota': 6.0
+          'nota': 6.0,
         }),
       );
       expect(response1.statusCode, equals(201));
@@ -387,11 +382,11 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': testAtividadeId,
-          'nota': 9.0
+          'nota': 9.0,
         }),
       );
       expect(response2.statusCode, equals(200));
-      
+
       final data2 = jsonDecode(response2.body);
       expect(data2['mensagem'], contains('atualizada'));
       expect(data2['nota']['nota'], equals(9.0));
@@ -401,7 +396,9 @@ void main() {
         Uri.parse('$baseUrl/notas/aluno/$alunoId'),
       );
       final notas = jsonDecode(getResponse.body) as List;
-      final notasAtividade = notas.where((n) => n['atividade_id'] == testAtividadeId).toList();
+      final notasAtividade = notas
+          .where((n) => n['atividade_id'] == testAtividadeId)
+          .toList();
       expect(notasAtividade.length, equals(1));
       expect(notasAtividade[0]['nota'], equals(9.0));
     });
@@ -414,7 +411,7 @@ void main() {
         body: jsonEncode({
           'titulo': 'Mensagem Test',
           'peso': 1.0,
-          'disciplina_id': disciplinaId
+          'disciplina_id': disciplinaId,
         }),
       );
       final testAtividadeId = jsonDecode(atividadeResponse.body)['id'];
@@ -426,10 +423,10 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': testAtividadeId,
-          'nota': 7.0
+          'nota': 7.0,
         }),
       );
-      
+
       final data1 = jsonDecode(response1.body);
       expect(data1['mensagem'], contains('atribuída'));
 
@@ -440,10 +437,10 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': testAtividadeId,
-          'nota': 8.5
+          'nota': 8.5,
         }),
       );
-      
+
       final data2 = jsonDecode(response2.body);
       expect(data2['mensagem'], contains('atualizada'));
     });
@@ -457,7 +454,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': atividadeId,
-          'nota': 'abc'
+          'nota': 'abc',
         }),
       );
 
@@ -471,7 +468,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': 'abc',
           'atividade_id': atividadeId,
-          'nota': 8.0
+          'nota': 8.0,
         }),
       );
 
@@ -485,7 +482,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': 'abc',
-          'nota': 8.0
+          'nota': 8.0,
         }),
       );
 
@@ -502,7 +499,7 @@ void main() {
         body: jsonEncode({
           'nome': 'Física',
           'cor': '#00FF00',
-          'professor_id': professorId
+          'professor_id': professorId,
         }),
       );
       final novaDiscId = jsonDecode(discResponse.body)['id'];
@@ -514,7 +511,7 @@ void main() {
         body: jsonEncode({
           'titulo': 'Prova Física',
           'peso': 3.0,
-          'disciplina_id': novaDiscId
+          'disciplina_id': novaDiscId,
         }),
       );
       final novaAtividadeId = jsonDecode(atividadeResponse.body)['id'];
@@ -526,7 +523,7 @@ void main() {
         body: jsonEncode({
           'aluno_id': alunoId,
           'atividade_id': novaAtividadeId,
-          'nota': 8.0
+          'nota': 8.0,
         }),
       );
 
@@ -534,12 +531,12 @@ void main() {
       final notasResponse = await http.get(
         Uri.parse('$baseUrl/notas/aluno/$alunoId'),
       );
-      
+
       final notas = jsonDecode(notasResponse.body) as List;
       final notaFisica = notas.firstWhere(
         (n) => n['atividade_id'] == novaAtividadeId,
       );
-      
+
       expect(notaFisica['disciplina_nome'], equals('Física'));
       expect(notaFisica['disciplina_cor'], equals('#00FF00'));
     });
@@ -554,7 +551,7 @@ void main() {
           body: jsonEncode({
             'titulo': 'Atividade $i',
             'peso': 1.0,
-            'disciplina_id': disciplinaId
+            'disciplina_id': disciplinaId,
           }),
         );
         atividades.add(jsonDecode(response.body)['id']);
@@ -568,7 +565,7 @@ void main() {
           body: jsonEncode({
             'aluno_id': alunoId,
             'atividade_id': atividades[i],
-            'nota': 5.0 + i
+            'nota': 5.0 + i,
           }),
         );
       }
@@ -577,7 +574,7 @@ void main() {
       final response = await http.get(
         Uri.parse('$baseUrl/notas/aluno/$alunoId'),
       );
-      
+
       final notas = jsonDecode(response.body) as List;
       expect(notas.length, greaterThanOrEqualTo(3));
     });

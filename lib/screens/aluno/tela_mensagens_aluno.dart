@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
 // Modelo de mensagem (pronto para MongoDB)
 class Message {
@@ -78,12 +77,11 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _messagesScrollController = ScrollController();
-  
+
   int? _selectedConversationIndex;
   Message? _replyingTo;
   Message? _editingMessage;
   String _conversationFilter = 'all'; // 'all', 'unread'
-  bool _isTyping = false;
 
   // Mock data - será substituído por dados do MongoDB
   final List<Conversation> _conversations = [
@@ -251,26 +249,25 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
           spacing: 8,
           runSpacing: 8,
           children: ['👍', '❤️', '😊', '😂', '😮', '😢', '🎉', '🔥']
-              .map((emoji) => InkWell(
-                    onTap: () {
-                      // TODO: Adicionar reação via MongoDB
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Reação $emoji adicionada!')),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        emoji,
-                        style: const TextStyle(fontSize: 24),
-                      ),
+              .map(
+                (emoji) => InkWell(
+                  onTap: () {
+                    // TODO: Adicionar reação via MongoDB
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Reação $emoji adicionada!')),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ))
+                    child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                  ),
+                ),
+              )
               .toList(),
         ),
       ),
@@ -298,7 +295,10 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
               ),
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Deletar', style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Deletar',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   // TODO: Deletar via MongoDB
@@ -398,9 +398,9 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
       _editingMessage = null;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Mensagem enviada!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Mensagem enviada!')));
   }
 
   @override
@@ -455,10 +455,7 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                 const SizedBox(height: 8),
                 Text(
                   'Converse com seus professores',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 24),
                 TextField(
@@ -476,14 +473,17 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                   child: Card(
                     child: ListView.separated(
                       itemCount: filteredConversations.length,
-                      separatorBuilder: (context, index) => const Divider(height: 1),
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1),
                       itemBuilder: (context, index) {
                         final conversation = filteredConversations[index];
                         final isSelected = _selectedConversationIndex == index;
 
                         return ListTile(
                           selected: isSelected,
-                          selectedTileColor: Colors.orange.withValues(alpha: 0.1),
+                          selectedTileColor: Colors.orange.withValues(
+                            alpha: 0.1,
+                          ),
                           leading: Stack(
                             children: [
                               CircleAvatar(
@@ -491,7 +491,9 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                                     ? Colors.orange
                                     : Colors.grey[300],
                                 child: Text(
-                                  conversation.participantName.substring(0, 2).toUpperCase(),
+                                  conversation.participantName
+                                      .substring(0, 2)
+                                      .toUpperCase(),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -549,7 +551,9 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                             children: [
                               if (conversation.lastMessageTime != null)
                                 Text(
-                                  _formatTimestamp(conversation.lastMessageTime!),
+                                  _formatTimestamp(
+                                    conversation.lastMessageTime!,
+                                  ),
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 12,
@@ -603,7 +607,7 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.1),
+                              color: Colors.orange.withValues(alpha: 0.1),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -633,7 +637,9 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                       ),
                     ),
                   )
-                : _buildChatArea(filteredConversations[_selectedConversationIndex!]),
+                : _buildChatArea(
+                    filteredConversations[_selectedConversationIndex!],
+                  ),
           ),
         ],
       ),
@@ -649,9 +655,7 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.orange.withValues(alpha: 0.1),
-              border: Border(
-                bottom: BorderSide(color: Colors.grey[300]!),
-              ),
+              border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
             ),
             child: Row(
               children: [
@@ -679,10 +683,7 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                       ),
                       Text(
                         conversation.participantRole,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       ),
                     ],
                   ),
@@ -705,8 +706,9 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                           height: 12,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.orange),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.orange,
+                            ),
                           ),
                         ),
                         SizedBox(width: 8),
@@ -787,9 +789,7 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: Colors.grey[300]!),
-              ),
+              border: Border(top: BorderSide(color: Colors.grey[300]!)),
             ),
             child: Row(
               children: [
@@ -825,7 +825,9 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: _sendMessage,
-                  icon: Icon(_editingMessage != null ? Icons.check : Icons.send),
+                  icon: Icon(
+                    _editingMessage != null ? Icons.check : Icons.send,
+                  ),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.orange,
                     foregroundColor: Colors.white,
@@ -852,8 +854,9 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
             maxWidth: MediaQuery.of(context).size.width * 0.5,
           ),
           child: Column(
-            crossAxisAlignment:
-                isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isMe
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               // Reply indicator
               if (message.replyToContent != null)
@@ -861,8 +864,9 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                   margin: const EdgeInsets.only(bottom: 4),
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: (isMe ? Colors.orange : Colors.grey)
-                        .withValues(alpha: 0.2),
+                    color: (isMe ? Colors.orange : Colors.grey).withValues(
+                      alpha: 0.2,
+                    ),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -901,7 +905,7 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 5,
                       offset: const Offset(0, 2),
                     ),
@@ -939,8 +943,8 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                               message.attachment!.type == 'image'
                                   ? Icons.image
                                   : message.attachment!.type == 'pdf'
-                                      ? Icons.picture_as_pdf
-                                      : Icons.insert_drive_file,
+                                  ? Icons.picture_as_pdf
+                                  : Icons.insert_drive_file,
                               color: isMe ? Colors.white : Colors.black87,
                             ),
                             const SizedBox(width: 8),
@@ -951,7 +955,9 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                                   Text(
                                     message.attachment!.name,
                                     style: TextStyle(
-                                      color: isMe ? Colors.white : Colors.black87,
+                                      color: isMe
+                                          ? Colors.white
+                                          : Colors.black87,
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -1043,7 +1049,10 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                     children: message.reactions.map((emoji) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 2),
-                        child: Text(emoji, style: const TextStyle(fontSize: 16)),
+                        child: Text(
+                          emoji,
+                          style: const TextStyle(fontSize: 16),
+                        ),
                       );
                     }).toList(),
                   ),

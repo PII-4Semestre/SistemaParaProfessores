@@ -7,7 +7,8 @@ class TelaDisciplinasProfessor extends StatefulWidget {
   const TelaDisciplinasProfessor({super.key});
 
   @override
-  State<TelaDisciplinasProfessor> createState() => _TelaDisciplinasProfessorState();
+  State<TelaDisciplinasProfessor> createState() =>
+      _TelaDisciplinasProfessorState();
 }
 
 class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
@@ -16,10 +17,24 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
   final TextEditingController _descricaoController = TextEditingController();
   Color _selectedColor = Colors.blue;
   final ApiService _apiService = ApiService();
-  
+
   List<dynamic> _disciplinas = [];
   bool _isLoading = true;
   String? _error;
+
+  String _colorToHexRGB(Color c) {
+    // Use non-deprecated r/g/b (0..1) components and convert to 0..255 ints
+    final r = ((c.r * 255.0).round() & 0xff)
+        .toRadixString(16)
+        .padLeft(2, '0');
+    final g = ((c.g * 255.0).round() & 0xff)
+        .toRadixString(16)
+        .padLeft(2, '0');
+    final b = ((c.b * 255.0).round() & 0xff)
+        .toRadixString(16)
+        .padLeft(2, '0');
+    return '#${(r + g + b).toUpperCase()}';
+  }
 
   @override
   void initState() {
@@ -47,8 +62,10 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
         throw Exception('Professor ID não encontrado');
       }
 
-      final disciplinas = await _apiService.getDisciplinasProfessor(professorId);
-      
+      final disciplinas = await _apiService.getDisciplinasProfessor(
+        professorId,
+      );
+
       if (mounted) {
         setState(() {
           _disciplinas = disciplinas;
@@ -69,7 +86,7 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
     _nomeController.clear();
     _descricaoController.clear();
     _selectedColor = Colors.blue;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -126,7 +143,10 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                           wheelDiameter: 200,
                           heading: const Text(
                             'Cores Pré-definidas',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           subheading: const Text(
                             'Cores Recentes',
@@ -225,13 +245,13 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                   nome: _nomeController.text,
                   descricao: _descricaoController.text,
                   professorId: professorId,
-                  cor: '#${_selectedColor.value.toRadixString(16).substring(2).toUpperCase()}',
+                  cor: _colorToHexRGB(_selectedColor),
                 );
 
                 if (!context.mounted) return;
-                
+
                 Navigator.pop(context);
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Disciplina criada com sucesso!'),
@@ -242,7 +262,7 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                 _loadDisciplinas();
               } catch (e) {
                 if (!context.mounted) return;
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Erro ao criar disciplina: $e'),
@@ -265,7 +285,7 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
   void _showEditDisciplinaDialog(Map<String, dynamic> disciplina) {
     _nomeController.text = disciplina['nome'] ?? '';
     _descricaoController.text = disciplina['descricao'] ?? '';
-    
+
     // Parse color from database
     final corString = disciplina['cor'] ?? '#2196F3';
     try {
@@ -273,7 +293,7 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
     } catch (e) {
       _selectedColor = Colors.blue;
     }
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -331,7 +351,10 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                             wheelDiameter: 200,
                             heading: const Text(
                               'Cores Pré-definidas',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             subheading: const Text(
                               'Cores Recentes',
@@ -344,9 +367,10 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                             showMaterialName: true,
                             showColorName: true,
                             showColorCode: true,
-                            copyPasteBehavior: const ColorPickerCopyPasteBehavior(
-                              longPressMenu: true,
-                            ),
+                            copyPasteBehavior:
+                                const ColorPickerCopyPasteBehavior(
+                                  longPressMenu: true,
+                                ),
                             materialNameTextStyle: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -425,13 +449,13 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                     id: disciplina['id'],
                     nome: _nomeController.text,
                     descricao: _descricaoController.text,
-                    cor: '#${_selectedColor.value.toRadixString(16).substring(2).toUpperCase()}',
+                    cor: _colorToHexRGB(_selectedColor),
                   );
 
                   if (!context.mounted) return;
-                  
+
                   Navigator.pop(context);
-                  
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Disciplina atualizada com sucesso!'),
@@ -442,7 +466,7 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                   _loadDisciplinas();
                 } catch (e) {
                   if (!context.mounted) return;
-                  
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Erro ao atualizar disciplina: $e'),
@@ -483,9 +507,9 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                 await _apiService.deleteDisciplina(disciplina['id']);
 
                 if (!context.mounted) return;
-                
+
                 Navigator.pop(context);
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Disciplina excluída com sucesso!'),
@@ -496,9 +520,9 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
                 _loadDisciplinas();
               } catch (e) {
                 if (!context.mounted) return;
-                
+
                 Navigator.pop(context);
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Erro ao excluir disciplina: $e'),
@@ -527,18 +551,12 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
         children: [
           const Text(
             'Disciplinas',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Gerencie suas disciplinas e veja os detalhes de cada uma',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
           Row(
@@ -576,56 +594,82 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                            const SizedBox(height: 16),
-                            Text('Erro ao carregar disciplinas', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
-                            const SizedBox(height: 8),
-                            Text(_error!, style: TextStyle(color: Colors.grey[600])),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _loadDisciplinas,
-                              child: const Text('Tentar novamente'),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.red,
                         ),
-                      )
-                    : _disciplinas.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.school_outlined, size: 64, color: Colors.grey),
-                                const SizedBox(height: 16),
-                                Text('Nenhuma disciplina cadastrada', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
-                                const SizedBox(height: 8),
-                                Text('Clique em "Nova Disciplina" para começar', style: TextStyle(color: Colors.grey[600])),
-                              ],
-                            ),
-                          )
-                        : GridView.builder(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: _getCrossAxisCount(context),
-                              crossAxisSpacing: 16,
-                              mainAxisSpacing: 16,
-                              childAspectRatio: _getCardAspectRatio(context),
-                            ),
-                            itemCount: _disciplinas.length,
-                            itemBuilder: (context, index) {
-                              final disciplina = _disciplinas[index];
-                              final cor = _parseColor(disciplina['cor'] ?? '#2196F3');
-                              
-                              return _buildDisciplinaCard(
-                                disciplina['nome'] ?? 'Sem nome',
-                                disciplina['descricao'] ?? 'Sem descrição',
-                                cor,
-                                disciplina,
-                              );
-                            },
+                        const SizedBox(height: 16),
+                        Text(
+                          'Erro ao carregar disciplinas',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[700],
                           ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _error!,
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadDisciplinas,
+                          child: const Text('Tentar novamente'),
+                        ),
+                      ],
+                    ),
+                  )
+                : _disciplinas.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.school_outlined,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Nenhuma disciplina cadastrada',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Clique em "Nova Disciplina" para começar',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  )
+                : GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: _getCrossAxisCount(context),
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: _getCardAspectRatio(context),
+                    ),
+                    itemCount: _disciplinas.length,
+                    itemBuilder: (context, index) {
+                      final disciplina = _disciplinas[index];
+                      final cor = _parseColor(disciplina['cor'] ?? '#2196F3');
+
+                      return _buildDisciplinaCard(
+                        disciplina['nome'] ?? 'Sem nome',
+                        disciplina['descricao'] ?? 'Sem descrição',
+                        cor,
+                        disciplina,
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -663,7 +707,12 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
     }
   }
 
-  Widget _buildDisciplinaCard(String nome, String descricao, Color cor, Map<String, dynamic> disciplina) {
+  Widget _buildDisciplinaCard(
+    String nome,
+    String descricao,
+    Color cor,
+    Map<String, dynamic> disciplina,
+  ) {
     return Card(
       elevation: 0,
       child: InkWell(
@@ -686,111 +735,112 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                cor.withValues(alpha: 0.8),
-                cor,
-              ],
+              colors: [cor.withValues(alpha: 0.8), cor],
             ),
             boxShadow: [
               BoxShadow(
-                color: cor.withOpacity(0.3),
+                color: cor.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Container(
-          padding: const EdgeInsets.all(12),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // Detectar se é tela muito pequena
-              final isVerySmall = constraints.maxHeight < 120;
-              final iconSize = isVerySmall ? 20.0 : 24.0;
-              final titleSize = isVerySmall ? 14.0 : 16.0;
-              final subtitleSize = isVerySmall ? 10.0 : 12.0;
-              final spacing = isVerySmall ? 4.0 : 8.0;
-              
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(isVerySmall ? 6 : 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(10),
+            padding: const EdgeInsets.all(12),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Detectar se é tela muito pequena
+                final isVerySmall = constraints.maxHeight < 120;
+                final iconSize = isVerySmall ? 20.0 : 24.0;
+                final titleSize = isVerySmall ? 14.0 : 16.0;
+                final subtitleSize = isVerySmall ? 10.0 : 12.0;
+                final spacing = isVerySmall ? 4.0 : 8.0;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(isVerySmall ? 6 : 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.book,
+                            color: Colors.white,
+                            size: iconSize,
+                          ),
                         ),
-                        child: Icon(
-                          Icons.book,
-                          color: Colors.white,
-                          size: iconSize,
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert,
+                            color: Colors.white,
+                            size: isVerySmall ? 20 : 24,
+                          ),
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Editar'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Excluir'),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _showEditDisciplinaDialog(disciplina);
+                            } else if (value == 'delete') {
+                              _confirmDeleteDisciplina(disciplina);
+                            }
+                          },
                         ),
+                      ],
+                    ),
+                    SizedBox(height: spacing),
+                    Text(
+                      nome,
+                      style: TextStyle(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                      PopupMenuButton<String>(
-                        icon: Icon(Icons.more_vert, color: Colors.white, size: isVerySmall ? 20 : 24),
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'edit',
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit, size: 20),
-                                SizedBox(width: 8),
-                                Text('Editar'),
-                              ],
-                            ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (!isVerySmall) ...[
+                      SizedBox(height: spacing / 2),
+                      Expanded(
+                        child: Text(
+                          descricao,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: subtitleSize,
                           ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete, size: 20),
-                                SizedBox(width: 8),
-                                Text('Excluir'),
-                              ],
-                            ),
-                          ),
-                        ],
-                        onSelected: (value) {
-                          if (value == 'edit') {
-                            _showEditDisciplinaDialog(disciplina);
-                          } else if (value == 'delete') {
-                            _confirmDeleteDisciplina(disciplina);
-                          }
-                        },
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
-                  ),
-                  SizedBox(height: spacing),
-                  Text(
-                    nome,
-                    style: TextStyle(
-                      fontSize: titleSize,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (!isVerySmall) ...[
-                    SizedBox(height: spacing / 2),
-                    Expanded(
-                      child: Text(
-                        descricao,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: subtitleSize,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
                   ],
-                ],
-              );
-            },
-          ),
+                );
+              },
+            ),
           ),
         ),
       ),

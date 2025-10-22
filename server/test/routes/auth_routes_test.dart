@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 void main() {
   // URL base do servidor (ajuste conforme necessário)
   const baseUrl = 'http://localhost:8080';
-  
+
   group('Auth Routes - Register', () {
     test('POST /auth/register - deve criar novo usuário professor', () async {
       final response = await http.post(
@@ -15,12 +15,12 @@ void main() {
           'nome': 'Professor Teste',
           'email': 'professor.teste@escola.com',
           'senha': 'senha123',
-          'tipo': 'professor'
+          'tipo': 'professor',
         }),
       );
 
       expect(response.statusCode, equals(201));
-      
+
       final data = jsonDecode(response.body);
       expect(data['usuario'], isNotNull);
       expect(data['usuario']['nome'], equals('Professor Teste'));
@@ -39,12 +39,12 @@ void main() {
           'nome': 'Aluno Teste',
           'email': 'aluno.teste@escola.com',
           'senha': 'senha123',
-          'tipo': 'aluno'
+          'tipo': 'aluno',
         }),
       );
 
       expect(response.statusCode, equals(201));
-      
+
       final data = jsonDecode(response.body);
       expect(data['usuario']['tipo'], equals('aluno'));
     });
@@ -54,7 +54,7 @@ void main() {
         'nome': 'Usuário Duplicado',
         'email': 'duplicado@escola.com',
         'senha': 'senha123',
-        'tipo': 'professor'
+        'tipo': 'professor',
       };
 
       // Primeiro registro
@@ -71,7 +71,7 @@ void main() {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(userData),
       );
-      
+
       expect(response2.statusCode, equals(409)); // Conflict
       final data = jsonDecode(response2.body);
       expect(data['erro'], contains('já existe'));
@@ -98,7 +98,7 @@ void main() {
           'nome': 'Teste',
           'email': 'teste@teste.com',
           'senha': 'senha123',
-          'tipo': 'admin' // tipo inválido
+          'tipo': 'admin', // tipo inválido
         }),
       );
 
@@ -126,30 +126,33 @@ void main() {
           'nome': 'Login Teste',
           'email': 'login.teste@escola.com',
           'senha': 'senha123',
-          'tipo': 'professor'
+          'tipo': 'professor',
         }),
       );
     });
 
-    test('POST /auth/login - deve fazer login com credenciais válidas', () async {
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': 'login.teste@escola.com',
-          'senha': 'senha123',
-        }),
-      );
+    test(
+      'POST /auth/login - deve fazer login com credenciais válidas',
+      () async {
+        final response = await http.post(
+          Uri.parse('$baseUrl/auth/login'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'email': 'login.teste@escola.com',
+            'senha': 'senha123',
+          }),
+        );
 
-      expect(response.statusCode, equals(200));
-      
-      final data = jsonDecode(response.body);
-      expect(data['usuario'], isNotNull);
-      expect(data['usuario']['email'], equals('login.teste@escola.com'));
-      expect(data['usuario']['nome'], equals('Login Teste'));
-      expect(data['token'], isNotNull);
-      expect(data['token'], isA<String>());
-    });
+        expect(response.statusCode, equals(200));
+
+        final data = jsonDecode(response.body);
+        expect(data['usuario'], isNotNull);
+        expect(data['usuario']['email'], equals('login.teste@escola.com'));
+        expect(data['usuario']['nome'], equals('Login Teste'));
+        expect(data['token'], isNotNull);
+        expect(data['token'], isA<String>());
+      },
+    );
 
     test('POST /auth/login - deve rejeitar email inexistente', () async {
       final response = await http.post(
@@ -166,24 +169,27 @@ void main() {
       expect(data['erro'], contains('Credenciais'));
     });
 
-    test('POST /auth/login - deve aceitar qualquer senha (SECURITY ISSUE)', () async {
-      // NOTA: Este teste documenta o problema de segurança atual
-      // onde qualquer senha é aceita
-      final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': 'login.teste@escola.com',
-          'senha': 'senhaerrada',
-        }),
-      );
+    test(
+      'POST /auth/login - deve aceitar qualquer senha (SECURITY ISSUE)',
+      () async {
+        // NOTA: Este teste documenta o problema de segurança atual
+        // onde qualquer senha é aceita
+        final response = await http.post(
+          Uri.parse('$baseUrl/auth/login'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'email': 'login.teste@escola.com',
+            'senha': 'senhaerrada',
+          }),
+        );
 
-      // ATUALMENTE aceita qualquer senha (PROBLEMA!)
-      expect(response.statusCode, equals(200));
-      
-      // TODO: Quando bcrypt for implementado, este teste deve ser:
-      // expect(response.statusCode, equals(401));
-    });
+        // ATUALMENTE aceita qualquer senha (PROBLEMA!)
+        expect(response.statusCode, equals(200));
+
+        // TODO: Quando bcrypt for implementado, este teste deve ser:
+        // expect(response.statusCode, equals(401));
+      },
+    );
 
     test('POST /auth/login - deve rejeitar dados incompletos', () async {
       final response = await http.post(
@@ -218,16 +224,16 @@ void main() {
           'nome': 'Token Teste',
           'email': 'token.teste@escola.com',
           'senha': 'senha123',
-          'tipo': 'professor'
+          'tipo': 'professor',
         }),
       );
 
       final data = jsonDecode(response.body);
       final token = data['token'] as String;
-      
+
       // Token JWT tem 3 partes separadas por ponto
       expect(token.split('.').length, equals(3));
-      
+
       // TODO: Quando JWT real for implementado, validar:
       // - Assinatura
       // - Claims (sub, exp, iat)
@@ -244,7 +250,7 @@ void main() {
           'nome': 'Security Teste',
           'email': 'security.teste@escola.com',
           'senha': 'senha123',
-          'tipo': 'professor'
+          'tipo': 'professor',
         }),
       );
 

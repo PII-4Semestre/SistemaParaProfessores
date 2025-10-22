@@ -18,12 +18,13 @@ class TelaDetalhesDisciplinaProfessor extends StatefulWidget {
       _TelaDetalhesDisciplinaProfessorState();
 }
 
-class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplinaProfessor>
+class _TelaDetalhesDisciplinaProfessorState
+    extends State<TelaDetalhesDisciplinaProfessor>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   final ApiService _apiService = ApiService();
-  
+
   List<dynamic> _atividades = [];
   bool _isLoadingAtividades = false;
   String? _errorAtividades;
@@ -48,7 +49,7 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
 
     try {
       final alunos = await _apiService.getAlunosDisciplina(widget.disciplinaId);
-      
+
       if (mounted) {
         setState(() {
           _alunos = alunos;
@@ -72,8 +73,10 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
     });
 
     try {
-      final atividades = await _apiService.getAtividadesDisciplina(widget.disciplinaId);
-      
+      final atividades = await _apiService.getAtividadesDisciplina(
+        widget.disciplinaId,
+      );
+
       if (mounted) {
         setState(() {
           _atividades = atividades;
@@ -124,7 +127,10 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                     child: Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                         const SizedBox(width: 8),
@@ -199,9 +205,16 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Erro ao carregar alunos', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+            Text(
+              'Erro ao carregar alunos',
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+            ),
             const SizedBox(height: 8),
-            Text(_errorAlunos!, style: TextStyle(color: Colors.grey[600]), textAlign: TextAlign.center),
+            Text(
+              _errorAlunos!,
+              style: TextStyle(color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadAlunos,
@@ -256,11 +269,21 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.people_outline, size: 64, color: Colors.grey),
+                    const Icon(
+                      Icons.people_outline,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(height: 16),
-                    Text('Nenhum aluno matriculado', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+                    Text(
+                      'Nenhum aluno matriculado',
+                      style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+                    ),
                     const SizedBox(height: 8),
-                    Text('Clique em "Adicionar Aluno" para começar', style: TextStyle(color: Colors.grey[600])),
+                    Text(
+                      'Clique em "Adicionar Aluno" para começar',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
                   ],
                 ),
               ),
@@ -274,7 +297,7 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                   final nome = aluno['nome'] ?? 'Sem nome';
                   final ra = aluno['ra'] ?? 'Sem RA';
                   final email = aluno['email'] ?? '';
-                  
+
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
                     elevation: 2,
@@ -284,7 +307,9 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                         children: [
                           CircleAvatar(
                             radius: 28,
-                            backgroundColor: widget.subjectColor.withValues(alpha: 0.2),
+                            backgroundColor: widget.subjectColor.withValues(
+                              alpha: 0.2,
+                            ),
                             child: Text(
                               nome.isNotEmpty ? nome[0].toUpperCase() : '?',
                               style: TextStyle(
@@ -315,7 +340,9 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: widget.subjectColor.withValues(alpha: 0.1),
+                                        color: widget.subjectColor.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
@@ -333,7 +360,11 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
-                                      Icon(Icons.email, size: 14, color: Colors.grey[600]),
+                                      Icon(
+                                        Icons.email,
+                                        size: 14,
+                                        color: Colors.grey[600],
+                                      ),
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: Text(
@@ -352,7 +383,10 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                            icon: const Icon(
+                              Icons.remove_circle_outline,
+                              color: Colors.red,
+                            ),
                             onPressed: () {
                               _confirmRemoveAluno(aluno);
                             },
@@ -382,7 +416,10 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Erro ao carregar atividades', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+            Text(
+              'Erro ao carregar atividades',
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+            ),
             const SizedBox(height: 8),
             Text(_errorAtividades!, style: TextStyle(color: Colors.grey[600])),
             const SizedBox(height: 16),
@@ -439,11 +476,21 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.assignment_outlined, size: 64, color: Colors.grey),
+                    const Icon(
+                      Icons.assignment_outlined,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(height: 16),
-                    Text('Nenhuma atividade cadastrada', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+                    Text(
+                      'Nenhuma atividade cadastrada',
+                      style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+                    ),
                     const SizedBox(height: 8),
-                    Text('Clique em "Nova Atividade" para começar', style: TextStyle(color: Colors.grey[600])),
+                    Text(
+                      'Clique em "Nova Atividade" para começar',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
                   ],
                 ),
               ),
@@ -457,10 +504,10 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                   final titulo = atividade['titulo'] ?? 'Sem título';
                   final descricao = atividade['descricao'] ?? '';
                   final peso = atividade['peso'];
-                  final dataEntrega = atividade['data_entrega'] != null 
+                  final dataEntrega = atividade['data_entrega'] != null
                       ? DateTime.parse(atividade['data_entrega'])
                       : null;
-                  
+
                   // Convert peso to double safely
                   double? pesoDouble;
                   if (peso != null) {
@@ -470,10 +517,12 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                       pesoDouble = double.tryParse(peso);
                     }
                   }
-                  
+
                   // Check if activity is expired
-                  final isExpired = dataEntrega != null && dataEntrega.isBefore(DateTime.now());
-                  
+                  final isExpired =
+                      dataEntrega != null &&
+                      dataEntrega.isBefore(DateTime.now());
+
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
                     elevation: 2,
@@ -487,7 +536,9 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: widget.subjectColor.withValues(alpha: 0.1),
+                                  color: widget.subjectColor.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
@@ -527,14 +578,20 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.blue),
+                                    icon: const Icon(
+                                      Icons.edit,
+                                      color: Colors.blue,
+                                    ),
                                     onPressed: () {
                                       _showEditAtividadeDialog(atividade);
                                     },
                                     tooltip: 'Editar',
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
                                     onPressed: () {
                                       _confirmDeleteAtividade(atividade);
                                     },
@@ -555,13 +612,19 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: widget.subjectColor.withValues(alpha: 0.1),
+                                  color: widget.subjectColor.withValues(
+                                    alpha: 0.1,
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.fitness_center, size: 14, color: widget.subjectColor),
+                                    Icon(
+                                      Icons.fitness_center,
+                                      size: 14,
+                                      color: widget.subjectColor,
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       'Peso: ${pesoDouble?.toStringAsFixed(1) ?? '1.0'}',
@@ -581,7 +644,7 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: isExpired 
+                                    color: isExpired
                                         ? Colors.red.withValues(alpha: 0.1)
                                         : Colors.green.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(12),
@@ -590,16 +653,22 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        isExpired ? Icons.event_busy : Icons.event,
+                                        isExpired
+                                            ? Icons.event_busy
+                                            : Icons.event,
                                         size: 14,
-                                        color: isExpired ? Colors.red : Colors.green,
+                                        color: isExpired
+                                            ? Colors.red
+                                            : Colors.green,
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
                                         '${dataEntrega.day.toString().padLeft(2, '0')}/${dataEntrega.month.toString().padLeft(2, '0')}/${dataEntrega.year}',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: isExpired ? Colors.red : Colors.green,
+                                          color: isExpired
+                                              ? Colors.red
+                                              : Colors.green,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
@@ -642,40 +711,37 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
             const SizedBox(height: 24),
             const Text(
               'Materiais em Desenvolvimento',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(
               'A funcionalidade de materiais didáticos estará disponível em breve.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Aqui você poderá fazer upload e gerenciar PDFs, slides, apostilas e outros recursos.',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                border: Border.all(color: widget.subjectColor.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: widget.subjectColor.withValues(alpha: 0.3),
+                ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.info_outline, color: widget.subjectColor, size: 20),
+                  Icon(
+                    Icons.info_outline,
+                    color: widget.subjectColor,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Integração com MongoDB em progresso',
@@ -736,7 +802,9 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                 const SizedBox(height: 16),
                 ListTile(
                   title: const Text('Data de Entrega'),
-                  subtitle: Text('${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.year}'),
+                  subtitle: Text(
+                    '${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.year}',
+                  ),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () async {
                     final picked = await showDatePicker(
@@ -764,7 +832,9 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
               onPressed: () async {
                 if (tituloController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor, preencha o título')),
+                    const SnackBar(
+                      content: Text('Por favor, preencha o título'),
+                    ),
                   );
                   return;
                 }
@@ -778,19 +848,20 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                     dataEntrega: selectedDate.toIso8601String(),
                   );
 
-                  if (mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Atividade criada com sucesso!')),
-                    );
-                    _loadAtividades(); // Reload activities list
-                  }
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Atividade criada com sucesso!'),
+                    ),
+                  );
+                  _loadAtividades(); // Reload activities list
                 } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Erro ao criar atividade: $e')),
-                    );
-                  }
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(content: Text('Erro ao criar atividade: $e')),
+                  );
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -806,8 +877,12 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
   }
 
   void _showEditAtividadeDialog(Map<String, dynamic> atividade) {
-    final tituloController = TextEditingController(text: atividade['titulo'] ?? '');
-    final descricaoController = TextEditingController(text: atividade['descricao'] ?? '');
+    final tituloController = TextEditingController(
+      text: atividade['titulo'] ?? '',
+    );
+    final descricaoController = TextEditingController(
+      text: atividade['descricao'] ?? '',
+    );
     final peso = atividade['peso'];
     double? pesoValue;
     if (peso is num) {
@@ -815,8 +890,10 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
     } else if (peso is String) {
       pesoValue = double.tryParse(peso);
     }
-    final pesoController = TextEditingController(text: pesoValue?.toString() ?? '1.0');
-    
+    final pesoController = TextEditingController(
+      text: pesoValue?.toString() ?? '1.0',
+    );
+
     DateTime selectedDate = atividade['data_entrega'] != null
         ? DateTime.parse(atividade['data_entrega'])
         : DateTime.now().add(const Duration(days: 7));
@@ -888,7 +965,9 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
               onPressed: () async {
                 if (tituloController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor, preencha o título')),
+                    const SnackBar(
+                      content: Text('Por favor, preencha o título'),
+                    ),
                   );
                   return;
                 }
@@ -902,19 +981,22 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                     dataEntrega: selectedDate.toIso8601String(),
                   );
 
-                  if (mounted) {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Atividade atualizada com sucesso!')),
-                    );
-                    _loadAtividades(); // Reload activities list
-                  }
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Atividade atualizada com sucesso!'),
+                    ),
+                  );
+                  _loadAtividades(); // Reload activities list
                 } catch (e) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Erro ao atualizar atividade: $e')),
-                    );
-                  }
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erro ao atualizar atividade: $e'),
+                    ),
+                  );
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -934,7 +1016,9 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Excluir Atividade'),
-        content: Text('Deseja realmente excluir a atividade "${atividade['titulo']}"? Esta ação não pode ser desfeita.'),
+        content: Text(
+          'Deseja realmente excluir a atividade "${atividade['titulo']}"? Esta ação não pode ser desfeita.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -945,20 +1029,22 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
               try {
                 await _apiService.deleteAtividade(atividade['id']);
 
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Atividade excluída com sucesso!')),
-                  );
-                  _loadAtividades(); // Reload activities list
-                }
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Atividade excluída com sucesso!'),
+                  ),
+                );
+                _loadAtividades(); // Reload activities list
               } catch (e) {
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao excluir atividade: $e')),
-                  );
-                }
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  SnackBar(content: Text('Erro ao excluir atividade: $e')),
+                );
               }
             },
             style: ElevatedButton.styleFrom(
@@ -974,13 +1060,17 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
 
   void _showAddAlunoDialog() async {
     try {
-      final alunosDisponiveis = await _apiService.getAlunosDisponiveis(widget.disciplinaId);
-      
+      final alunosDisponiveis = await _apiService.getAlunosDisponiveis(
+        widget.disciplinaId,
+      );
+
       if (!mounted) return;
 
       if (alunosDisponiveis.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Não há alunos disponíveis para adicionar')),
+          const SnackBar(
+            content: Text('Não há alunos disponíveis para adicionar'),
+          ),
         );
         return;
       }
@@ -997,9 +1087,7 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
               itemBuilder: (context, index) {
                 final aluno = alunosDisponiveis[index];
                 return ListTile(
-                  leading: const CircleAvatar(
-                    child: Icon(Icons.person),
-                  ),
+                  leading: const CircleAvatar(child: Icon(Icons.person)),
                   title: Text(aluno['nome'] ?? 'Sem nome'),
                   subtitle: Text('RA: ${aluno['ra'] ?? 'Sem RA'}'),
                   trailing: IconButton(
@@ -1012,19 +1100,22 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                           disciplinaId: widget.disciplinaId,
                         );
 
-                        if (mounted) {
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Aluno adicionado com sucesso!')),
-                          );
-                          _loadAlunos(); // Reload students list
-                        }
+                        if (!context.mounted) return;
+                        Navigator.pop(context);
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Aluno adicionado com sucesso!'),
+                          ),
+                        );
+                        _loadAlunos(); // Reload students list
                       } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Erro ao adicionar aluno: $e')),
-                          );
-                        }
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          SnackBar(
+                            content: Text('Erro ao adicionar aluno: $e'),
+                          ),
+                        );
                       }
                     },
                   ),
@@ -1042,9 +1133,9 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao buscar alunos: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao buscar alunos: $e')));
       }
     }
   }
@@ -1054,7 +1145,9 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Remover Aluno'),
-        content: Text('Deseja realmente remover "${aluno['nome']}" desta disciplina?'),
+        content: Text(
+          'Deseja realmente remover "${aluno['nome']}" desta disciplina?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1068,20 +1161,22 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
                   disciplinaId: widget.disciplinaId,
                 );
 
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Aluno removido com sucesso!')),
-                  );
-                  _loadAlunos(); // Reload students list
-                }
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Aluno removido com sucesso!'),
+                  ),
+                );
+                _loadAlunos(); // Reload students list
               } catch (e) {
-                if (mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao remover aluno: $e')),
-                  );
-                }
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                if (!mounted) return;
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  SnackBar(content: Text('Erro ao remover aluno: $e')),
+                );
               }
             },
             style: ElevatedButton.styleFrom(
@@ -1094,5 +1189,4 @@ class _TelaDetalhesDisciplinaProfessorState extends State<TelaDetalhesDisciplina
       ),
     );
   }
-
 }

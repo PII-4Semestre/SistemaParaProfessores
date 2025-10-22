@@ -6,7 +6,7 @@ import 'package:sistema_professores_server/database/database.dart';
 class NotasRoutes {
   Router get router {
     final router = Router();
-    
+
     // GET /api/notas/aluno/<id> - Notas de um aluno
     router.get('/aluno/<id>', (Request request, String id) async {
       try {
@@ -23,18 +23,22 @@ class NotasRoutes {
           ''',
           parameters: [int.parse(id)],
         );
-        
-        final notas = result.map((row) => {
-          'id': row[0],
-          'atividade_id': row[1],
-          'aluno_id': row[2],
-          'nota': row[3],
-          'comentario': row[4],
-          'atribuida_em': row[5]?.toString(),
-          'atividade_titulo': row[6],
-          'disciplina_nome': row[7],
-        }).toList();
-        
+
+        final notas = result
+            .map(
+              (row) => {
+                'id': row[0],
+                'atividade_id': row[1],
+                'aluno_id': row[2],
+                'nota': row[3],
+                'comentario': row[4],
+                'atribuida_em': row[5]?.toString(),
+                'atividade_titulo': row[6],
+                'disciplina_nome': row[7],
+              },
+            )
+            .toList();
+
         return Response.ok(
           json.encode(notas),
           headers: {'Content-Type': 'application/json'},
@@ -45,12 +49,12 @@ class NotasRoutes {
         );
       }
     });
-    
+
     // POST /api/notas - Atribuir nota
     router.post('/', (Request request) async {
       try {
         final payload = json.decode(await request.readAsString());
-        
+
         final db = await Database.getInstance();
         final result = await db.connection.execute(
           '''
@@ -67,7 +71,7 @@ class NotasRoutes {
             payload['comentario'],
           ],
         );
-        
+
         final row = result.first;
         return Response.ok(
           json.encode({
@@ -86,7 +90,7 @@ class NotasRoutes {
         );
       }
     });
-    
+
     return router;
   }
 }

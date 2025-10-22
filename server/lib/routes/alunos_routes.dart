@@ -6,27 +6,25 @@ import 'package:sistema_professores_server/database/database.dart';
 class AlunosRoutes {
   Router get router {
     final router = Router();
-    
+
     // GET /api/alunos - Listar todos os alunos com suas disciplinas
     router.get('/', (Request request) async {
       try {
         final db = await Database.getInstance();
-        
+
         // Buscar todos os alunos
-        final alunosResult = await db.connection.execute(
-          '''
+        final alunosResult = await db.connection.execute('''
           SELECT id, nome, email, ra, criado_em
           FROM usuarios
           WHERE tipo = 'aluno'
           ORDER BY nome
-          ''',
-        );
-        
+          ''');
+
         final alunos = <Map<String, dynamic>>[];
-        
+
         for (final alunoRow in alunosResult) {
           final alunoId = alunoRow[0] as int;
-          
+
           // Buscar disciplinas do aluno
           final disciplinasResult = await db.connection.execute(
             '''
@@ -38,13 +36,11 @@ class AlunosRoutes {
             ''',
             parameters: [alunoId],
           );
-          
-          final disciplinas = disciplinasResult.map((row) => {
-            'id': row[0],
-            'nome': row[1],
-            'cor': row[2],
-          }).toList();
-          
+
+          final disciplinas = disciplinasResult
+              .map((row) => {'id': row[0], 'nome': row[1], 'cor': row[2]})
+              .toList();
+
           alunos.add({
             'id': alunoId,
             'nome': alunoRow[1],
@@ -54,7 +50,7 @@ class AlunosRoutes {
             'disciplinas': disciplinas,
           });
         }
-        
+
         return Response.ok(
           json.encode(alunos),
           headers: {'Content-Type': 'application/json'},
@@ -65,7 +61,7 @@ class AlunosRoutes {
         );
       }
     });
-    
+
     // GET /api/alunos/<id>/disciplinas - Listar disciplinas de um aluno específico
     router.get('/<id>/disciplinas', (Request request, String id) async {
       try {
@@ -81,27 +77,33 @@ class AlunosRoutes {
           ''',
           parameters: [int.parse(id)],
         );
-        
-        final disciplinas = result.map((row) => {
-          'id': row[0],
-          'nome': row[1],
-          'descricao': row[2],
-          'cor': row[3],
-          'professor_id': row[4],
-          'professor_nome': row[5],
-        }).toList();
-        
+
+        final disciplinas = result
+            .map(
+              (row) => {
+                'id': row[0],
+                'nome': row[1],
+                'descricao': row[2],
+                'cor': row[3],
+                'professor_id': row[4],
+                'professor_nome': row[5],
+              },
+            )
+            .toList();
+
         return Response.ok(
           json.encode(disciplinas),
           headers: {'Content-Type': 'application/json'},
         );
       } catch (e) {
         return Response.internalServerError(
-          body: json.encode({'error': 'Erro ao buscar disciplinas do aluno: $e'}),
+          body: json.encode({
+            'error': 'Erro ao buscar disciplinas do aluno: $e',
+          }),
         );
       }
     });
-    
+
     // GET /api/alunos/disciplina/<id> - Listar alunos matriculados em uma disciplina
     router.get('/disciplina/<id>', (Request request, String id) async {
       try {
@@ -116,15 +118,19 @@ class AlunosRoutes {
           ''',
           parameters: [int.parse(id)],
         );
-        
-        final alunos = result.map((row) => {
-          'id': row[0],
-          'nome': row[1],
-          'email': row[2],
-          'ra': row[3],
-          'matriculado_em': row[4]?.toString(),
-        }).toList();
-        
+
+        final alunos = result
+            .map(
+              (row) => {
+                'id': row[0],
+                'nome': row[1],
+                'email': row[2],
+                'ra': row[3],
+                'matriculado_em': row[4]?.toString(),
+              },
+            )
+            .toList();
+
         return Response.ok(
           json.encode(alunos),
           headers: {'Content-Type': 'application/json'},
@@ -135,9 +141,12 @@ class AlunosRoutes {
         );
       }
     });
-    
+
     // GET /api/alunos/disponiveis/<disciplinaId> - Listar alunos que NÃO estão matriculados na disciplina
-    router.get('/disponiveis/<disciplinaId>', (Request request, String disciplinaId) async {
+    router.get('/disponiveis/<disciplinaId>', (
+      Request request,
+      String disciplinaId,
+    ) async {
       try {
         final db = await Database.getInstance();
         final result = await db.connection.execute(
@@ -152,14 +161,18 @@ class AlunosRoutes {
           ''',
           parameters: [int.parse(disciplinaId)],
         );
-        
-        final alunos = result.map((row) => {
-          'id': row[0],
-          'nome': row[1],
-          'email': row[2],
-          'ra': row[3],
-        }).toList();
-        
+
+        final alunos = result
+            .map(
+              (row) => {
+                'id': row[0],
+                'nome': row[1],
+                'email': row[2],
+                'ra': row[3],
+              },
+            )
+            .toList();
+
         return Response.ok(
           json.encode(alunos),
           headers: {'Content-Type': 'application/json'},
@@ -170,12 +183,12 @@ class AlunosRoutes {
         );
       }
     });
-    
+
     // POST /api/alunos/matricular - Matricular aluno em uma disciplina
     router.post('/matricular', (Request request) async {
       try {
         final payload = json.decode(await request.readAsString());
-        
+
         final db = await Database.getInstance();
         final result = await db.connection.execute(
           '''
@@ -184,19 +197,19 @@ class AlunosRoutes {
           ON CONFLICT (aluno_id, disciplina_id) DO NOTHING
           RETURNING aluno_id, disciplina_id, matriculado_em
           ''',
-          parameters: [
-            payload['aluno_id'],
-            payload['disciplina_id'],
-          ],
+          parameters: [payload['aluno_id'], payload['disciplina_id']],
         );
-        
+
         if (result.isEmpty) {
-          return Response(409, 
-            body: json.encode({'error': 'Aluno já está matriculado nesta disciplina'}),
+          return Response(
+            409,
+            body: json.encode({
+              'error': 'Aluno já está matriculado nesta disciplina',
+            }),
             headers: {'Content-Type': 'application/json'},
           );
         }
-        
+
         final row = result.first;
         return Response.ok(
           json.encode({
@@ -213,12 +226,12 @@ class AlunosRoutes {
         );
       }
     });
-    
+
     // DELETE /api/alunos/desmatricular - Remover aluno de uma disciplina
     router.delete('/desmatricular', (Request request) async {
       try {
         final payload = json.decode(await request.readAsString());
-        
+
         final db = await Database.getInstance();
         final result = await db.connection.execute(
           '''
@@ -226,18 +239,15 @@ class AlunosRoutes {
           WHERE aluno_id = \$1 AND disciplina_id = \$2
           RETURNING aluno_id, disciplina_id
           ''',
-          parameters: [
-            payload['aluno_id'],
-            payload['disciplina_id'],
-          ],
+          parameters: [payload['aluno_id'], payload['disciplina_id']],
         );
-        
+
         if (result.isEmpty) {
           return Response.notFound(
             json.encode({'error': 'Matrícula não encontrada'}),
           );
         }
-        
+
         return Response.ok(
           json.encode({'message': 'Aluno removido da disciplina com sucesso'}),
           headers: {'Content-Type': 'application/json'},
@@ -248,7 +258,7 @@ class AlunosRoutes {
         );
       }
     });
-    
+
     return router;
   }
 }

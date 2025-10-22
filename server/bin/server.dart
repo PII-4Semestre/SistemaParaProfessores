@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:developer' as developer;
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
@@ -13,29 +14,32 @@ import 'package:sistema_professores_server/routes/alunos_routes.dart';
 void main() async {
   // Carregar variáveis de ambiente
   final env = DotEnv()..load();
-  
+
   // Conectar ao banco de dados
   await Database.getInstance();
-  
+
   // Configurar rotas
   final router = Router()
-    ..mount('/api/auth', AuthRoutes().router)
-    ..mount('/api/disciplinas', DisciplinasRoutes().router)
-    ..mount('/api/atividades', AtividadesRoutes().router)
-    ..mount('/api/notas', NotasRoutes().router)
-    ..mount('/api/alunos', AlunosRoutes().router);
-  
+    ..mount('/api/auth', AuthRoutes().router.call)
+    ..mount('/api/disciplinas', DisciplinasRoutes().router.call)
+    ..mount('/api/atividades', AtividadesRoutes().router.call)
+    ..mount('/api/notas', NotasRoutes().router.call)
+    ..mount('/api/alunos', AlunosRoutes().router.call);
+
   // Middleware para CORS
   final handler = Pipeline()
-    .addMiddleware(corsHeaders())
-    .addMiddleware(logRequests())
-    .addMiddleware(handleErrors())
-    .addHandler(router.call);
-  
+      .addMiddleware(corsHeaders())
+      .addMiddleware(logRequests())
+      .addMiddleware(handleErrors())
+      .addHandler(router.call);
+
   // Iniciar servidor
   final port = int.parse(env['PORT'] ?? '8080');
   final server = await shelf_io.serve(handler, InternetAddress.anyIPv4, port);
-  print('🚀 Servidor rodando em http://${server.address.host}:${server.port}');
+  developer.log(
+    '🚀 Servidor rodando em http://${server.address.host}:${server.port}',
+    name: 'server',
+  );
 }
 
 Middleware corsHeaders() {
@@ -44,7 +48,7 @@ Middleware corsHeaders() {
       if (request.method == 'OPTIONS') {
         return Response.ok('', headers: _corsHeaders());
       }
-      
+
       final response = await handler(request);
       return response.change(headers: _corsHeaders());
     };
@@ -65,8 +69,13 @@ Middleware handleErrors() {
       try {
         return await handler(request);
       } catch (error, stackTrace) {
-        print('❌ Error: $error');
-        print('Stack trace: $stackTrace');
+        developer.log(
+          '❌ Error handling request: $error',
+          name: 'server',
+          error: error,
+          stackTrace: stackTrace,
+          level: 1000,
+        );
         return Response.internalServerError(
           body: '{"error": "Internal server error: $error"}',
           headers: {'Content-Type': 'application/json'},

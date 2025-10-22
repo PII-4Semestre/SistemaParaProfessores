@@ -67,7 +67,9 @@ class _TelaAlunosProfessorState extends State<TelaAlunosProfessor> {
           final nome = (aluno['nome'] ?? '').toString().toLowerCase();
           final email = (aluno['email'] ?? '').toString().toLowerCase();
           final ra = (aluno['ra'] ?? '').toString().toLowerCase();
-          return nome.contains(query) || email.contains(query) || ra.contains(query);
+          return nome.contains(query) ||
+              email.contains(query) ||
+              ra.contains(query);
         }).toList();
       }
     });
@@ -77,7 +79,7 @@ class _TelaAlunosProfessorState extends State<TelaAlunosProfessor> {
     _nomeController.clear();
     _raController.clear();
     _emailController.clear();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -146,18 +148,12 @@ class _TelaAlunosProfessorState extends State<TelaAlunosProfessor> {
         children: [
           const Text(
             'Alunos',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Gerencie todos os alunos e suas disciplinas',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
           Row(
@@ -195,117 +191,147 @@ class _TelaAlunosProfessorState extends State<TelaAlunosProfessor> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: Colors.red,
+                        ),
+                        const SizedBox(height: 16),
+                        Text('Erro ao carregar alunos'),
+                        const SizedBox(height: 8),
+                        Text(
+                          _error!,
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadAlunos,
+                          child: const Text('Tentar novamente'),
+                        ),
+                      ],
+                    ),
+                  )
+                : _alunosFiltrados.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.person_off,
+                          size: 48,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _searchController.text.isEmpty
+                              ? 'Nenhum aluno cadastrado'
+                              : 'Nenhum aluno encontrado',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _alunosFiltrados.length,
+                    itemBuilder: (context, index) {
+                      final aluno = _alunosFiltrados[index];
+                      final disciplinas = aluno['disciplinas'] as List? ?? [];
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ExpansionTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.orange,
+                            child: Text(
+                              (aluno['nome'] ?? '?')[0].toUpperCase(),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          title: Text(aluno['nome'] ?? 'Sem nome'),
+                          subtitle: Text('RA: ${aluno['ra'] ?? 'N/A'}'),
                           children: [
-                            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                            const SizedBox(height: 16),
-                            Text('Erro ao carregar alunos'),
-                            const SizedBox(height: 8),
-                            Text(_error!, style: TextStyle(color: Colors.grey[600])),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _loadAlunos,
-                              child: const Text('Tentar novamente'),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.email,
+                                        size: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        aluno['email'] ?? 'N/A',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  const Divider(),
+                                  const SizedBox(height: 12),
+                                  const Text(
+                                    'Disciplinas:',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  disciplinas.isEmpty
+                                      ? Text(
+                                          'Não matriculado em nenhuma disciplina',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        )
+                                      : Wrap(
+                                          spacing: 8,
+                                          runSpacing: 8,
+                                          children: disciplinas.map<Widget>((
+                                            disc,
+                                          ) {
+                                            Color chipColor;
+                                            try {
+                                              final corString =
+                                                  disc['cor'] ?? '#2196F3';
+                                              chipColor = Color(
+                                                int.parse(
+                                                  corString.replaceFirst(
+                                                    '#',
+                                                    '0xFF',
+                                                  ),
+                                                ),
+                                              );
+                                            } catch (e) {
+                                              chipColor = Colors.blue;
+                                            }
+
+                                            return Chip(
+                                              label: Text(
+                                                disc['nome'] ?? 'Sem nome',
+                                              ),
+                                              backgroundColor: chipColor
+                                                  .withValues(alpha: 0.2),
+                                            );
+                                          }).toList(),
+                                        ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      )
-                    : _alunosFiltrados.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.person_off, size: 48, color: Colors.grey),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _searchController.text.isEmpty
-                                      ? 'Nenhum aluno cadastrado'
-                                      : 'Nenhum aluno encontrado',
-                                  style: TextStyle(color: Colors.grey[600]),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: _alunosFiltrados.length,
-                            itemBuilder: (context, index) {
-                              final aluno = _alunosFiltrados[index];
-                              final disciplinas = aluno['disciplinas'] as List? ?? [];
-                              
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: ExpansionTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Colors.orange,
-                                    child: Text(
-                                      (aluno['nome'] ?? '?')[0].toUpperCase(),
-                                      style: const TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                  title: Text(aluno['nome'] ?? 'Sem nome'),
-                                  subtitle: Text('RA: ${aluno['ra'] ?? 'N/A'}'),
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(Icons.email, size: 16, color: Colors.grey[600]),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                aluno['email'] ?? 'N/A',
-                                                style: TextStyle(color: Colors.grey[600]),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 12),
-                                          const Divider(),
-                                          const SizedBox(height: 12),
-                                          const Text(
-                                            'Disciplinas:',
-                                            style: TextStyle(fontWeight: FontWeight.bold),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          disciplinas.isEmpty
-                                              ? Text(
-                                                  'Não matriculado em nenhuma disciplina',
-                                                  style: TextStyle(
-                                                    color: Colors.grey[600],
-                                                    fontStyle: FontStyle.italic,
-                                                  ),
-                                                )
-                                              : Wrap(
-                                                  spacing: 8,
-                                                  runSpacing: 8,
-                                                  children: disciplinas.map<Widget>((disc) {
-                                                    Color chipColor;
-                                                    try {
-                                                      final corString = disc['cor'] ?? '#2196F3';
-                                                      chipColor = Color(int.parse(
-                                                        corString.replaceFirst('#', '0xFF'),
-                                                      ));
-                                                    } catch (e) {
-                                                      chipColor = Colors.blue;
-                                                    }
-                                                    
-                                                    return Chip(
-                                                      label: Text(disc['nome'] ?? 'Sem nome'),
-                                                      backgroundColor: chipColor.withValues(alpha: 0.2),
-                                                    );
-                                                  }).toList(),
-                                                ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

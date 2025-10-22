@@ -4,6 +4,8 @@ import 'tela_disciplinas_aluno.dart';
 import 'tela_mensagens_aluno.dart';
 import '../autenticacao/tela_login.dart';
 import '../../services/api_service.dart';
+import '../../widgets/app_bar_user_actions.dart';
+import '../../widgets/drawer_user_header.dart';
 
 class TelaInicialAluno extends StatefulWidget {
   const TelaInicialAluno({super.key});
@@ -15,7 +17,7 @@ class TelaInicialAluno extends StatefulWidget {
 class _TelaInicialAlunoState extends State<TelaInicialAluno> {
   int _selectedIndex = 0;
   final ApiService _apiService = ApiService();
-  
+
   List<dynamic> _notas = [];
   bool _isLoadingNotas = false;
   String? _errorNotas;
@@ -39,7 +41,7 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
       }
 
       final notas = await _apiService.getNotasAluno(alunoId);
-      
+
       if (mounted) {
         setState(() {
           _notas = notas;
@@ -110,7 +112,10 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            Text('Erro ao carregar notas', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+            Text(
+              'Erro ao carregar notas',
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+            ),
             const SizedBox(height: 8),
             Text(_errorNotas!, style: TextStyle(color: Colors.grey[600])),
             const SizedBox(height: 16),
@@ -128,8 +133,8 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
     if (_notas.isNotEmpty) {
       double soma = 0.0;
       for (var nota in _notas) {
-        soma += (nota['nota'] is String) 
-            ? double.tryParse(nota['nota']) ?? 0.0 
+        soma += (nota['nota'] is String)
+            ? double.tryParse(nota['nota']) ?? 0.0
             : (nota['nota'] as num).toDouble();
       }
       mediaGeral = soma / _notas.length;
@@ -152,18 +157,12 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
         children: [
           const Text(
             'Minhas Notas',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Veja suas notas em todas as disciplinas',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
           Card(
@@ -172,11 +171,7 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
               padding: const EdgeInsets.all(20.0),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.grade,
-                    size: 48,
-                    color: Colors.blue,
-                  ),
+                  const Icon(Icons.grade, size: 48, color: Colors.blue),
                   const SizedBox(width: 20),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,10 +201,7 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
           const SizedBox(height: 24),
           const Text(
             'Notas por Disciplina',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           if (_notas.isEmpty)
@@ -218,9 +210,16 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.assignment_outlined, size: 64, color: Colors.grey),
+                    const Icon(
+                      Icons.assignment_outlined,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(height: 16),
-                    Text('Nenhuma nota cadastrada', style: TextStyle(fontSize: 18, color: Colors.grey[700])),
+                    Text(
+                      'Nenhuma nota cadastrada',
+                      style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+                    ),
                   ],
                 ),
               ),
@@ -232,22 +231,29 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
                 itemBuilder: (context, index) {
                   final disciplina = notasPorDisciplina.keys.elementAt(index);
                   final notasDisciplina = notasPorDisciplina[disciplina]!;
-                  
+
                   // Calcular média da disciplina
                   double mediaDisciplina = 0.0;
                   if (notasDisciplina.isNotEmpty) {
                     double soma = 0.0;
                     for (var nota in notasDisciplina) {
-                      soma += (nota['nota'] is String) 
-                          ? double.tryParse(nota['nota']) ?? 0.0 
+                      soma += (nota['nota'] is String)
+                          ? double.tryParse(nota['nota']) ?? 0.0
                           : (nota['nota'] as num).toDouble();
                     }
                     mediaDisciplina = soma / notasDisciplina.length;
                   }
-                  
-                  final colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.teal, Colors.pink];
+
+                  final colors = [
+                    Colors.blue,
+                    Colors.green,
+                    Colors.orange,
+                    Colors.purple,
+                    Colors.teal,
+                    Colors.pink,
+                  ];
                   final color = colors[index % colors.length];
-                  
+
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
                     child: ExpansionTile(
@@ -284,22 +290,26 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
                             children: notasDisciplina.map<Widget>((nota) {
-                              final notaValor = (nota['nota'] is String) 
-                                  ? double.tryParse(nota['nota']) ?? 0.0 
+                              final notaValor = (nota['nota'] is String)
+                                  ? double.tryParse(nota['nota']) ?? 0.0
                                   : (nota['nota'] as num).toDouble();
-                              
+
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
-                                            nota['atividade_titulo'] ?? 'Sem título',
-                                            style: const TextStyle(fontWeight: FontWeight.bold),
+                                            nota['atividade_titulo'] ??
+                                                'Sem título',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                         Container(
@@ -309,7 +319,9 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: color.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
                                           child: Text(
                                             notaValor.toStringAsFixed(1),
@@ -321,7 +333,10 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
                                         ),
                                       ],
                                     ),
-                                    if (nota['comentario'] != null && nota['comentario'].toString().isNotEmpty)
+                                    if (nota['comentario'] != null &&
+                                        nota['comentario']
+                                            .toString()
+                                            .isNotEmpty)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 4),
                                         child: Text(
@@ -358,102 +373,48 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
       appBar: AppBar(
         title: const Text(
           'Portal do Aluno',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
-        actions: isWideScreen ? [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      _apiService.currentUser?['nome'] ?? 'Aluno',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      'RA: ${_apiService.currentUser?['ra'] ?? ''}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ],
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        actions: isWideScreen
+            ? [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: AppBarUserActions(
+                    name: _apiService.currentUser?['nome'] ?? 'Aluno',
+                    subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
+                    onLogout: () async {
+                      final navigator = Navigator.of(context);
+                      await _apiService.logout();
+                      if (!mounted) return;
+                      navigator.pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const TelaLogin(),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                  ),
                 ),
-                const SizedBox(width: 12),
-                const CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, color: Colors.orange),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: () async {
-                    await _apiService.logout();
-                    if (!mounted) return;
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const TelaLogin()),
-                      (route) => false,
-                    );
-                  },
-                  tooltip: 'Sair',
-                ),
-              ],
-            ),
-          ),
-        ] : null,
+              ]
+            : null,
       ),
       drawer: !isWideScreen
           ? Drawer(
               child: Column(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-                    decoration: const BoxDecoration(color: Colors.orange),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.white,
-                          child: Icon(Icons.person, size: 35, color: Colors.orange),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _apiService.currentUser?['nome'] ?? 'Aluno',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'RA: ${_apiService.currentUser?['ra'] ?? ''}',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
+                  DrawerUserHeader(
+                    name: _apiService.currentUser?['nome'] ?? 'Aluno',
+                    subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
                   ),
                   ...List.generate(
                     _destinations.length,
                     (index) => ListTile(
                       selected: _selectedIndex == index,
-                      selectedTileColor: Colors.orange.withValues(alpha: 0.1),
+                      selectedTileColor: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.1),
                       leading: _selectedIndex == index
                           ? _destinations[index].selectedIcon
                           : _destinations[index].icon,
@@ -470,10 +431,13 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
                     leading: const Icon(Icons.logout),
                     title: const Text('Sair'),
                     onTap: () async {
+                      final navigator = Navigator.of(context);
                       await _apiService.logout();
                       if (!mounted) return;
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (context) => const TelaLogin()),
+                      navigator.pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const TelaLogin(),
+                        ),
                         (route) => false,
                       );
                     },
@@ -488,11 +452,25 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
             NavigationRail(
               extended: true,
               selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+              onDestinationSelected: (index) =>
+                  setState(() => _selectedIndex = index),
               backgroundColor: Colors.grey[100],
-              selectedIconTheme: const IconThemeData(color: Colors.orange),
-              selectedLabelTextStyle: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
-              destinations: _destinations.map((dest) => NavigationRailDestination(icon: dest.icon, selectedIcon: dest.selectedIcon, label: Text(dest.label))).toList(),
+              selectedIconTheme: IconThemeData(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              selectedLabelTextStyle: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+              destinations: _destinations
+                  .map(
+                    (dest) => NavigationRailDestination(
+                      icon: dest.icon,
+                      selectedIcon: dest.selectedIcon,
+                      label: Text(dest.label),
+                    ),
+                  )
+                  .toList(),
             ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(child: _getCurrentScreen()),

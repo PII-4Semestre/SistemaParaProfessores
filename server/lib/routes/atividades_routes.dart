@@ -6,7 +6,7 @@ import 'package:sistema_professores_server/database/database.dart';
 class AtividadesRoutes {
   Router get router {
     final router = Router();
-    
+
     // GET /api/atividades/disciplina/<id> - Atividades de uma disciplina
     router.get('/disciplina/<id>', (Request request, String id) async {
       try {
@@ -15,18 +15,22 @@ class AtividadesRoutes {
           'SELECT id, disciplina_id, titulo, descricao, peso, data_entrega, criado_em, atualizado_em FROM atividades WHERE disciplina_id = \$1 ORDER BY data_entrega',
           parameters: [int.parse(id)],
         );
-        
-        final atividades = result.map((row) => {
-          'id': row[0],
-          'disciplina_id': row[1],
-          'titulo': row[2],
-          'descricao': row[3],
-          'peso': row[4],
-          'data_entrega': row[5]?.toString(),
-          'criado_em': row[6]?.toString(),
-          'atualizado_em': row[7]?.toString(),
-        }).toList();
-        
+
+        final atividades = result
+            .map(
+              (row) => {
+                'id': row[0],
+                'disciplina_id': row[1],
+                'titulo': row[2],
+                'descricao': row[3],
+                'peso': row[4],
+                'data_entrega': row[5]?.toString(),
+                'criado_em': row[6]?.toString(),
+                'atualizado_em': row[7]?.toString(),
+              },
+            )
+            .toList();
+
         return Response.ok(
           json.encode(atividades),
           headers: {'Content-Type': 'application/json'},
@@ -37,12 +41,12 @@ class AtividadesRoutes {
         );
       }
     });
-    
+
     // POST /api/atividades - Criar nova atividade
     router.post('/', (Request request) async {
       try {
         final payload = json.decode(await request.readAsString());
-        
+
         final db = await Database.getInstance();
         final result = await db.connection.execute(
           '''
@@ -58,7 +62,7 @@ class AtividadesRoutes {
             payload['data_entrega'],
           ],
         );
-        
+
         final row = result.first;
         return Response.ok(
           json.encode({
@@ -79,12 +83,12 @@ class AtividadesRoutes {
         );
       }
     });
-    
+
     // PUT /api/atividades/<id> - Atualizar atividade
     router.put('/<id>', (Request request, String id) async {
       try {
         final payload = json.decode(await request.readAsString());
-        
+
         final db = await Database.getInstance();
         final result = await db.connection.execute(
           '''
@@ -101,13 +105,13 @@ class AtividadesRoutes {
             int.parse(id),
           ],
         );
-        
+
         if (result.isEmpty) {
           return Response.notFound(
             json.encode({'error': 'Atividade não encontrada'}),
           );
         }
-        
+
         final row = result.first;
         return Response.ok(
           json.encode({
@@ -128,7 +132,7 @@ class AtividadesRoutes {
         );
       }
     });
-    
+
     // DELETE /api/atividades/<id> - Deletar atividade
     router.delete('/<id>', (Request request, String id) async {
       try {
@@ -137,13 +141,13 @@ class AtividadesRoutes {
           'DELETE FROM atividades WHERE id = \$1 RETURNING id',
           parameters: [int.parse(id)],
         );
-        
+
         if (result.isEmpty) {
           return Response.notFound(
             json.encode({'error': 'Atividade não encontrada'}),
           );
         }
-        
+
         return Response.ok(
           json.encode({'message': 'Atividade deletada com sucesso'}),
           headers: {'Content-Type': 'application/json'},
@@ -154,7 +158,7 @@ class AtividadesRoutes {
         );
       }
     });
-    
+
     return router;
   }
 }

@@ -12,12 +12,7 @@ class Usuario {
   });
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'nome': nome,
-      'email': email,
-      'tipo': tipo.toString(),
-    };
+    return {'id': id, 'nome': nome, 'email': email, 'tipo': tipo.toString()};
   }
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
@@ -25,14 +20,9 @@ class Usuario {
       id: json['id'],
       nome: json['nome'],
       email: json['email'],
-      tipo: TipoUsuario.values.firstWhere(
-        (e) => e.toString() == json['tipo'],
-      ),
+      tipo: TipoUsuario.values.firstWhere((e) => e.toString() == json['tipo']),
     );
   }
 }
 
-enum TipoUsuario {
-  professor,
-  aluno,
-}
+enum TipoUsuario { professor, aluno }

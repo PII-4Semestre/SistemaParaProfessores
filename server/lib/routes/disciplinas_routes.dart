@@ -6,7 +6,7 @@ import 'package:sistema_professores_server/database/database.dart';
 class DisciplinasRoutes {
   Router get router {
     final router = Router();
-    
+
     // GET /api/disciplinas - Listar todas as disciplinas
     router.get('/', (Request request) async {
       try {
@@ -14,17 +14,21 @@ class DisciplinasRoutes {
         final result = await db.connection.execute(
           'SELECT id, nome, descricao, professor_id, cor, criado_em, atualizado_em FROM disciplinas ORDER BY nome',
         );
-        
-        final disciplinas = result.map((row) => {
-          'id': row[0],
-          'nome': row[1],
-          'descricao': row[2],
-          'professor_id': row[3],
-          'cor': row[4],
-          'criado_em': row[5]?.toString(),
-          'atualizado_em': row[6]?.toString(),
-        }).toList();
-        
+
+        final disciplinas = result
+            .map(
+              (row) => {
+                'id': row[0],
+                'nome': row[1],
+                'descricao': row[2],
+                'professor_id': row[3],
+                'cor': row[4],
+                'criado_em': row[5]?.toString(),
+                'atualizado_em': row[6]?.toString(),
+              },
+            )
+            .toList();
+
         return Response.ok(
           json.encode(disciplinas),
           headers: {'Content-Type': 'application/json'},
@@ -35,7 +39,7 @@ class DisciplinasRoutes {
         );
       }
     });
-    
+
     // GET /api/disciplinas/professor/<id> - Disciplinas de um professor
     router.get('/professor/<id>', (Request request, String id) async {
       try {
@@ -44,17 +48,21 @@ class DisciplinasRoutes {
           'SELECT id, nome, descricao, professor_id, cor, criado_em, atualizado_em FROM disciplinas WHERE professor_id = \$1 ORDER BY nome',
           parameters: [int.parse(id)],
         );
-        
-        final disciplinas = result.map((row) => {
-          'id': row[0],
-          'nome': row[1],
-          'descricao': row[2],
-          'professor_id': row[3],
-          'cor': row[4],
-          'criado_em': row[5]?.toString(),
-          'atualizado_em': row[6]?.toString(),
-        }).toList();
-        
+
+        final disciplinas = result
+            .map(
+              (row) => {
+                'id': row[0],
+                'nome': row[1],
+                'descricao': row[2],
+                'professor_id': row[3],
+                'cor': row[4],
+                'criado_em': row[5]?.toString(),
+                'atualizado_em': row[6]?.toString(),
+              },
+            )
+            .toList();
+
         return Response.ok(
           json.encode(disciplinas),
           headers: {'Content-Type': 'application/json'},
@@ -65,12 +73,12 @@ class DisciplinasRoutes {
         );
       }
     });
-    
+
     // POST /api/disciplinas - Criar nova disciplina
     router.post('/', (Request request) async {
       try {
         final payload = json.decode(await request.readAsString());
-        
+
         final db = await Database.getInstance();
         final result = await db.connection.execute(
           '''
@@ -85,7 +93,7 @@ class DisciplinasRoutes {
             payload['cor'] ?? '#FF9800',
           ],
         );
-        
+
         final row = result.first;
         return Response.ok(
           json.encode({
@@ -105,12 +113,12 @@ class DisciplinasRoutes {
         );
       }
     });
-    
+
     // PUT /api/disciplinas/<id> - Atualizar disciplina
     router.put('/<id>', (Request request, String id) async {
       try {
         final payload = json.decode(await request.readAsString());
-        
+
         final db = await Database.getInstance();
         final result = await db.connection.execute(
           '''
@@ -126,11 +134,13 @@ class DisciplinasRoutes {
             int.parse(id),
           ],
         );
-        
+
         if (result.isEmpty) {
-          return Response.notFound(json.encode({'error': 'Disciplina não encontrada'}));
+          return Response.notFound(
+            json.encode({'error': 'Disciplina não encontrada'}),
+          );
         }
-        
+
         final row = result.first;
         return Response.ok(
           json.encode({
@@ -150,7 +160,7 @@ class DisciplinasRoutes {
         );
       }
     });
-    
+
     // DELETE /api/disciplinas/<id> - Deletar disciplina
     router.delete('/<id>', (Request request, String id) async {
       try {
@@ -159,7 +169,7 @@ class DisciplinasRoutes {
           'DELETE FROM disciplinas WHERE id = \$1',
           parameters: [int.parse(id)],
         );
-        
+
         return Response.ok(
           json.encode({'message': 'Disciplina deletada com sucesso'}),
           headers: {'Content-Type': 'application/json'},
@@ -170,7 +180,7 @@ class DisciplinasRoutes {
         );
       }
     });
-    
+
     return router;
   }
 }
