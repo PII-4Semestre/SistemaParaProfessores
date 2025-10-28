@@ -5,7 +5,7 @@ import 'tela_mensagens_aluno.dart';
 import '../autenticacao/tela_login.dart';
 import '../../services/api_service.dart';
 import '../../widgets/app_bar_user_actions.dart';
-import '../../widgets/drawer_user_header.dart';
+import '../../widgets/side_menu.dart';
 
 class TelaInicialAluno extends StatefulWidget {
   const TelaInicialAluno({super.key});
@@ -402,75 +402,52 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
       ),
       drawer: !isWideScreen
           ? Drawer(
-              child: Column(
-                children: [
-                  DrawerUserHeader(
-                    name: _apiService.currentUser?['nome'] ?? 'Aluno',
-                    subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
-                  ),
-                  ...List.generate(
-                    _destinations.length,
-                    (index) => ListTile(
-                      selected: _selectedIndex == index,
-                      selectedTileColor: Theme.of(
-                        context,
-                      ).colorScheme.primary.withValues(alpha: 0.1),
-                      leading: _selectedIndex == index
-                          ? _destinations[index].selectedIcon
-                          : _destinations[index].icon,
-                      title: Text(_destinations[index].label),
-                      onTap: () {
-                        setState(() => _selectedIndex = index);
-                        Navigator.pop(context);
-                      },
+              child: SideMenu(
+                name: _apiService.currentUser?['nome'] ?? 'Aluno',
+                subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
+                destinations: _destinations,
+                selectedIndex: _selectedIndex,
+                onSelect: (index) {
+                  setState(() => _selectedIndex = index);
+                  Navigator.pop(context);
+                },
+                onLogout: () async {
+                  final navigator = Navigator.of(context);
+                  await _apiService.logout();
+                  if (!mounted) return;
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const TelaLogin(),
                     ),
-                  ),
-                  const Spacer(),
-                  const Divider(),
-                  ListTile(
-                    leading: const Icon(Icons.logout),
-                    title: const Text('Sair'),
-                    onTap: () async {
-                      final navigator = Navigator.of(context);
-                      await _apiService.logout();
-                      if (!mounted) return;
-                      navigator.pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => const TelaLogin(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                  ),
-                ],
+                    (route) => false,
+                  );
+                },
               ),
             )
           : null,
       body: Row(
         children: [
           if (isWideScreen)
-            NavigationRail(
-              extended: true,
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) =>
-                  setState(() => _selectedIndex = index),
-              backgroundColor: Colors.grey[100],
-              selectedIconTheme: IconThemeData(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              selectedLabelTextStyle: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
-              destinations: _destinations
-                  .map(
-                    (dest) => NavigationRailDestination(
-                      icon: dest.icon,
-                      selectedIcon: dest.selectedIcon,
-                      label: Text(dest.label),
+            SizedBox(
+              width: 300,
+              child: SideMenu(
+                name: _apiService.currentUser?['nome'] ?? 'Aluno',
+                subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
+                destinations: _destinations,
+                selectedIndex: _selectedIndex,
+                onSelect: (index) => setState(() => _selectedIndex = index),
+                onLogout: () async {
+                  final navigator = Navigator.of(context);
+                  await _apiService.logout();
+                  if (!mounted) return;
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const TelaLogin(),
                     ),
-                  )
-                  .toList(),
+                    (route) => false,
+                  );
+                },
+              ),
             ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(child: _getCurrentScreen()),

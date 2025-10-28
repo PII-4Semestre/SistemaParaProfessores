@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/autenticacao/tela_login.dart';
 import 'services/api_service.dart';
+import 'services/theme_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,133 +14,152 @@ class PoliEducaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'PoliEduca',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.orange,
+    // React to theme changes across the app.
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.instance.themeMode,
+      builder: (context, themeMode, _) {
+        final lightPrimary = const Color(0xFFF28C1B);
+        final darkPrimary = const Color(0xFF1CB3C2);
+
+        final lightScheme = ColorScheme.fromSeed(
+          seedColor: lightPrimary,
           brightness: Brightness.light,
-        ),
-        // Modern card styling
-        cardTheme: CardThemeData(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        // Modern elevated button styling
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        // Modern input decoration
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.grey.shade50,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.orange, width: 2),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-        ),
-        // Modern app bar styling
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          centerTitle: false,
-          titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        // Typography improvements
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-          displayMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          displaySmall: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          headlineLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-          headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-          headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-          bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.orange,
+        ).copyWith(
+          primary: lightPrimary,
+          surface: Colors.white,
+          background: Colors.white,
+        );
+
+        final darkScheme = ColorScheme.fromSeed(
+          seedColor: darkPrimary,
           brightness: Brightness.dark,
-        ),
-        cardTheme: CardThemeData(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+        ).copyWith(
+          primary: darkPrimary,
+          surface: const Color.fromARGB(255, 46, 46, 46),
+          background: Colors.black,
+        );
+
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'PoliEduca',
+          themeMode: themeMode,
+          theme: ThemeData(
+            useMaterial3: true,
+            colorScheme: lightScheme,
+            scaffoldBackgroundColor: Colors.white,
+            cardTheme: CardThemeData(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: Colors.grey.shade50,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: lightPrimary, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+            ),
+            appBarTheme: const AppBarTheme(
+              elevation: 0,
+              centerTitle: false,
+              titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            textTheme: const TextTheme(
+              displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              displayMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              displaySmall: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              headlineLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+              bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
             ),
           ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.grey.shade900,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade700),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            colorScheme: darkScheme,
+            scaffoldBackgroundColor: const Color.fromARGB(255, 22, 22, 22),
+            cardTheme: CardThemeData(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              filled: true,
+              fillColor: Colors.grey.shade900,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade700),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade700),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: darkPrimary, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
+            ),
+            appBarTheme: const AppBarTheme(
+              elevation: 0,
+              centerTitle: false,
+              titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            textTheme: const TextTheme(
+              displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              displayMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              displaySmall: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              headlineLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+              headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
+              bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+            ),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade700),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.orange, width: 2),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-        ),
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          centerTitle: false,
-          titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-          displayMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          displaySmall: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          headlineLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-          headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-          headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-          titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-          bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
-        ),
-      ),
-      home: const TelaLogin(),
+          home: const TelaLogin(),
+        );
+      },
     );
   }
 }
