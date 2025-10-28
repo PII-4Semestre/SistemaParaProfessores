@@ -132,6 +132,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                 : _calcularMediaGeral().toStringAsFixed(1),
                             icon: Icons.grade,
                             color: Colors.blue,
+                            onTap: () => widget.onNavigateToTab?.call(3),
                           ),
                           const SizedBox(height: 12),
                           _buildStatCard(
@@ -139,6 +140,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                             value: '${_disciplinas.length}',
                             icon: Icons.book,
                             color: Colors.green,
+                            onTap: () => widget.onNavigateToTab?.call(1),
                           ),
                           const SizedBox(height: 12),
                           _buildStatCard(
@@ -146,6 +148,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                             value: '0',
                             icon: Icons.mail,
                             color: Colors.purple,
+                            onTap: () => widget.onNavigateToTab?.call(2),
                           ),
                         ],
                       )
@@ -159,6 +162,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                   : _calcularMediaGeral().toStringAsFixed(1),
                               icon: Icons.grade,
                               color: Colors.blue,
+                              onTap: () => widget.onNavigateToTab?.call(3),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -168,6 +172,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                               value: '${_disciplinas.length}',
                               icon: Icons.book,
                               color: Colors.green,
+                              onTap: () => widget.onNavigateToTab?.call(1),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -177,6 +182,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                               value: '0',
                               icon: Icons.mail,
                               color: Colors.purple,
+                              onTap: () => widget.onNavigateToTab?.call(2),
                             ),
                           ),
                         ],
@@ -184,6 +190,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
               },
             ),
             const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
             // Seção de atividades recentes com dados reais
             const Text(
               'Notas Recentes',
@@ -266,6 +274,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
               ),
 
             const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
 
             // Seção de disciplinas com dados reais
             Row(
@@ -490,11 +500,12 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
     required String value,
     required IconData icon,
     required Color color,
+    VoidCallback? onTap,
   }) {
-    return TweenAnimationBuilder(
+    return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 600),
       tween: Tween<double>(begin: 0, end: 1),
-      builder: (context, double animValue, child) {
+      builder: (context, animValue, child) {
         return Transform.scale(
           scale: 0.8 + (animValue * 0.2),
           child: Opacity(opacity: animValue, child: child),
@@ -502,63 +513,68 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
       },
       child: Card(
         elevation: 0,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color.withValues(alpha: 0.1),
-                color.withValues(alpha: 0.05),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(icon, color: color, size: 24),
-                  ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withValues(alpha: 0.1),
+                  color.withValues(alpha: 0.05),
                 ],
               ),
-              const SizedBox(height: 16),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                    letterSpacing: -1,
+              borderRadius: BorderRadius.circular(16),
+              border:
+                  Border.all(color: color.withValues(alpha: 0.2), width: 1),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(icon, color: color, size: 24),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                      letterSpacing: -1,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

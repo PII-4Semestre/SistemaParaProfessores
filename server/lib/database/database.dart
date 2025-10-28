@@ -33,7 +33,7 @@ class Database {
       settings: ConnectionSettings(sslMode: SslMode.disable, encoding: utf8),
     );
 
-  developer.log('✅ Conectado ao PostgreSQL', name: 'database');
+    developer.log('✅ Conectado ao PostgreSQL', name: 'database');
   }
 
   Connection get connection => _connection;

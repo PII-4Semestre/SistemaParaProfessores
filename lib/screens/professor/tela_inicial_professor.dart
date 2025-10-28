@@ -112,9 +112,7 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
                   await _apiService.logout();
                   if (!mounted) return;
                   navigator.pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const TelaLogin(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const TelaLogin()),
                     (route) => false,
                   );
                 },
@@ -137,9 +135,7 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
                   await _apiService.logout();
                   if (!mounted) return;
                   navigator.pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const TelaLogin(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const TelaLogin()),
                     (route) => false,
                   );
                 },

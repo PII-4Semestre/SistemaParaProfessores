@@ -21,23 +21,25 @@ class PoliEducaApp extends StatelessWidget {
         final lightPrimary = const Color(0xFFF28C1B);
         final darkPrimary = const Color(0xFF1CB3C2);
 
-        final lightScheme = ColorScheme.fromSeed(
-          seedColor: lightPrimary,
-          brightness: Brightness.light,
-        ).copyWith(
-          primary: lightPrimary,
-          surface: Colors.white,
-          background: Colors.white,
-        );
+        final lightScheme =
+            ColorScheme.fromSeed(
+              seedColor: lightPrimary,
+              brightness: Brightness.light,
+            ).copyWith(
+              primary: lightPrimary,
+              surface: Colors.white,
+              background: Colors.white,
+            );
 
-        final darkScheme = ColorScheme.fromSeed(
-          seedColor: darkPrimary,
-          brightness: Brightness.dark,
-        ).copyWith(
-          primary: darkPrimary,
-          surface: const Color.fromARGB(255, 46, 46, 46),
-          background: Colors.black,
-        );
+        final darkScheme =
+            ColorScheme.fromSeed(
+              seedColor: darkPrimary,
+              brightness: Brightness.dark,
+            ).copyWith(
+              primary: darkPrimary,
+              surface: const Color.fromARGB(255, 46, 46, 46),
+              background: Colors.black,
+            );
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -56,7 +58,10 @@ class PoliEducaApp extends StatelessWidget {
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -85,19 +90,43 @@ class PoliEducaApp extends StatelessWidget {
             appBarTheme: const AppBarTheme(
               elevation: 0,
               centerTitle: false,
-              titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              titleTextStyle: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             textTheme: const TextTheme(
-              displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              displayMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              displaySmall: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              headlineLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-              headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-              headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              displayLarge: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+              displayMedium: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+              displaySmall: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              headlineLarge: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+              ),
+              headlineMedium: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+              headlineSmall: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
               titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-              bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+              bodyMedium: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+              ),
             ),
           ),
           darkTheme: ThemeData(
@@ -113,7 +142,10 @@ class PoliEducaApp extends StatelessWidget {
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -142,19 +174,43 @@ class PoliEducaApp extends StatelessWidget {
             appBarTheme: const AppBarTheme(
               elevation: 0,
               centerTitle: false,
-              titleTextStyle: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              titleTextStyle: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             textTheme: const TextTheme(
-              displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              displayMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              displaySmall: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              headlineLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-              headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-              headlineSmall: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              displayLarge: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+              displayMedium: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+              displaySmall: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+              headlineLarge: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+              ),
+              headlineMedium: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+              headlineSmall: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
               titleLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               titleMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               bodyLarge: TextStyle(fontSize: 16, fontWeight: FontWeight.normal),
-              bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+              bodyMedium: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+              ),
             ),
           ),
           home: const TelaLogin(),

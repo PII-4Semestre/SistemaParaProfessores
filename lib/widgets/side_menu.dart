@@ -25,7 +25,8 @@ class SideMenu extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
-      color: Theme.of(context).drawerTheme.backgroundColor ??
+      color:
+          Theme.of(context).drawerTheme.backgroundColor ??
           Theme.of(context).colorScheme.surface,
       child: SafeArea(
         bottom: true,
@@ -52,11 +53,14 @@ class SideMenu extends StatelessWidget {
                 builder: (context, mode, _) {
                   final isDark = mode == ThemeMode.dark;
                   return SwitchListTile(
-                    secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
+                    secondary: Icon(
+                      isDark ? Icons.dark_mode : Icons.light_mode,
+                    ),
                     title: const Text('Tema escuro'),
                     value: isDark,
-                    onChanged: (v) => ThemeController.instance
-                        .set(v ? ThemeMode.dark : ThemeMode.light),
+                    onChanged: (v) => ThemeController.instance.set(
+                      v ? ThemeMode.dark : ThemeMode.light,
+                    ),
                   );
                 },
               ),

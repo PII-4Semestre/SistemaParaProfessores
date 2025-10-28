@@ -993,9 +993,7 @@ class _TelaDetalhesDisciplinaProfessorState
                 } catch (e) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(this.context).showSnackBar(
-                    SnackBar(
-                      content: Text('Erro ao atualizar atividade: $e'),
-                    ),
+                    SnackBar(content: Text('Erro ao atualizar atividade: $e')),
                   );
                 }
               },
@@ -1165,9 +1163,7 @@ class _TelaDetalhesDisciplinaProfessorState
                 Navigator.pop(context);
                 if (!mounted) return;
                 ScaffoldMessenger.of(this.context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Aluno removido com sucesso!'),
-                  ),
+                  const SnackBar(content: Text('Aluno removido com sucesso!')),
                 );
                 _loadAlunos(); // Reload students list
               } catch (e) {

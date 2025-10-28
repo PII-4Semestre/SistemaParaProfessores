@@ -24,15 +24,9 @@ class _TelaDisciplinasProfessorState extends State<TelaDisciplinasProfessor> {
 
   String _colorToHexRGB(Color c) {
     // Use non-deprecated r/g/b (0..1) components and convert to 0..255 ints
-    final r = ((c.r * 255.0).round() & 0xff)
-        .toRadixString(16)
-        .padLeft(2, '0');
-    final g = ((c.g * 255.0).round() & 0xff)
-        .toRadixString(16)
-        .padLeft(2, '0');
-    final b = ((c.b * 255.0).round() & 0xff)
-        .toRadixString(16)
-        .padLeft(2, '0');
+    final r = ((c.r * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+    final g = ((c.g * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
+    final b = ((c.b * 255.0).round() & 0xff).toRadixString(16).padLeft(2, '0');
     return '#${(r + g + b).toUpperCase()}';
   }
 
