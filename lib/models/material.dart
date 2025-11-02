@@ -38,9 +38,7 @@ class MaterialDidatico {
       titulo: json['titulo'],
       descricao: json['descricao'],
       disciplinaId: json['disciplinaId'],
-      tipo: TipoMaterial.values.firstWhere(
-        (e) => e.toString() == json['tipo'],
-      ),
+      tipo: TipoMaterial.values.firstWhere((e) => e.toString() == json['tipo']),
       url: json['url'],
       tamanho: json['tamanho'].toDouble(),
       dataUpload: DateTime.parse(json['dataUpload']),
@@ -70,10 +68,4 @@ class MaterialDidatico {
   }
 }
 
-enum TipoMaterial {
-  pdf,
-  imagem,
-  video,
-  documento,
-  link,
-}
+enum TipoMaterial { pdf, imagem, video, documento, link }

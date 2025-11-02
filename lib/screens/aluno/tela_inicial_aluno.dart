@@ -3,6 +3,9 @@ import 'tela_visao_geral_aluno.dart';
 import 'tela_disciplinas_aluno.dart';
 import 'tela_mensagens_aluno.dart';
 import '../autenticacao/tela_login.dart';
+import '../../services/api_service.dart';
+import '../../widgets/app_bar_user_actions.dart';
+import '../../widgets/side_menu.dart';
 
 class TelaInicialAluno extends StatefulWidget {
   const TelaInicialAluno({super.key});
@@ -13,6 +16,47 @@ class TelaInicialAluno extends StatefulWidget {
 
 class _TelaInicialAlunoState extends State<TelaInicialAluno> {
   int _selectedIndex = 0;
+  final ApiService _apiService = ApiService();
+
+  List<dynamic> _notas = [];
+  bool _isLoadingNotas = false;
+  String? _errorNotas;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotas();
+  }
+
+  Future<void> _loadNotas() async {
+    setState(() {
+      _isLoadingNotas = true;
+      _errorNotas = null;
+    });
+
+    try {
+      final alunoId = _apiService.currentUser?['id'];
+      if (alunoId == null) {
+        throw Exception('Aluno ID não encontrado');
+      }
+
+      final notas = await _apiService.getNotasAluno(alunoId);
+
+      if (mounted) {
+        setState(() {
+          _notas = notas;
+          _isLoadingNotas = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorNotas = e.toString();
+          _isLoadingNotas = false;
+        });
+      }
+    }
+  }
 
   final List<NavigationDestination> _destinations = const [
     NavigationDestination(
@@ -40,7 +84,11 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
   Widget _getCurrentScreen() {
     switch (_selectedIndex) {
       case 0:
-        return const TelaVisaoGeralAluno();
+        return TelaVisaoGeralAluno(
+          onNavigateToTab: (index) {
+            setState(() => _selectedIndex = index);
+          },
+        );
       case 1:
         return const TelaDisciplinasAluno();
       case 2:
@@ -53,6 +101,55 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
   }
 
   Widget _buildNotasScreen() {
+    if (_isLoadingNotas) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorNotas != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              'Erro ao carregar notas',
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+            ),
+            const SizedBox(height: 8),
+            Text(_errorNotas!, style: TextStyle(color: Colors.grey[600])),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadNotas,
+              child: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Calcular média geral
+    double mediaGeral = 0.0;
+    if (_notas.isNotEmpty) {
+      double soma = 0.0;
+      for (var nota in _notas) {
+        soma += (nota['nota'] is String)
+            ? double.tryParse(nota['nota']) ?? 0.0
+            : (nota['nota'] as num).toDouble();
+      }
+      mediaGeral = soma / _notas.length;
+    }
+
+    // Agrupar notas por disciplina
+    Map<String, List<dynamic>> notasPorDisciplina = {};
+    for (var nota in _notas) {
+      String disciplina = nota['disciplina_nome'] ?? 'Sem disciplina';
+      if (!notasPorDisciplina.containsKey(disciplina)) {
+        notasPorDisciplina[disciplina] = [];
+      }
+      notasPorDisciplina[disciplina]!.add(nota);
+    }
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -60,18 +157,12 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
         children: [
           const Text(
             'Minhas Notas',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Veja suas notas em todas as disciplinas',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
           Card(
@@ -80,11 +171,7 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
               padding: const EdgeInsets.all(20.0),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.grade,
-                    size: 48,
-                    color: Colors.blue,
-                  ),
+                  const Icon(Icons.grade, size: 48, color: Colors.blue),
                   const SizedBox(width: 20),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,8 +185,8 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '8.5',
-                        style: TextStyle(
+                        _notas.isEmpty ? '-' : mediaGeral.toStringAsFixed(1),
+                        style: const TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
                           color: Colors.blue,
@@ -114,100 +201,165 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
           const SizedBox(height: 24),
           const Text(
             'Notas por Disciplina',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: 4,
-              itemBuilder: (context, index) {
-                final colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple];
-                final media = 7.0 + (index * 0.5);
-                
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ExpansionTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: colors[index].withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(Icons.book, color: colors[index]),
+          if (_notas.isEmpty)
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.assignment_outlined,
+                      size: 64,
+                      color: Colors.grey,
                     ),
-                    title: Text('Disciplina ${index + 1}'),
-                    subtitle: Text('Prof. Silva'),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colors[index].withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        media.toStringAsFixed(1),
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: colors[index],
+                    const SizedBox(height: 16),
+                    Text(
+                      'Nenhuma nota cadastrada',
+                      style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.builder(
+                itemCount: notasPorDisciplina.length,
+                itemBuilder: (context, index) {
+                  final disciplina = notasPorDisciplina.keys.elementAt(index);
+                  final notasDisciplina = notasPorDisciplina[disciplina]!;
+
+                  // Calcular média da disciplina
+                  double mediaDisciplina = 0.0;
+                  if (notasDisciplina.isNotEmpty) {
+                    double soma = 0.0;
+                    for (var nota in notasDisciplina) {
+                      soma += (nota['nota'] is String)
+                          ? double.tryParse(nota['nota']) ?? 0.0
+                          : (nota['nota'] as num).toDouble();
+                    }
+                    mediaDisciplina = soma / notasDisciplina.length;
+                  }
+
+                  final colors = [
+                    Colors.blue,
+                    Colors.green,
+                    Colors.orange,
+                    Colors.purple,
+                    Colors.teal,
+                    Colors.pink,
+                  ];
+                  final color = colors[index % colors.length];
+
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ExpansionTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
                         ),
+                        child: Icon(Icons.book, color: color),
                       ),
-                    ),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: List.generate(
-                            3,
-                            (i) => Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('Atividade ${i + 1}'),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Peso: ${i + 1}',
-                                        style: TextStyle(color: Colors.grey[600]),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: colors[index].withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        child: Text(
-                                          (7.0 + i * 0.3).toStringAsFixed(1),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: colors[index],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
+                      title: Text(disciplina),
+                      subtitle: Text('${notasDisciplina.length} atividade(s)'),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          mediaDisciplina.toStringAsFixed(1),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: color,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: notasDisciplina.map<Widget>((nota) {
+                              final notaValor = (nota['nota'] is String)
+                                  ? double.tryParse(nota['nota']) ?? 0.0
+                                  : (nota['nota'] as num).toDouble();
+
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            nota['atividade_titulo'] ??
+                                                'Sem título',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: color.withValues(alpha: 0.1),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            notaValor.toStringAsFixed(1),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: color,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (nota['comentario'] != null &&
+                                        nota['comentario']
+                                            .toString()
+                                            .isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Text(
+                                          'Comentário: ${nota['comentario']}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -221,122 +373,77 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
       appBar: AppBar(
         title: const Text(
           'Portal do Aluno',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'João da Silva',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      'RA: 24.00304-2',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                  ],
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        actions: isWideScreen
+            ? [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: AppBarUserActions(
+                    name: _apiService.currentUser?['nome'] ?? 'Aluno',
+                    subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
+                    onLogout: () async {
+                      final navigator = Navigator.of(context);
+                      await _apiService.logout();
+                      if (!mounted) return;
+                      navigator.pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const TelaLogin(),
+                        ),
+                        (route) => false,
+                      );
+                    },
+                  ),
                 ),
-                const SizedBox(width: 12),
-                const CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, color: Colors.orange),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: () {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const TelaLogin()),
-                      (route) => false,
-                    );
-                  },
-                  tooltip: 'Sair',
-                ),
-              ],
-            ),
-          ),
-        ],
+              ]
+            : null,
       ),
       drawer: !isWideScreen
           ? Drawer(
-              child: Column(
-                children: [
-                  DrawerHeader(
-                    decoration: const BoxDecoration(color: Colors.orange),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        const CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.white,
-                          child: Icon(Icons.person, size: 35, color: Colors.orange),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'João da Silva',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'RA: 24.00304-2',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ...List.generate(
-                    _destinations.length,
-                    (index) => ListTile(
-                      selected: _selectedIndex == index,
-                      selectedTileColor: Colors.orange.withValues(alpha: 0.1),
-                      leading: _selectedIndex == index
-                          ? _destinations[index].selectedIcon
-                          : _destinations[index].icon,
-                      title: Text(_destinations[index].label),
-                      onTap: () {
-                        setState(() => _selectedIndex = index);
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                ],
+              child: SideMenu(
+                name: _apiService.currentUser?['nome'] ?? 'Aluno',
+                subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
+                destinations: _destinations,
+                selectedIndex: _selectedIndex,
+                onSelect: (index) {
+                  setState(() => _selectedIndex = index);
+                  Navigator.pop(context);
+                },
+                onLogout: () async {
+                  final navigator = Navigator.of(context);
+                  await _apiService.logout();
+                  if (!mounted) return;
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const TelaLogin()),
+                    (route) => false,
+                  );
+                },
               ),
             )
           : null,
       body: Row(
         children: [
           if (isWideScreen)
-            NavigationRail(
-              extended: true,
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) => setState(() => _selectedIndex = index),
-              backgroundColor: Colors.grey[100],
-              selectedIconTheme: const IconThemeData(color: Colors.orange),
-              selectedLabelTextStyle: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
-              destinations: _destinations.map((dest) => NavigationRailDestination(icon: dest.icon, selectedIcon: dest.selectedIcon, label: Text(dest.label))).toList(),
+            SizedBox(
+              width: 300,
+              child: SideMenu(
+                name: _apiService.currentUser?['nome'] ?? 'Aluno',
+                subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
+                destinations: _destinations,
+                selectedIndex: _selectedIndex,
+                onSelect: (index) => setState(() => _selectedIndex = index),
+                onLogout: () async {
+                  final navigator = Navigator.of(context);
+                  await _apiService.logout();
+                  if (!mounted) return;
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const TelaLogin()),
+                    (route) => false,
+                  );
+                },
+              ),
             ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(child: _getCurrentScreen()),

@@ -3,7 +3,8 @@ class Aluno {
   final String nome;
   final String ra;
   final String email;
-  final List<String> disciplinaIds; // IDs das disciplinas em que está matriculado
+  final List<String>
+  disciplinaIds; // IDs das disciplinas em que está matriculado
 
   Aluno({
     required this.id,

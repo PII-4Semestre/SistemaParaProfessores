@@ -4,6 +4,8 @@ import 'tela_disciplinas_professor.dart';
 import 'tela_alunos_professor.dart';
 import 'tela_mensagens_professor.dart';
 import '../autenticacao/tela_login.dart';
+import '../../services/api_service.dart';
+import '../../widgets/side_menu.dart';
 
 class TelaInicialProfessor extends StatefulWidget {
   const TelaInicialProfessor({super.key});
@@ -14,6 +16,7 @@ class TelaInicialProfessor extends StatefulWidget {
 
 class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
   int _selectedIndex = 0;
+  final ApiService _apiService = ApiService();
 
   final List<NavigationDestination> _destinations = const [
     NavigationDestination(
@@ -41,7 +44,11 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
   Widget _getCurrentScreen() {
     switch (_selectedIndex) {
       case 0:
-        return const TelaVisaoGeralProfessor();
+        return TelaVisaoGeralProfessor(
+          onNavigateToTab: (index) {
+            setState(() => _selectedIndex = index);
+          },
+        );
       case 1:
         return const TelaDisciplinasProfessor();
       case 2:
@@ -58,89 +65,73 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
     final bool isWideScreen = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Portal do Professor', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const Text('Matheus Mattoso', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    Text('Professor', style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.9))),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                const CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.person, color: Colors.orange)),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.logout),
-                  onPressed: () {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const TelaLogin()),
-                      (route) => false,
-                    );
-                  },
-                  tooltip: 'Sair',
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
       drawer: !isWideScreen
           ? Drawer(
-              child: Column(
-                children: [
-                  DrawerHeader(
-                    decoration: const BoxDecoration(color: Colors.orange),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        const CircleAvatar(radius: 30, backgroundColor: Colors.white, child: Icon(Icons.person, size: 35, color: Colors.orange)),
-                        const SizedBox(height: 10),
-                        const Text('Matheus Mattoso', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                        Text('Professor', style: TextStyle(color: Colors.white.withValues(alpha: 0.9))),
-                      ],
-                    ),
-                  ),
-                  ...List.generate(
-                    _destinations.length,
-                    (index) => ListTile(
-                      selected: _selectedIndex == index,
-                      selectedTileColor: Colors.orange.withValues(alpha: 0.1),
-                      leading: _selectedIndex == index ? _destinations[index].selectedIcon : _destinations[index].icon,
-                      title: Text(_destinations[index].label),
-                      onTap: () {
-                        setState(() => _selectedIndex = index);
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                ],
+              child: SideMenu(
+                name: _apiService.currentUser?['nome'] ?? 'Professor',
+                subtitle: 'Professor',
+                destinations: _destinations,
+                selectedIndex: _selectedIndex,
+                onSelect: (index) {
+                  setState(() => _selectedIndex = index);
+                  Navigator.pop(context);
+                },
+                onLogout: () async {
+                  final navigator = Navigator.of(context);
+                  await _apiService.logout();
+                  if (!mounted) return;
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const TelaLogin()),
+                    (route) => false,
+                  );
+                },
               ),
             )
           : null,
       body: Row(
         children: [
           if (isWideScreen)
-            NavigationRail(
-              extended: true,
-              selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) => setState(() => _selectedIndex = index),
-              backgroundColor: Colors.grey[100],
-              selectedIconTheme: const IconThemeData(color: Colors.orange),
-              selectedLabelTextStyle: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
-              destinations: _destinations.map((dest) => NavigationRailDestination(icon: dest.icon, selectedIcon: dest.selectedIcon, label: Text(dest.label))).toList(),
+            SizedBox(
+              width: 300,
+              child: SideMenu(
+                name: _apiService.currentUser?['nome'] ?? 'Professor',
+                subtitle: 'Professor',
+                destinations: _destinations,
+                selectedIndex: _selectedIndex,
+                onSelect: (index) => setState(() => _selectedIndex = index),
+                onLogout: () async {
+                  final navigator = Navigator.of(context);
+                  await _apiService.logout();
+                  if (!mounted) return;
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const TelaLogin()),
+                    (route) => false,
+                  );
+                },
+              ),
             ),
           const VerticalDivider(thickness: 1, width: 1),
-          Expanded(child: _getCurrentScreen()),
+          Expanded(
+            child: Column(
+              children: [
+                if (!isWideScreen)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Builder(
+                      builder: (context) => Padding(
+                        padding: const EdgeInsets.only(left: 8, top: 8),
+                        child: IconButton(
+                          icon: const Icon(Icons.menu),
+                          tooltip: 'Menu',
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                        ),
+                      ),
+                    ),
+                  ),
+                Expanded(child: _getCurrentScreen()),
+              ],
+            ),
+          ),
         ],
       ),
     );

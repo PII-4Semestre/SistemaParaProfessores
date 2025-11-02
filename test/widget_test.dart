@@ -14,10 +14,11 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const PoliEducaApp());
 
-    // Verify that login screen elements are present.
+    // Verify that login screen elements are present (updated UI).
     expect(find.text('Portal Educacional'), findsOneWidget);
-    expect(find.text('ALUNO'), findsOneWidget);
-    expect(find.text('PROFESSOR'), findsOneWidget);
+    expect(find.text('MODO DESENVOLVIMENTO'), findsOneWidget);
+    expect(find.text('Digite "aluno" ou "professor"'), findsWidgets);
+    expect(find.text('Login Rápido'), findsOneWidget);
     expect(find.text('ENTRAR'), findsOneWidget);
   });
 }

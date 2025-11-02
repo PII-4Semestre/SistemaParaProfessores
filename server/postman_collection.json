@@ -1,0 +1,200 @@
+{
+  "info": {
+    "name": "Sistema Para Professores API",
+    "description": "API endpoints for the teacher-student management system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login - Professor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"silva@escola.com\",\n  \"senha\": \"123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login - Aluno",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"joao@aluno.com\",\n  \"senha\": \"123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Disciplinas",
+      "item": [
+        {
+          "name": "Listar todas disciplinas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/disciplinas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "disciplinas"]
+            }
+          }
+        },
+        {
+          "name": "Disciplinas do Professor (ID=1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/disciplinas/professor/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "disciplinas", "professor", "1"]
+            }
+          }
+        },
+        {
+          "name": "Criar nova disciplina",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Quimica\",\n  \"descricao\": \"Quimica Organica e Inorganica\",\n  \"professor_id\": 1,\n  \"cor\": \"#9C27B0\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/disciplinas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "disciplinas"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Atividades",
+      "item": [
+        {
+          "name": "Atividades da Disciplina (ID=1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/atividades/disciplina/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "atividades", "disciplina", "1"]
+            }
+          }
+        },
+        {
+          "name": "Criar nova atividade",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"disciplina_id\": 1,\n  \"titulo\": \"Prova 2\",\n  \"descricao\": \"Segunda avaliacao\",\n  \"peso\": 4.0,\n  \"data_entrega\": \"2025-11-15T23:59:00\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/atividades",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "atividades"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notas",
+      "item": [
+        {
+          "name": "Notas do Aluno (ID=3)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/notas/aluno/3",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "notas", "aluno", "3"]
+            }
+          }
+        },
+        {
+          "name": "Atribuir/Atualizar nota",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"atividade_id\": 1,\n  \"aluno_id\": 3,\n  \"nota\": 9.5,\n  \"comentario\": \"Excelente trabalho!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/notas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "notas"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
