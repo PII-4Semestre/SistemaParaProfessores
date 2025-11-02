@@ -101,20 +101,24 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         ),
       );
     }
-    return SingleChildScrollView(
+    return Stack(
+      children: [
+        // Top background gradient accent
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: _TopBackground(height: 220),
+        ),
+        SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Visão Geral',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Bem-vindo ao Portal do Aluno',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            const _IntroHeader(
+              title: 'Visão Geral',
+              subtitle: 'Bem-vindo ao Portal do Aluno',
             ),
             const SizedBox(height: 16),
 
@@ -190,13 +194,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
               },
             ),
             const SizedBox(height: 24),
-            const Divider(),
+            const _AnimatedGradientDivider(),
             const SizedBox(height: 16),
             // Seção de atividades recentes com dados reais
-            const Text(
-              'Notas Recentes',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
+            _buildSectionHeader(context, 'Notas Recentes', Icons.grade),
             const SizedBox(height: 16),
             if (_notas.isEmpty)
               Card(
@@ -274,16 +275,20 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
               ),
 
             const SizedBox(height: 24),
-            const Divider(),
+            const _AnimatedGradientDivider(),
             const SizedBox(height: 16),
 
             // Seção de disciplinas com dados reais
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Text(
-                  'Minhas Disciplinas',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: _buildSectionHeader(
+                    context,
+                    'Minhas Disciplinas',
+                    Icons.book,
+                  ),
                 ),
                 if (_disciplinas.isNotEmpty)
                   TextButton.icon(
@@ -492,6 +497,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
           ],
         ),
       ),
+    ),
+      ],
     );
   }
 
@@ -502,78 +509,275 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
     required Color color,
     VoidCallback? onTap,
   }) {
+    return _AnimatedStatCard(
+      title: title,
+      value: value,
+      icon: icon,
+      color: color,
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title,
+    IconData icon,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: cs.primary),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 4,
+          width: 80,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            gradient: LinearGradient(
+              colors: [cs.primary, cs.secondary],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TopBackground extends StatelessWidget {
+  const _TopBackground({required this.height});
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return IgnorePointer(
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              cs.primary.withValues(alpha: 0.10),
+              cs.secondary.withValues(alpha: 0.06),
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.6, 1.0],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedGradientDivider extends StatelessWidget {
+  const _AnimatedGradientDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 500),
+      tween: Tween(begin: 0, end: 1),
+      builder: (context, value, _) {
+        return Align(
+          alignment: Alignment.centerLeft,
+          child: FractionallySizedBox(
+            widthFactor: value,
+            child: Container(
+              height: 1,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    cs.primary.withValues(alpha: 0.25),
+                    cs.secondary.withValues(alpha: 0.15),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _IntroHeader extends StatelessWidget {
+  const _IntroHeader({required this.title, required this.subtitle});
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeOut,
+      tween: Tween(begin: 0, end: 1),
+      builder: (context, t, child) {
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(
+            offset: Offset(0, (1 - t) * 12),
+            child: child,
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Builder(
+            builder: (context) => Text(
+              subtitle,
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnimatedStatCard extends StatefulWidget {
+  const _AnimatedStatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+    this.onTap,
+  });
+
+    final String title;
+    final String value;
+    final IconData icon;
+    final Color color;
+    final VoidCallback? onTap;
+
+  @override
+  State<_AnimatedStatCard> createState() => _AnimatedStatCardState();
+}
+
+class _AnimatedStatCardState extends State<_AnimatedStatCard> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = widget.color;
+    final shadowColor = baseColor.withValues(alpha: 0.3);
+
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 600),
       tween: Tween<double>(begin: 0, end: 1),
       builder: (context, animValue, child) {
         return Transform.scale(
-          scale: 0.8 + (animValue * 0.2),
-          child: Opacity(opacity: animValue, child: child),
+          scale: 0.9 + (animValue * 0.1),
+          child: child,
         );
       },
-      child: Card(
-        elevation: 0,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  color.withValues(alpha: 0.1),
-                  color.withValues(alpha: 0.05),
-                ],
-              ),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        cursor: SystemMouseCursors.click,
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOut,
+          scale: _hovered ? 1.02 : 1.0,
+          child: Card(
+            elevation: _hovered ? 6 : 2,
+            shadowColor: shadowColor,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: widget.onTap,
               borderRadius: BorderRadius.circular(16),
-              border:
-                  Border.all(color: color.withValues(alpha: 0.2), width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w500,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(icon, color: color, size: 24),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      baseColor.withValues(alpha: _hovered ? 0.14 : 0.1),
+                      baseColor.withValues(alpha: _hovered ? 0.08 : 0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: baseColor.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: shadowColor,
+                      blurRadius: _hovered ? 18 : 10,
+                      offset: Offset(0, _hovered ? 10 : 6),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                      letterSpacing: -1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            widget.title,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: baseColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(widget.icon, color: baseColor, size: 24),
+                        ),
+                      ],
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        widget.value,
+                        style: TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: baseColor,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

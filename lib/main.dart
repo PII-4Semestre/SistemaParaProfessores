@@ -28,7 +28,6 @@ class PoliEducaApp extends StatelessWidget {
             ).copyWith(
               primary: lightPrimary,
               surface: Colors.white,
-              background: Colors.white,
             );
 
         final darkScheme =
@@ -38,7 +37,6 @@ class PoliEducaApp extends StatelessWidget {
             ).copyWith(
               primary: darkPrimary,
               surface: const Color.fromARGB(255, 46, 46, 46),
-              background: Colors.black,
             );
 
         return MaterialApp(

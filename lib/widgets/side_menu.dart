@@ -45,7 +45,8 @@ class SideMenu extends StatelessWidget {
                 onTap: () => onSelect(index),
               ),
             ),
-            const SizedBox(height: 8),
+            const Spacer(),
+            const Divider(height: 1),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: ValueListenableBuilder<ThemeMode>(
@@ -53,10 +54,11 @@ class SideMenu extends StatelessWidget {
                 builder: (context, mode, _) {
                   final isDark = mode == ThemeMode.dark;
                   return SwitchListTile(
+                    dense: true,
                     secondary: Icon(
                       isDark ? Icons.dark_mode : Icons.light_mode,
                     ),
-                    title: const Text('Tema escuro'),
+                    title: const Text('Tema'),
                     value: isDark,
                     onChanged: (v) => ThemeController.instance.set(
                       v ? ThemeMode.dark : ThemeMode.light,
@@ -65,8 +67,6 @@ class SideMenu extends StatelessWidget {
                 },
               ),
             ),
-            const Spacer(),
-            const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Sair'),

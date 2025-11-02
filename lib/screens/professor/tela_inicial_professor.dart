@@ -5,7 +5,6 @@ import 'tela_alunos_professor.dart';
 import 'tela_mensagens_professor.dart';
 import '../autenticacao/tela_login.dart';
 import '../../services/api_service.dart';
-import '../../widgets/app_bar_user_actions.dart';
 import '../../widgets/side_menu.dart';
 
 class TelaInicialProfessor extends StatefulWidget {
@@ -66,36 +65,6 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
     final bool isWideScreen = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Portal do Professor',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        actions: isWideScreen
-            ? [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: AppBarUserActions(
-                    name: _apiService.currentUser?['nome'] ?? 'Professor',
-                    subtitle: 'Professor',
-                    onLogout: () async {
-                      final navigator = Navigator.of(context);
-                      await _apiService.logout();
-                      if (!mounted) return;
-                      navigator.pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => const TelaLogin(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                  ),
-                ),
-              ]
-            : null,
-      ),
       drawer: !isWideScreen
           ? Drawer(
               child: SideMenu(
@@ -142,7 +111,27 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
               ),
             ),
           const VerticalDivider(thickness: 1, width: 1),
-          Expanded(child: _getCurrentScreen()),
+          Expanded(
+            child: Column(
+              children: [
+                if (!isWideScreen)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Builder(
+                      builder: (context) => Padding(
+                        padding: const EdgeInsets.only(left: 8, top: 8),
+                        child: IconButton(
+                          icon: const Icon(Icons.menu),
+                          tooltip: 'Menu',
+                          onPressed: () => Scaffold.of(context).openDrawer(),
+                        ),
+                      ),
+                    ),
+                  ),
+                Expanded(child: _getCurrentScreen()),
+              ],
+            ),
+          ),
         ],
       ),
     );
