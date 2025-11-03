@@ -111,29 +111,18 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
               ),
             ),
           const VerticalDivider(thickness: 1, width: 1),
-          Expanded(
-            child: Column(
-              children: [
-                if (!isWideScreen)
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Builder(
-                      builder: (context) => Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 8),
-                        child: IconButton(
-                          icon: const Icon(Icons.menu),
-                          tooltip: 'Menu',
-                          onPressed: () => Scaffold.of(context).openDrawer(),
-                        ),
-                      ),
-                    ),
-                  ),
-                Expanded(child: _getCurrentScreen()),
-              ],
-            ),
-          ),
+          Expanded(child: _getCurrentScreen()),
         ],
       ),
+      floatingActionButton: !isWideScreen
+          ? Builder(
+              builder: (context) => FloatingActionButton(
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                backgroundColor: Color(0xFF1CB3C2),
+                child: Icon(Icons.menu, color: Colors.white),
+              ),
+            )
+          : null,
     );
   }
 }

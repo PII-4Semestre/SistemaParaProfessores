@@ -4,7 +4,6 @@ import 'tela_disciplinas_aluno.dart';
 import 'tela_mensagens_aluno.dart';
 import '../autenticacao/tela_login.dart';
 import '../../services/api_service.dart';
-import '../../widgets/app_bar_user_actions.dart';
 import '../../widgets/side_menu.dart';
 
 class TelaInicialAluno extends StatefulWidget {
@@ -370,36 +369,7 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
     final bool isWideScreen = MediaQuery.of(context).size.width > 900;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Portal do Aluno',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        actions: isWideScreen
-            ? [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: AppBarUserActions(
-                    name: _apiService.currentUser?['nome'] ?? 'Aluno',
-                    subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
-                    onLogout: () async {
-                      final navigator = Navigator.of(context);
-                      await _apiService.logout();
-                      if (!mounted) return;
-                      navigator.pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => const TelaLogin(),
-                        ),
-                        (route) => false,
-                      );
-                    },
-                  ),
-                ),
-              ]
-            : null,
-      ),
+      backgroundColor: Colors.transparent,
       drawer: !isWideScreen
           ? Drawer(
               child: SideMenu(
@@ -423,32 +393,54 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
               ),
             )
           : null,
-      body: Row(
-        children: [
-          if (isWideScreen)
-            SizedBox(
-              width: 300,
-              child: SideMenu(
-                name: _apiService.currentUser?['nome'] ?? 'Aluno',
-                subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
-                destinations: _destinations,
-                selectedIndex: _selectedIndex,
-                onSelect: (index) => setState(() => _selectedIndex = index),
-                onLogout: () async {
-                  final navigator = Navigator.of(context);
-                  await _apiService.logout();
-                  if (!mounted) return;
-                  navigator.pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const TelaLogin()),
-                    (route) => false,
-                  );
-                },
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0F0C29),
+              Color(0xFF302B63),
+              Color(0xFF24243E),
+            ],
+          ),
+        ),
+        child: Row(
+          children: [
+            if (isWideScreen)
+              SizedBox(
+                width: 300,
+                child: SideMenu(
+                  name: _apiService.currentUser?['nome'] ?? 'Aluno',
+                  subtitle: 'RA: ${_apiService.currentUser?['ra'] ?? ''}',
+                  destinations: _destinations,
+                  selectedIndex: _selectedIndex,
+                  onSelect: (index) => setState(() => _selectedIndex = index),
+                  onLogout: () async {
+                    final navigator = Navigator.of(context);
+                    await _apiService.logout();
+                    if (!mounted) return;
+                    navigator.pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const TelaLogin()),
+                      (route) => false,
+                    );
+                  },
+                ),
               ),
-            ),
-          const VerticalDivider(thickness: 1, width: 1),
-          Expanded(child: _getCurrentScreen()),
-        ],
+            const VerticalDivider(thickness: 1, width: 1),
+            Expanded(child: _getCurrentScreen()),
+          ],
+        ),
       ),
+      floatingActionButton: !isWideScreen
+          ? Builder(
+              builder: (context) => FloatingActionButton(
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                backgroundColor: Color(0xFF1CB3C2),
+                child: Icon(Icons.menu, color: Colors.white),
+              ),
+            )
+          : null,
     );
   }
 }
