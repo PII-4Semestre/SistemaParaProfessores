@@ -18,26 +18,36 @@ class PoliEducaApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: ThemeController.instance.themeMode,
       builder: (context, themeMode, _) {
-        final lightPrimary = const Color(0xFFF28C1B);
-        final darkPrimary = const Color(0xFF1CB3C2);
+        // Cores do tema claro - tons salmão/pêssego
+        final lightSalmon = const Color(0xFFF6E2CD); // Salmão claro de fundo
+        final lightPeach = const Color(0xFFFFB88C); // Pêssego para acentos
+        final lightCoral = const Color(0xFFFF9B71); // Coral para primary
+        
+        // Cores do tema escuro - gradiente atual
+        final darkCyan = const Color(0xFF1CB3C2);
+        final darkPurple = const Color(0xFF9C27B0);
 
-        final lightScheme =
-            ColorScheme.fromSeed(
-              seedColor: lightPrimary,
-              brightness: Brightness.light,
-            ).copyWith(
-              primary: lightPrimary,
-              surface: Colors.white,
-            );
+        final lightScheme = ColorScheme.light(
+          primary: lightCoral,
+          secondary: lightPeach,
+          surface: lightSalmon,
+          background: const Color(0xFFFFF5EB), // Tom ainda mais claro para background
+          onPrimary: Colors.white,
+          onSecondary: const Color(0xFF5D4037),
+          onSurface: const Color(0xFF5D4037), // Marrom escuro para texto
+          onBackground: const Color(0xFF5D4037),
+        );
 
-        final darkScheme =
-            ColorScheme.fromSeed(
-              seedColor: darkPrimary,
-              brightness: Brightness.dark,
-            ).copyWith(
-              primary: darkPrimary,
-              surface: const Color.fromARGB(255, 46, 46, 46),
-            );
+        final darkScheme = ColorScheme.dark(
+          primary: darkCyan,
+          secondary: darkPurple,
+          surface: const Color(0xFF1A1A2E),
+          background: const Color(0xFF0F0C29),
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+          onSurface: Colors.white,
+          onBackground: Colors.white,
+        );
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -46,9 +56,10 @@ class PoliEducaApp extends StatelessWidget {
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: lightScheme,
-            scaffoldBackgroundColor: Colors.white,
+            scaffoldBackgroundColor: const Color(0xFFFFF5EB),
             cardTheme: CardThemeData(
               elevation: 0,
+              color: lightSalmon,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -56,6 +67,8 @@ class PoliEducaApp extends StatelessWidget {
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                 elevation: 0,
+                backgroundColor: lightCoral,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -67,18 +80,18 @@ class PoliEducaApp extends StatelessWidget {
             ),
             inputDecorationTheme: InputDecorationTheme(
               filled: true,
-              fillColor: Colors.grey.shade50,
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(color: lightPeach.withOpacity(0.3)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide(color: lightPeach.withOpacity(0.3)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: lightPrimary, width: 2),
+                borderSide: BorderSide(color: lightCoral, width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -130,9 +143,10 @@ class PoliEducaApp extends StatelessWidget {
           darkTheme: ThemeData(
             useMaterial3: true,
             colorScheme: darkScheme,
-            scaffoldBackgroundColor: const Color.fromARGB(255, 22, 22, 22),
+            scaffoldBackgroundColor: const Color(0xFF0F0C29),
             cardTheme: CardThemeData(
               elevation: 0,
+              color: const Color(0xFF1A1A2E),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -140,6 +154,8 @@ class PoliEducaApp extends StatelessWidget {
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
                 elevation: 0,
+                backgroundColor: darkCyan,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,
@@ -151,18 +167,18 @@ class PoliEducaApp extends StatelessWidget {
             ),
             inputDecorationTheme: InputDecorationTheme(
               filled: true,
-              fillColor: Colors.grey.shade900,
+              fillColor: const Color(0xFF1A1A2E),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade700),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade700),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: darkPrimary, width: 2),
+                borderSide: BorderSide(color: darkCyan, width: 2),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,

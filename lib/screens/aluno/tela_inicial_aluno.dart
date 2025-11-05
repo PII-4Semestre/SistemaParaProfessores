@@ -398,11 +398,17 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F0C29),
-              Color(0xFF302B63),
-              Color(0xFF24243E),
-            ],
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [
+                    Color(0xFF0F0C29),
+                    Color(0xFF302B63),
+                    Color(0xFF24243E),
+                  ]
+                : [
+                    Color(0xFFFFF5EB),
+                    Color(0xFFFFE4D6),
+                    Color(0xFFF6E2CD),
+                  ],
           ),
         ),
         child: Row(
@@ -436,7 +442,7 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
           ? Builder(
               builder: (context) => FloatingActionButton(
                 onPressed: () => Scaffold.of(context).openDrawer(),
-                backgroundColor: Color(0xFF1CB3C2),
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 child: Icon(Icons.menu, color: Colors.white),
               ),
             )

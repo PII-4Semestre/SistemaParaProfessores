@@ -28,6 +28,61 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
   bool _isLoading = true;
   String? _error;
 
+  // Helper para cores adaptáveis ao tema
+  Color _getPrimaryColor() {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Color(0xFF1CB3C2) // Cyan
+        : Color(0xFFFF9B71); // Coral
+  }
+
+  Color _getSecondaryColor() {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Color(0xFFED2152) // Pink
+        : Color(0xFFFFB88C); // Peach
+  }
+
+  Color _getAccentColor() {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Color(0xFFF9A31F) // Orange
+        : Color(0xFFFF8A65); // Light orange
+  }
+
+  Color _getCardColor() {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Color(0xFF24243E)
+        : Color(0xFFF6E2CD); // Salmão claro
+  }
+
+  List<Color> _getGradientColors() {
+    return Theme.of(context).brightness == Brightness.dark
+        ? [Color(0xFF0F0C29), Color(0xFF302B63), Color(0xFF24243E)]
+        : [Color(0xFFFFF5EB), Color(0xFFFFE4D6), Color(0xFFF6E2CD)];
+  }
+
+  Color _getTextColor() {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : Color(0xFF5D4037); // Marrom escuro
+  }
+
+  Color _getTextSecondaryColor() {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white70
+        : Color(0xFF8D6E63); // Marrom médio
+  }
+
+  Color _getTextTertiaryColor() {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white60
+        : Color(0xFFA1887F); // Marrom claro
+  }
+
+  Color _getBorderColor() {
+    return Theme.of(context).brightness == Brightness.dark
+        ? Colors.white.withOpacity(0.2)
+        : Color(0xFFFFB88C).withOpacity(0.3);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -91,11 +146,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F0C29),
-              Color(0xFF302B63),
-              Color(0xFF24243E),
-            ],
+            colors: _getGradientColors(),
           ),
         ),
         child: _isLoading
@@ -108,6 +159,11 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
   }
 
   Widget _buildLoadingState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shimmerBase = isDark ? Colors.white.withOpacity(0.1) : Color(0xFFFFB88C).withOpacity(0.2);
+    final shimmerHighlight = isDark ? Colors.white.withOpacity(0.2) : Color(0xFFFF9B71).withOpacity(0.3);
+    final shimmerColor = isDark ? Colors.white : Color(0xFFF6E2CD);
+    
     return SafeArea(
       child: SingleChildScrollView(
         padding: EdgeInsets.all(24),
@@ -115,14 +171,14 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
           children: [
             SizedBox(height: 20),
             Shimmer.fromColors(
-              baseColor: Colors.white.withOpacity(0.1),
-              highlightColor: Colors.white.withOpacity(0.2),
+              baseColor: shimmerBase,
+              highlightColor: shimmerHighlight,
               child: Column(
                 children: [
                   Container(
                     height: 80,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: shimmerColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
@@ -133,7 +189,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                         height: 120,
                         margin: EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: shimmerColor,
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
@@ -143,7 +199,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                   Container(
                     height: 300,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: shimmerColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
@@ -164,14 +220,14 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Iconsax.danger, size: 64, color: Color(0xFFED2152)),
+              Icon(Iconsax.danger, size: 64, color: _getSecondaryColor()),
               SizedBox(height: 16),
               Text(
                 'Erro ao carregar dados',
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: _getTextColor(),
                 ),
               ),
               SizedBox(height: 8),
@@ -179,7 +235,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                 _error ?? 'Erro desconhecido',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: Colors.white70,
+                  color: _getTextSecondaryColor(),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -191,7 +247,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                   style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: _getTextColor(),
                   ),
                 ),
               ),
@@ -203,11 +259,12 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
   }
 
   Widget _buildContent() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: _carregarDados,
-        backgroundColor: Color(0xFF24243E),
-        color: Color(0xFF1CB3C2),
+        backgroundColor: isDark ? Color(0xFF24243E) : _getCardColor(),
+        color: _getPrimaryColor(),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth > 1200;
@@ -252,7 +309,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
           greeting,
           style: GoogleFonts.poppins(
             fontSize: 16,
-            color: Colors.white70,
+            color: _getTextSecondaryColor(),
             fontWeight: FontWeight.w400,
           ),
         ).animate().fadeIn(delay: 100.ms).slideY(begin: -0.3, end: 0),
@@ -262,7 +319,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
           style: GoogleFonts.poppins(
             fontSize: 32,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: _getTextColor(),
             height: 1.2,
           ),
         ).animate().fadeIn(delay: 200.ms).slideY(begin: -0.3, end: 0),
@@ -272,7 +329,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
           width: 60,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1CB3C2), Color(0xFFED2152), Color(0xFFF9A31F)],
+              colors: [_getPrimaryColor(), _getSecondaryColor(), _getAccentColor()],
             ),
             borderRadius: BorderRadius.circular(2),
           ),
@@ -290,15 +347,15 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
         icon: Iconsax.book_1,
         title: 'Disciplinas',
         value: _disciplinas.length.toString(),
-        color: Color(0xFFED2152),
-        subtitle: 'Lecionadas',
+        color: _getSecondaryColor(),
+        subtitle: 'Ativas',
         onTap: () => widget.onNavigateToTab?.call(1),
       ),
       StatCardData(
         icon: Iconsax.people,
         title: 'Alunos',
         value: alunosTotal.toString(),
-        color: Color(0xFF1CB3C2),
+        color: _getPrimaryColor(),
         subtitle: 'Total',
         onTap: () => widget.onNavigateToTab?.call(2),
       ),
@@ -306,7 +363,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
         icon: Iconsax.message,
         title: 'Mensagens',
         value: mensagensPendentes.toString(),
-        color: Color(0xFFF9A31F),
+        color: _getAccentColor(),
         subtitle: 'Pendentes',
         onTap: () => widget.onNavigateToTab?.call(3),
       ),
@@ -349,9 +406,9 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
   Widget _buildDistributionChart() {
     // Cores para o gráfico de pizza
     final colors = [
-      Color(0xFF1CB3C2),
-      Color(0xFFED2152),
-      Color(0xFFF9A31F),
+      _getPrimaryColor(),
+      _getSecondaryColor(),
+      _getAccentColor(),
       Color(0xFF9C27B0),
       Color(0xFF4CAF50),
       Color(0xFFFF5722),
@@ -372,7 +429,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
         titleStyle: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: _getTextColor(),
         ),
         badgeWidget: totalAlunos > 0 ? null : null,
       );
@@ -388,7 +445,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: _getTextColor(),
           ),
         ).animate().fadeIn(delay: 350.ms),
         SizedBox(height: 16),
@@ -425,7 +482,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white70,
+                                color: _getTextSecondaryColor(),
                               ),
                             ),
                             SizedBox(height: 16),
@@ -454,7 +511,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                                         disciplina['nome'] ?? 'Sem nome',
                                         style: GoogleFonts.poppins(
                                           fontSize: 13,
-                                          color: Colors.white,
+                                          color: _getTextColor(),
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -488,13 +545,13 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                       padding: EdgeInsets.all(32),
                       child: Column(
                         children: [
-                          Icon(Iconsax.chart_21, size: 48, color: Colors.white38),
+                          Icon(Iconsax.chart_21, size: 48, color: _getTextTertiaryColor().withOpacity(0.6)),
                           SizedBox(height: 12),
                           Text(
                             'Sem dados para exibir',
                             style: GoogleFonts.poppins(
                               fontSize: 14,
-                              color: Colors.white60,
+                              color: _getTextSecondaryColor(),
                             ),
                           ),
                         ],
@@ -519,7 +576,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: _getTextColor(),
               ),
             ),
             if (_disciplinas.length > 6)
@@ -529,7 +586,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                   'Ver todas',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Color(0xFF1CB3C2),
+                    color: _getPrimaryColor(),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -547,13 +604,13 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                     Container(
                       padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Color(0xFF1CB3C2).withOpacity(0.2),
+                        color: _getPrimaryColor().withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Iconsax.book_15,
                         size: 48,
-                        color: Color(0xFF1CB3C2),
+                        color: _getPrimaryColor(),
                       ),
                     ),
                     SizedBox(height: 20),
@@ -562,7 +619,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: _getTextColor(),
                       ),
                     ),
                     SizedBox(height: 8),
@@ -571,7 +628,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: Colors.white60,
+                        color: _getTextSecondaryColor(),
                         height: 1.5,
                       ),
                     ),
@@ -581,26 +638,26 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Color(0xFF1CB3C2).withOpacity(0.3),
-                            Color(0xFF1CB3C2).withOpacity(0.1),
+                            _getPrimaryColor().withOpacity(0.3),
+                            _getPrimaryColor().withOpacity(0.1),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Color(0xFF1CB3C2).withOpacity(0.3),
+                          color: _getPrimaryColor().withOpacity(0.3),
                           width: 1,
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Iconsax.info_circle, size: 16, color: Color(0xFF1CB3C2)),
+                          Icon(Iconsax.info_circle, size: 16, color: _getPrimaryColor()),
                           SizedBox(width: 8),
                           Text(
                             'Disciplinas são atribuídas pela administração',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
-                              color: Colors.white70,
+                              color: _getTextSecondaryColor(),
                             ),
                           ),
                         ],
@@ -677,7 +734,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: _getTextColor(),
               ),
             ),
             if (_alunos.length > (isDesktop ? 8 : 6))
@@ -687,7 +744,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                   'Ver todos',
                   style: GoogleFonts.poppins(
                     fontSize: 14,
-                    color: Color(0xFF1CB3C2),
+                    color: _getPrimaryColor(),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -705,13 +762,13 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                     Container(
                       padding: EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Color(0xFFED2152).withOpacity(0.2),
+                        color: _getSecondaryColor().withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Iconsax.people5,
                         size: 48,
-                        color: Color(0xFFED2152),
+                        color: _getSecondaryColor(),
                       ),
                     ),
                     SizedBox(height: 20),
@@ -720,7 +777,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: _getTextColor(),
                       ),
                     ),
                     SizedBox(height: 8),
@@ -729,7 +786,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: Colors.white60,
+                        color: _getTextSecondaryColor(),
                         height: 1.5,
                       ),
                     ),
@@ -739,20 +796,20 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Color(0xFFED2152).withOpacity(0.3),
-                            Color(0xFFED2152).withOpacity(0.1),
+                            _getSecondaryColor().withOpacity(0.3),
+                            _getSecondaryColor().withOpacity(0.1),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Color(0xFFED2152).withOpacity(0.3),
+                          color: _getSecondaryColor().withOpacity(0.3),
                           width: 1,
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Iconsax.user_add, size: 16, color: Color(0xFFED2152)),
+                          Icon(Iconsax.user_add, size: 16, color: _getSecondaryColor()),
                           SizedBox(width: 8),
                           Text(
                             'Alunos aparecerão aqui após matrícula',
@@ -776,6 +833,10 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                 final index = entry.key;
                 final aluno = entry.value;
                 final isLast = index == alunosLimitados.length - 1;
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                final textColor = isDark ? Colors.white : Color(0xFF5D4037);
+                final secondaryTextColor = isDark ? Colors.white60 : Color(0xFF8D6E63);
+                final primaryColor = isDark ? Color(0xFF1CB3C2) : Color(0xFFFF9B71);
                 
                 return Column(
                   children: [
@@ -789,8 +850,8 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Color(0xFF1CB3C2),
-                                  Color(0xFF0E8A96),
+                                  primaryColor,
+                                  primaryColor.withOpacity(0.7),
                                 ],
                               ),
                               shape: BoxShape.circle,
@@ -816,7 +877,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                                    color: textColor,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -826,7 +887,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                                   aluno['ra'] ?? 'RA não informado',
                                   style: GoogleFonts.poppins(
                                     fontSize: 13,
-                                    color: Colors.white60,
+                                    color: secondaryTextColor,
                                   ),
                                 ),
                               ],
@@ -834,7 +895,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                           ),
                           Icon(
                             Iconsax.arrow_right_3,
-                            color: Colors.white38,
+                            color: secondaryTextColor.withOpacity(0.6),
                             size: 20,
                           ),
                         ],
@@ -896,6 +957,11 @@ class _StatCardState extends State<StatCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Color(0xFF5D4037);
+    final secondaryTextColor = isDark ? Colors.white70 : Color(0xFF8D6E63);
+    final tertiaryTextColor = isDark ? Colors.white60 : Color(0xFFA1887F);
+    
     return MouseRegion(
       cursor: widget.data.onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
       onEnter: (_) => setState(() => _isHovered = true),
@@ -929,7 +995,7 @@ class _StatCardState extends State<StatCard> {
                     widget.data.title,
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: Colors.white70,
+                      color: secondaryTextColor,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -939,7 +1005,7 @@ class _StatCardState extends State<StatCard> {
                     style: GoogleFonts.poppins(
                       fontSize: 32,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: textColor,
                       height: 1.2,
                     ),
                   ),
@@ -948,7 +1014,7 @@ class _StatCardState extends State<StatCard> {
                     widget.data.subtitle,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: Colors.white60,
+                      color: tertiaryTextColor,
                     ),
                   ),
                 ],
@@ -974,6 +1040,8 @@ class GlassContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
@@ -984,14 +1052,21 @@ class GlassContainer extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.1),
-                Colors.white.withOpacity(0.05),
-              ],
+              colors: isDark
+                  ? [
+                      Colors.white.withOpacity(0.1),
+                      Colors.white.withOpacity(0.05),
+                    ]
+                  : [
+                      Colors.white.withOpacity(0.7),
+                      Color(0xFFF6E2CD).withOpacity(0.4),
+                    ],
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: isDark
+                  ? Colors.white.withOpacity(0.2)
+                  : Color(0xFFFFB88C).withOpacity(0.3),
               width: 1.5,
             ),
           ),
@@ -1046,7 +1121,8 @@ class _DisciplinaCardState extends State<DisciplinaCard> {
   bool _isHovered = false;
 
   Color _getDisciplinaColor(int index) {
-    final colors = [
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final darkColors = [
       Color(0xFFED2152),
       Color(0xFF1CB3C2),
       Color(0xFFF9A31F),
@@ -1054,11 +1130,25 @@ class _DisciplinaCardState extends State<DisciplinaCard> {
       Color(0xFF3498DB),
       Color(0xFFE74C3C),
     ];
-    return colors[index % colors.length];
+    final lightColors = [
+      Color(0xFFFFB88C),
+      Color(0xFFFF9B71),
+      Color(0xFFFF8A65),
+      Color(0xFFBA68C8),
+      Color(0xFF64B5F6),
+      Color(0xFFEF5350),
+    ];
+    return isDark 
+        ? darkColors[index % darkColors.length]
+        : lightColors[index % lightColors.length];
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Color(0xFF5D4037);
+    final secondaryTextColor = isDark ? Colors.white60 : Color(0xFF8D6E63);
+    
     final color = _getDisciplinaColor(widget.index);
     final nome = widget.disciplina['nome'] ?? 'Sem nome';
     final disciplinaId = widget.disciplina['id'] is String 
@@ -1122,7 +1212,7 @@ class _DisciplinaCardState extends State<DisciplinaCard> {
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: textColor,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -1130,13 +1220,13 @@ class _DisciplinaCardState extends State<DisciplinaCard> {
                       SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(Iconsax.people, size: 14, color: Colors.white60),
+                          Icon(Iconsax.people, size: 14, color: secondaryTextColor),
                           SizedBox(width: 4),
                           Text(
                             '$alunosCount alunos',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
-                              color: Colors.white60,
+                              color: secondaryTextColor,
                             ),
                           ),
                         ],

@@ -25,16 +25,24 @@ class SideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0F0C29),
-            Color(0xFF302B63),
-            Color(0xFF24243E),
-          ],
+          colors: isDark
+              ? [
+                  Color(0xFF0F0C29),
+                  Color(0xFF302B63),
+                  Color(0xFF24243E),
+                ]
+              : [
+                  Color(0xFFFFF5EB),
+                  Color(0xFFFFE4D6),
+                  Color(0xFFF6E2CD),
+                ],
         ),
       ),
       child: SafeArea(
@@ -92,6 +100,10 @@ class SideMenu extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark ? Color(0xFF1CB3C2) : Color(0xFFFF9B71);
+    final secondaryTextColor = isDark ? Colors.white70 : Color(0xFF8D6E63);
+    
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
@@ -106,25 +118,32 @@ class SideMenu extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: isSelected
                   ? [
-                      Color(0xFF1CB3C2).withOpacity(0.3),
-                      Color(0xFF1CB3C2).withOpacity(0.1),
+                      primaryColor.withOpacity(0.3),
+                      primaryColor.withOpacity(0.1),
                     ]
-                  : [
-                      Colors.white.withOpacity(0.05),
-                      Colors.white.withOpacity(0.02),
-                    ],
+                  : isDark
+                      ? [
+                          Colors.white.withOpacity(0.05),
+                          Colors.white.withOpacity(0.02),
+                        ]
+                      : [
+                          Colors.white.withOpacity(0.7),
+                          Colors.white.withOpacity(0.4),
+                        ],
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               width: 1.5,
               color: isSelected
-                  ? Color(0xFF1CB3C2).withOpacity(0.5)
-                  : Colors.white.withOpacity(0.1),
+                  ? primaryColor.withOpacity(0.5)
+                  : isDark
+                      ? Colors.white.withOpacity(0.1)
+                      : Color(0xFFFFB88C).withOpacity(0.3),
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: Color(0xFF1CB3C2).withOpacity(0.3),
+                      color: primaryColor.withOpacity(0.3),
                       blurRadius: 20,
                       spreadRadius: 0,
                       offset: Offset(0, 8),
@@ -147,17 +166,21 @@ class SideMenu extends StatelessWidget {
                         gradient: isSelected
                             ? LinearGradient(
                                 colors: [
-                                  Color(0xFF1CB3C2),
-                                  Color(0xFF0E8A96),
+                                  primaryColor,
+                                  primaryColor.withOpacity(0.7),
                                 ],
                               )
                             : null,
-                        color: isSelected ? null : Colors.white.withOpacity(0.1),
+                        color: isSelected 
+                            ? null 
+                            : isDark 
+                                ? Colors.white.withOpacity(0.1)
+                                : Colors.white.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconTheme(
                         data: IconThemeData(
-                          color: isSelected ? Colors.white : Colors.white70,
+                          color: isSelected ? Colors.white : secondaryTextColor,
                           size: 22,
                         ),
                         child: icon,
@@ -170,7 +193,7 @@ class SideMenu extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 15,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                          color: isSelected ? Colors.white : Colors.white70,
+                          color: isSelected ? Colors.white : secondaryTextColor,
                         ),
                       ),
                     ),
@@ -179,11 +202,11 @@ class SideMenu extends StatelessWidget {
                         width: 6,
                         height: 6,
                         decoration: BoxDecoration(
-                          color: Color(0xFF1CB3C2),
+                          color: primaryColor,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Color(0xFF1CB3C2),
+                              color: primaryColor,
                               blurRadius: 8,
                               spreadRadius: 2,
                             ),

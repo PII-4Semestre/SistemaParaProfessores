@@ -11,6 +11,11 @@ class DrawerUserHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark ? Color(0xFF1CB3C2) : Color(0xFFFF9B71);
+    final secondaryColor = isDark ? Color(0xFFED2152) : Color(0xFFFFB88C);
+    final textColor = isDark ? Colors.white : Color(0xFF5D4037);
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 24),
@@ -25,18 +30,20 @@ class DrawerUserHeader extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF1CB3C2).withOpacity(0.3),
-                  Color(0xFFED2152).withOpacity(0.2),
+                  primaryColor.withOpacity(0.3),
+                  secondaryColor.withOpacity(0.2),
                 ],
               ),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 width: 1.5,
-                color: Colors.white.withOpacity(0.2),
+                color: isDark 
+                    ? Colors.white.withOpacity(0.2)
+                    : primaryColor.withOpacity(0.3),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Color(0xFF1CB3C2).withOpacity(0.3),
+                  color: primaryColor.withOpacity(0.3),
                   blurRadius: 24,
                   spreadRadius: 0,
                   offset: Offset(0, 8),
@@ -53,13 +60,13 @@ class DrawerUserHeader extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Color(0xFF1CB3C2),
-                        Color(0xFF0E8A96),
+                        primaryColor,
+                        primaryColor.withOpacity(0.7),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Color(0xFF1CB3C2).withOpacity(0.5),
+                        color: primaryColor.withOpacity(0.5),
                         blurRadius: 20,
                         spreadRadius: 2,
                       ),
@@ -79,13 +86,13 @@ class DrawerUserHeader extends StatelessWidget {
                 Text(
                   name,
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: textColor,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.5,
                     shadows: [
                       Shadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: (isDark ? Colors.black : Colors.brown).withOpacity(0.3),
                         offset: Offset(0, 2),
                         blurRadius: 4,
                       ),
@@ -100,21 +107,28 @@ class DrawerUserHeader extends StatelessWidget {
                     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Colors.white.withOpacity(0.2),
-                          Colors.white.withOpacity(0.1),
-                        ],
+                        colors: isDark
+                            ? [
+                                Colors.white.withOpacity(0.2),
+                                Colors.white.withOpacity(0.1),
+                              ]
+                            : [
+                                Colors.white.withOpacity(0.8),
+                                Colors.white.withOpacity(0.5),
+                              ],
                       ),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
+                        color: isDark 
+                            ? Colors.white.withOpacity(0.3)
+                            : primaryColor.withOpacity(0.3),
                         width: 1,
                       ),
                     ),
                     child: Text(
                       subtitle!,
                       style: GoogleFonts.poppins(
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
