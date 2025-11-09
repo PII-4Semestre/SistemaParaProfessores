@@ -218,6 +218,18 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
     super.dispose();
   }
 
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_messagesScrollController.hasClients) {
+        _messagesScrollController.animateTo(
+          _messagesScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
@@ -409,257 +421,370 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
         ? _conversations.where((c) => c.unreadCount > 0).toList()
         : _conversations;
 
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Row(
-        children: [
-          // Lista de conversas
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWideScreen = constraints.maxWidth > 900;
+        final showChatArea = _selectedConversationIndex != null;
+
+        // Em telas estreitas, mostrar apenas uma view por vez
+        if (!isWideScreen && showChatArea) {
+          return _buildChatArea(
+            filteredConversations[_selectedConversationIndex!],
+          );
+        }
+
+        return Padding(
+          padding: EdgeInsets.all(isWideScreen ? 24.0 : 16.0),
+          child: isWideScreen
+              ? Row(
                   children: [
-                    const Text(
-                      'Mensagens',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                    // Lista de conversas
+                    Expanded(
+                      flex: 2,
+                      child: _buildConversationsList(
+                        filteredConversations,
+                        isWideScreen,
                       ),
                     ),
-                    // Filtro de conversas
-                    SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(
-                          value: 'all',
-                          label: Text('Todas'),
-                          icon: Icon(Icons.chat, size: 16),
-                        ),
-                        ButtonSegment(
-                          value: 'unread',
-                          label: Text('Não lidas'),
-                          icon: Icon(Icons.mark_chat_unread, size: 16),
-                        ),
-                      ],
-                      selected: {_conversationFilter},
-                      onSelectionChanged: (Set<String> newSelection) {
-                        setState(() {
-                          _conversationFilter = newSelection.first;
-                        });
-                      },
+                    const SizedBox(width: 24),
+                    // Área de conversa
+                    Expanded(
+                      flex: 3,
+                      child: _selectedConversationIndex == null
+                          ? _buildEmptyState()
+                          : _buildChatArea(
+                              filteredConversations[
+                                  _selectedConversationIndex!],
+                            ),
                     ),
                   ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Converse com seus professores',
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                ),
-                const SizedBox(height: 24),
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar conversas...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: Card(
-                    child: ListView.separated(
-                      itemCount: filteredConversations.length,
-                      separatorBuilder: (context, index) =>
-                          const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final conversation = filteredConversations[index];
-                        final isSelected = _selectedConversationIndex == index;
+                )
+              : _buildConversationsList(filteredConversations, isWideScreen),
+        );
+      },
+    );
+  }
 
-                        return ListTile(
-                          selected: isSelected,
-                          selectedTileColor: Colors.orange.withValues(
-                            alpha: 0.1,
+  Widget _buildConversationsList(
+    List<Conversation> conversations,
+    bool isWideScreen,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (isWideScreen)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Mensagens',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              // Filtro de conversas
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(
+                    value: 'all',
+                    label: Text('Todas'),
+                    icon: Icon(Icons.chat, size: 16),
+                  ),
+                  ButtonSegment(
+                    value: 'unread',
+                    label: Text('Não lidas'),
+                    icon: Icon(Icons.mark_chat_unread, size: 16),
+                  ),
+                ],
+                selected: {_conversationFilter},
+                onSelectionChanged: (Set<String> newSelection) {
+                  setState(() {
+                    _conversationFilter = newSelection.first;
+                  });
+                },
+              ),
+            ],
+          )
+        else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Mensagens',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Filtro de conversas - versão mobile
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(
+                    value: 'all',
+                    label: Text('Todas'),
+                  ),
+                  ButtonSegment(
+                    value: 'unread',
+                    label: Text('Não lidas'),
+                  ),
+                ],
+                selected: {_conversationFilter},
+                onSelectionChanged: (Set<String> newSelection) {
+                  setState(() {
+                    _conversationFilter = newSelection.first;
+                  });
+                },
+                style: ButtonStyle(
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+            ],
+          ),
+        if (isWideScreen) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Converse com seus professores',
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          ),
+        ],
+        SizedBox(height: isWideScreen ? 24 : 16),
+        TextField(
+          controller: _searchController,
+          decoration: InputDecoration(
+            hintText: 'Buscar conversas...',
+            prefixIcon: const Icon(Icons.search),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: Card(
+            child: conversations.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.inbox,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Nenhuma conversa encontrada',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
                           ),
-                          leading: Stack(
-                            children: [
-                              CircleAvatar(
-                                backgroundColor: conversation.unreadCount > 0
-                                    ? Colors.orange
-                                    : Colors.grey[300],
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: conversations.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final conversation = conversations[index];
+                      final isSelected = _selectedConversationIndex == index;
+
+                      return ListTile(
+                        selected: isSelected,
+                        selectedTileColor: Colors.orange.withValues(
+                          alpha: 0.1,
+                        ),
+                        leading: Stack(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: conversation.unreadCount > 0
+                                  ? Colors.orange
+                                  : Colors.grey[300],
+                              child: Text(
+                                conversation.participantName
+                                    .substring(0, 2)
+                                    .toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            if (conversation.unreadCount > 0)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        title: Text(
+                          conversation.participantName,
+                          style: TextStyle(
+                            fontWeight: conversation.unreadCount > 0
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        subtitle: Text(
+                          conversation.isTyping
+                              ? 'digitando...'
+                              : (conversation.lastMessage ?? 'Sem mensagens'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: conversation.unreadCount > 0
+                                ? FontWeight.w500
+                                : FontWeight.normal,
+                            fontStyle: conversation.isTyping
+                                ? FontStyle.italic
+                                : FontStyle.normal,
+                            color: conversation.isTyping
+                                ? Colors.orange
+                                : null,
+                          ),
+                        ),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (conversation.lastMessageTime != null)
+                              Text(
+                                _formatTimestamp(
+                                  conversation.lastMessageTime!,
+                                ),
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            if (conversation.unreadCount > 0)
+                              Container(
+                                margin: const EdgeInsets.only(top: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                                 child: Text(
-                                  conversation.participantName
-                                      .substring(0, 2)
-                                      .toUpperCase(),
+                                  '${conversation.unreadCount}',
                                   style: const TextStyle(
                                     color: Colors.white,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
-                              if (conversation.unreadCount > 0)
-                                Positioned(
-                                  right: 0,
-                                  top: 0,
-                                  child: Container(
-                                    width: 12,
-                                    height: 12,
-                                    decoration: BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 2,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          title: Text(
-                            conversation.participantName,
-                            style: TextStyle(
-                              fontWeight: conversation.unreadCount > 0
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                          subtitle: Text(
-                            conversation.isTyping
-                                ? 'digitando...'
-                                : (conversation.lastMessage ?? 'Sem mensagens'),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontWeight: conversation.unreadCount > 0
-                                  ? FontWeight.w500
-                                  : FontWeight.normal,
-                              fontStyle: conversation.isTyping
-                                  ? FontStyle.italic
-                                  : FontStyle.normal,
-                              color: conversation.isTyping
-                                  ? Colors.orange
-                                  : null,
-                            ),
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              if (conversation.lastMessageTime != null)
-                                Text(
-                                  _formatTimestamp(
-                                    conversation.lastMessageTime!,
-                                  ),
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              if (conversation.unreadCount > 0)
-                                Container(
-                                  margin: const EdgeInsets.only(top: 4),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.orange,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    '${conversation.unreadCount}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          onTap: () {
-                            setState(() {
-                              _selectedConversationIndex = index;
-                            });
-                          },
-                        );
-                      },
-                    ),
+                          ],
+                        ),
+                        onTap: () {
+                          setState(() {
+                            _selectedConversationIndex = index;
+                          });
+                          _scrollToBottom();
+                        },
+                      );
+                    },
                   ),
-                ),
-              ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Card(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.chat_bubble_outline,
+                size: 64,
+                color: Colors.orange.shade300,
+              ),
             ),
-          ),
-          const SizedBox(width: 24),
-          // Área de conversa
-          Expanded(
-            flex: 3,
-            child: _selectedConversationIndex == null
-                ? Card(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withValues(alpha: 0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.chat_bubble_outline,
-                              size: 64,
-                              color: Colors.orange.shade300,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'Selecione uma conversa',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[700],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Escolha um professor para começar',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : _buildChatArea(
-                    filteredConversations[_selectedConversationIndex!],
-                  ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            Text(
+              'Selecione uma conversa',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Escolha um professor para começar',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildChatArea(Conversation conversation) {
-    return Card(
-      child: Column(
-        children: [
-          // Cabeçalho da conversa
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.orange.withValues(alpha: 0.1),
-              border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
+    // Rolar para o final quando o chat for construído
+    _scrollToBottom();
+    
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWideScreen = MediaQuery.of(context).size.width > 900;
+        
+        return Card(
+          child: Column(
+            children: [
+              // Cabeçalho da conversa
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+                ),
+                child: Row(
+                  children: [
+                    // Botão voltar em telas estreitas
+                    if (!isWideScreen)
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () {
+                          setState(() {
+                            _selectedConversationIndex = null;
+                          });
+                        },
+                      ),
+                    CircleAvatar(
                   backgroundColor: Colors.orange,
                   child: Text(
                     conversation.participantName.substring(0, 2).toUpperCase(),
@@ -840,6 +965,8 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
           ),
         ],
       ),
+    );
+      },
     );
   }
 

@@ -35,22 +35,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         : Color(0xFFFF9B71); // Coral
   }
 
-  Color _getSecondaryColor() {
-    return Theme.of(context).brightness == Brightness.dark
-        ? Color(0xFFED2152) // Pink
-        : Color(0xFFFFB88C); // Peach
-  }
-
   Color _getAccentColor() {
     return Theme.of(context).brightness == Brightness.dark
         ? Color(0xFFF9A31F) // Orange
         : Color(0xFFFF8A65); // Light orange
-  }
-
-  Color _getCardColor() {
-    return Theme.of(context).brightness == Brightness.dark
-        ? Color(0xFF24243E)
-        : Color(0xFFF6E2CD); // Salmão claro
   }
 
   List<Color> _getGradientColors() {
@@ -1016,9 +1004,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                           dotData: FlDotData(
                             show: true,
                             getDotPainter: (spot, percent, barData, index) {
+                              final isDark = Theme.of(context).brightness == Brightness.dark;
                               return FlDotCirclePainter(
                                 radius: 4,
-                                color: Colors.white,
+                                color: isDark ? Colors.white : Color(0xFF5D4037),
                                 strokeWidth: 2,
                                 strokeColor: Color(0xFF1CB3C2), // Cyan
                               );
@@ -1212,6 +1201,11 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                 final nota = entry.value;
                 final isLast = index == notasRecentes.length - 1;
                 
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                final textColor = isDark ? Colors.white : Color(0xFF5D4037);
+                final secondaryTextColor = isDark ? Colors.white60 : Color(0xFF8D6E63);
+                final tertiaryTextColor = isDark ? Colors.white38 : Color(0xFFA1887F).withOpacity(0.6);
+                
                 return Column(
                   children: [
                     Padding(
@@ -1248,7 +1242,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                                    color: textColor,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1258,7 +1252,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                   nota['atividade_nome'] ?? 'Atividade',
                                   style: GoogleFonts.poppins(
                                     fontSize: 13,
-                                    color: Colors.white60,
+                                    color: secondaryTextColor,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -1268,7 +1262,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                           ),
                           Icon(
                             Iconsax.arrow_right_3,
-                            color: Colors.white38,
+                            color: tertiaryTextColor,
                             size: 20,
                           ),
                         ],
@@ -1276,7 +1270,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                     ),
                     if (!isLast)
                       Divider(
-                        color: Colors.white.withOpacity(0.1),
+                        color: (isDark ? Colors.white : Color(0xFFFFB88C)).withOpacity(0.2),
                         height: 1,
                         indent: 16,
                         endIndent: 16,
@@ -1310,7 +1304,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: _getTextColor(),
               ),
             ),
             TextButton(
@@ -1319,7 +1313,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                 'Ver todas',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: Color(0xFF1CB3C2), // Cyan
+                  color: _getPrimaryColor(),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1913,7 +1907,7 @@ class _StatCardState extends State<StatCard> {
                                     '${widget.data.trendPercentage!.toStringAsFixed(1)}%',
                                     style: GoogleFonts.poppins(
                                       fontSize: 11,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                     ),
                                   ),
