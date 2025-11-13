@@ -394,9 +394,9 @@ class _TelaDetalhesDisciplinaAlunoState
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         'Sua Média',
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                        style: TextStyle(fontSize: 16, color: widget.subjectColor),
                       ),
                       const SizedBox(height: 4),
                       Text(
