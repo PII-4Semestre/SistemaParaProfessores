@@ -856,7 +856,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Evolução de Performance',
+              'Evolução de Coeficiente de Rendimento',
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
