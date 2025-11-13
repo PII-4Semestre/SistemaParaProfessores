@@ -77,7 +77,9 @@ class SideMenu extends StatelessWidget {
               child: Column(
                 children: [
                   Divider(
-                    color: Colors.white.withOpacity(0.1),
+                    color: (Theme.of(context).brightness == Brightness.dark 
+                        ? Colors.white 
+                        : Color(0xFFFFB88C)).withOpacity(0.2),
                     thickness: 1,
                   ),
                   SizedBox(height: 8),
@@ -227,7 +229,13 @@ class SideMenu extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: ThemeController.instance.themeMode,
       builder: (context, mode, _) {
-        final isDark = mode == ThemeMode.dark;
+        final isDarkMode = mode == ThemeMode.dark;
+        final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+        final textColor = isDarkTheme ? Colors.white70 : Color(0xFF8D6E63);
+        final iconColor = isDarkTheme ? Colors.white70 : Color(0xFF8D6E63);
+        final backgroundColor = isDarkTheme ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.5);
+        final borderColor = isDarkTheme ? Colors.white.withOpacity(0.1) : Color(0xFFFFB88C).withOpacity(0.3);
+        
         return ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: BackdropFilter(
@@ -237,15 +245,20 @@ class SideMenu extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    Colors.white.withOpacity(0.05),
-                    Colors.white.withOpacity(0.02),
-                  ],
+                  colors: isDarkTheme
+                      ? [
+                          Colors.white.withOpacity(0.05),
+                          Colors.white.withOpacity(0.02),
+                        ]
+                      : [
+                          Colors.white.withOpacity(0.7),
+                          Colors.white.withOpacity(0.4),
+                        ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   width: 1.5,
-                  color: Colors.white.withOpacity(0.1),
+                  color: borderColor,
                 ),
               ),
               child: Material(
@@ -257,13 +270,13 @@ class SideMenu extends StatelessWidget {
                       Container(
                         padding: EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: backgroundColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
-                          isDark ? Iconsax.moon : Iconsax.sun_1,
+                          isDarkMode ? Iconsax.moon : Iconsax.sun_1,
                           size: 22,
-                          color: Colors.white70,
+                          color: iconColor,
                         ),
                       ),
                       SizedBox(width: 12),
@@ -273,19 +286,21 @@ class SideMenu extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            color: Colors.white70,
+                            color: textColor,
                           ),
                         ),
                       ),
                       Switch(
-                        value: isDark,
+                        value: isDarkMode,
                         onChanged: (v) => ThemeController.instance.set(
                           v ? ThemeMode.dark : ThemeMode.light,
                         ),
-                        activeColor: Color(0xFF1CB3C2),
-                        activeTrackColor: Color(0xFF1CB3C2).withOpacity(0.5),
-                        inactiveThumbColor: Colors.white70,
-                        inactiveTrackColor: Colors.white.withOpacity(0.2),
+                        activeColor: isDarkTheme ? Color(0xFF1CB3C2) : Color(0xFFFF9B71),
+                        activeTrackColor: isDarkTheme 
+                            ? Color(0xFF1CB3C2).withOpacity(0.5)
+                            : Color(0xFFFF9B71).withOpacity(0.5),
+                        inactiveThumbColor: iconColor,
+                        inactiveTrackColor: backgroundColor,
                       ),
                     ],
                   ),
@@ -299,6 +314,9 @@ class SideMenu extends StatelessWidget {
   }
 
   Widget _buildLogoutButton(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final logoutColor = Color(0xFFED2152); // Vermelho em ambos os temas
+    
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: BackdropFilter(
@@ -309,14 +327,14 @@ class SideMenu extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFFED2152).withOpacity(0.2),
-                Color(0xFFED2152).withOpacity(0.05),
+                logoutColor.withOpacity(0.2),
+                logoutColor.withOpacity(0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               width: 1.5,
-              color: Color(0xFFED2152).withOpacity(0.3),
+              color: logoutColor.withOpacity(0.3),
             ),
           ),
           child: Material(
@@ -340,7 +358,7 @@ class SideMenu extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Color(0xFFED2152).withOpacity(0.3),
+                            color: logoutColor.withOpacity(0.3),
                             blurRadius: 12,
                             spreadRadius: 0,
                           ),
@@ -358,7 +376,7 @@ class SideMenu extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: isDark ? Colors.white : Color(0xFF5D4037),
                       ),
                     ),
                   ],

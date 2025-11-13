@@ -77,12 +77,6 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
         : Color(0xFFA1887F); // Marrom claro
   }
 
-  Color _getBorderColor() {
-    return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white.withOpacity(0.2)
-        : Color(0xFFFFB88C).withOpacity(0.3);
-  }
-
   @override
   void initState() {
     super.initState();
@@ -1058,17 +1052,26 @@ class GlassContainer extends StatelessWidget {
                       Colors.white.withOpacity(0.05),
                     ]
                   : [
+                      Colors.white.withOpacity(0.9),
                       Colors.white.withOpacity(0.7),
-                      Color(0xFFF6E2CD).withOpacity(0.4),
                     ],
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isDark
                   ? Colors.white.withOpacity(0.2)
-                  : Color(0xFFFFB88C).withOpacity(0.3),
+                  : Color(0xFFFFB88C).withOpacity(0.4),
               width: 1.5,
             ),
+            boxShadow: isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Color(0xFFFF9B71).withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
           ),
           child: child,
         ),

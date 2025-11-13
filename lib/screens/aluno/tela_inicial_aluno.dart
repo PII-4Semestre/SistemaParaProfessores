@@ -199,7 +199,7 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
           ),
           const SizedBox(height: 24),
           const Text(
-            'Notas por Disciplina',
+            'Média por Disciplina',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),

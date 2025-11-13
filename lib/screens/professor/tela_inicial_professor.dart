@@ -116,11 +116,16 @@ class _TelaInicialProfessorState extends State<TelaInicialProfessor> {
       ),
       floatingActionButton: !isWideScreen
           ? Builder(
-              builder: (context) => FloatingActionButton(
-                onPressed: () => Scaffold.of(context).openDrawer(),
-                backgroundColor: Color(0xFF1CB3C2),
-                child: Icon(Icons.menu, color: Colors.white),
-              ),
+              builder: (context) {
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                final primaryColor = isDark ? Color(0xFF1CB3C2) : Color(0xFFFF9B71);
+                
+                return FloatingActionButton(
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                  backgroundColor: primaryColor,
+                  child: Icon(Icons.menu, color: Colors.white),
+                );
+              },
             )
           : null,
     );

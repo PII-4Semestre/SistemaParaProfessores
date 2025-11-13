@@ -6,9 +6,9 @@ class ThemeController {
   ThemeController._();
   static final ThemeController instance = ThemeController._();
 
-  /// Current app ThemeMode. Defaults to dark.
+  /// Current app ThemeMode. Defaults to light.
   final ValueNotifier<ThemeMode> themeMode = ValueNotifier<ThemeMode>(
-    ThemeMode.dark,
+    ThemeMode.light,
   );
 
   void toggle() {
