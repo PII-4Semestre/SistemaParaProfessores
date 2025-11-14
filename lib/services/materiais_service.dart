@@ -39,19 +39,27 @@ class MateriaisService {
   // GET /api/materiais/disciplina/:id - Materiais por disciplina
   Future<List<Material>> getMateriaisPorDisciplina(String disciplinaId) async {
     try {
+      print('[MateriaisService] Buscando materiais da disciplina: $disciplinaId');
+      print('[MateriaisService] URL: $baseUrl/disciplina/$disciplinaId');
+      
       final response = await http.get(
         Uri.parse('$baseUrl/disciplina/$disciplinaId'),
         headers: _headers(),
       );
 
+      print('[MateriaisService] Status: ${response.statusCode}');
+      print('[MateriaisService] Body: ${response.body}');
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
+        print('[MateriaisService] Encontrados ${data.length} materiais');
         return data.map((json) => Material.fromJson(json)).toList();
       } else {
         throw Exception(
-            'Erro ao buscar materiais da disciplina: ${response.statusCode}');
+            'Erro ao buscar materiais da disciplina: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
+      print('[MateriaisService] ERRO: $e');
       throw Exception('Erro ao buscar materiais da disciplina: $e');
     }
   }
@@ -206,6 +214,46 @@ class MateriaisService {
     }
   }
 
+  // POST /api/materiais/:id/arquivo - Upload de arquivo (usando bytes - para web)
+  Future<Map<String, dynamic>> uploadArquivoBytes({
+    required String materialId,
+    required Uint8List bytes,
+    required String nomeOriginal,
+    required String mimeType,
+  }) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/$materialId/arquivo'),
+      );
+
+      // Adiciona o arquivo usando bytes
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'arquivo',
+          bytes,
+          filename: nomeOriginal,
+        ),
+      );
+
+      // Adiciona campos adicionais
+      request.fields['nome_original'] = nomeOriginal;
+      request.fields['mime_type'] = mimeType;
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['error'] ?? 'Erro ao fazer upload do arquivo');
+      }
+    } catch (e) {
+      throw Exception('Erro ao fazer upload do arquivo: $e');
+    }
+  }
+
   // GET /api/materiais/arquivo/:fileId - Download de arquivo
   Future<Uint8List> downloadArquivo(String fileId) async {
     try {
@@ -220,6 +268,23 @@ class MateriaisService {
       }
     } catch (e) {
       throw Exception('Erro ao baixar arquivo: $e');
+    }
+  }
+
+  // DELETE /api/materiais/:materialId/arquivo/:fileId - Remover arquivo de um material
+  Future<void> removerArquivo(String materialId, String fileId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/$materialId/arquivo/$fileId'),
+        headers: _headers(),
+      );
+
+      if (response.statusCode != 200) {
+        final error = json.decode(response.body);
+        throw Exception(error['error'] ?? 'Erro ao remover arquivo');
+      }
+    } catch (e) {
+      throw Exception('Erro ao remover arquivo: $e');
     }
   }
 
