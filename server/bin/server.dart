@@ -5,18 +5,37 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:sistema_professores_server/database/database.dart';
+import 'package:sistema_professores_server/database/mongodb.dart';
 import 'package:sistema_professores_server/routes/auth_routes.dart';
 import 'package:sistema_professores_server/routes/disciplinas_routes.dart';
 import 'package:sistema_professores_server/routes/atividades_routes.dart';
 import 'package:sistema_professores_server/routes/notas_routes.dart';
 import 'package:sistema_professores_server/routes/alunos_routes.dart';
+import 'package:sistema_professores_server/routes/materiais_routes.dart';
+
+/// Helper para formatar timestamp nos logs
+String _timestamp() {
+  final now = DateTime.now();
+  return '[${now.hour.toString().padLeft(2, '0')}:'
+      '${now.minute.toString().padLeft(2, '0')}:'
+      '${now.second.toString().padLeft(2, '0')}]';
+}
 
 void main() async {
   // Carregar variáveis de ambiente
   final env = DotEnv()..load();
 
-  // Conectar ao banco de dados
+  print('${_timestamp()} Iniciando servidor...');
+
+  // Conectar ao PostgreSQL
   await Database.getInstance();
+
+  // Conectar ao MongoDB
+  try {
+    await MongoDB.getInstance();
+  } catch (e) {
+    print('${_timestamp()} [server] ⚠️ MongoDB não disponível. Recursos de materiais estarão desabilitados: $e');
+  }
 
   // Configurar rotas
   final router = Router()
@@ -24,7 +43,8 @@ void main() async {
     ..mount('/api/disciplinas', DisciplinasRoutes().router.call)
     ..mount('/api/atividades', AtividadesRoutes().router.call)
     ..mount('/api/notas', NotasRoutes().router.call)
-    ..mount('/api/alunos', AlunosRoutes().router.call);
+    ..mount('/api/alunos', AlunosRoutes().router.call)
+    ..mount('/api/materiais', MateriaisRoutes().router.call);
 
   // Middleware para CORS
   final handler = Pipeline()
@@ -36,9 +56,8 @@ void main() async {
   // Iniciar servidor
   final port = int.parse(env['PORT'] ?? '8080');
   final server = await shelf_io.serve(handler, InternetAddress.anyIPv4, port);
-  developer.log(
-    '🚀 Servidor rodando em http://${server.address.host}:${server.port}',
-    name: 'server',
+  print(
+    '${_timestamp()} [server] 🚀 Servidor rodando em http://${server.address.host}:${server.port}',
   );
 }
 
