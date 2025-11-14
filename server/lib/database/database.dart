@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer' as developer;
 import 'package:postgres/postgres.dart';
 import 'package:dotenv/dotenv.dart';
 
@@ -15,6 +14,13 @@ class Database {
       await _instance!._connect();
     }
     return _instance!;
+  }
+
+  String _timestamp() {
+    final now = DateTime.now();
+    return '[${now.hour.toString().padLeft(2, '0')}:'
+        '${now.minute.toString().padLeft(2, '0')}:'
+        '${now.second.toString().padLeft(2, '0')}]';
   }
 
   Future<void> _connect() async {
@@ -33,13 +39,13 @@ class Database {
       settings: ConnectionSettings(sslMode: SslMode.disable, encoding: utf8),
     );
 
-    developer.log('✅ Conectado ao PostgreSQL', name: 'database');
+    print('${_timestamp()} [database] ✅ Conectado ao PostgreSQL');
   }
 
   Connection get connection => _connection;
 
   Future<void> close() async {
     await _connection.close();
-    developer.log('❌ Conexão com PostgreSQL fechada', name: 'database');
+    print('${_timestamp()} [database] ❌ Conexão com PostgreSQL fechada');
   }
 }
