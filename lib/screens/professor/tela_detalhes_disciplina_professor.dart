@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart';
 import '../../services/api_service.dart';
+import '../../services/materiais_service.dart';
+import '../../models/material.dart' as models;
 
 class TelaDetalhesDisciplinaProfessor extends StatefulWidget {
   final String subjectName;
@@ -24,6 +28,7 @@ class _TelaDetalhesDisciplinaProfessorState
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   final ApiService _apiService = ApiService();
+  final MateriaisService _materiaisService = MateriaisService();
 
   List<dynamic> _atividades = [];
   bool _isLoadingAtividades = false;
@@ -33,12 +38,17 @@ class _TelaDetalhesDisciplinaProfessorState
   bool _isLoadingAlunos = false;
   String? _errorAlunos;
 
+  List<models.Material> _materiais = [];
+  bool _isLoadingMateriais = false;
+  String? _errorMateriais;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _loadAtividades();
     _loadAlunos();
+    _loadMateriais();
   }
 
   Future<void> _loadAlunos() async {
@@ -93,6 +103,36 @@ class _TelaDetalhesDisciplinaProfessorState
     }
   }
 
+  Future<void> _loadMateriais() async {
+    setState(() {
+      _isLoadingMateriais = true;
+      _errorMateriais = null;
+    });
+
+    try {
+      print('[DEBUG] Carregando materiais da disciplina ID: ${widget.disciplinaId}');
+      final materiais = await _materiaisService.getMateriaisPorDisciplina(
+        widget.disciplinaId.toString(),
+      );
+      print('[DEBUG] Materiais carregados: ${materiais.length} encontrado(s)');
+
+      if (mounted) {
+        setState(() {
+          _materiais = materiais;
+          _isLoadingMateriais = false;
+        });
+      }
+    } catch (e) {
+      print('[DEBUG] Erro ao carregar materiais: $e');
+      if (mounted) {
+        setState(() {
+          _errorMateriais = e.toString();
+          _isLoadingMateriais = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -138,14 +178,41 @@ class _TelaDetalhesDisciplinaProfessorState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                widget.subjectName,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      'ID: ${widget.disciplinaId}',
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.9),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      widget.subjectName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
+                              const SizedBox(height: 4),
                               Text(
                                 '${_alunos.length} alunos • ${_atividades.length} atividades',
                                 style: TextStyle(
@@ -690,73 +757,382 @@ class _TelaDetalhesDisciplinaProfessorState
   }
 
   Widget _buildMateriaisTab() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(48.0),
+    if (_isLoadingMateriais) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMateriais != null) {
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: widget.subjectColor.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.folder_open,
-                size: 80,
-                color: widget.subjectColor,
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Materiais em Desenvolvimento',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
+            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            const SizedBox(height: 16),
             Text(
-              'A funcionalidade de materiais didáticos estará disponível em breve.',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              textAlign: TextAlign.center,
+              'Erro ao carregar materiais',
+              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
             ),
             const SizedBox(height: 8),
             Text(
-              'Aqui você poderá fazer upload e gerenciar PDFs, slides, apostilas e outros recursos.',
+              _errorMateriais!,
               style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: widget.subjectColor.withValues(alpha: 0.3),
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: widget.subjectColor,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Integração com MongoDB em progresso',
-                    style: TextStyle(
-                      color: widget.subjectColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _loadMateriais,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Tentar Novamente'),
             ),
           ],
         ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Header com botão de adicionar
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${_materiais.length} ${_materiais.length == 1 ? 'material' : 'materiais'}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: _showAddMaterialDialog,
+                icon: const Icon(Icons.add),
+                label: const Text('Novo Material'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.subjectColor,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Lista de materiais
+        Expanded(
+          child: _materiais.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.folder_open,
+                        size: 80,
+                        color: Colors.grey[300],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Nenhum material adicionado',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Clique em "Novo Material" para começar',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _materiais.length,
+                  itemBuilder: (context, index) {
+                    final material = _materiais[index];
+                    return _buildMaterialCard(material);
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMaterialCard(models.Material material) {
+    final dateFormat = DateFormat('dd/MM/yyyy');
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 2,
+      child: InkWell(
+        onTap: () => _showMaterialDetails(material),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Ícone do tipo
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: widget.subjectColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      material.icone,
+                      style: const TextStyle(fontSize: 24),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+
+                  // Título e tipo
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          material.titulo,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          material.tipo.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: widget.subjectColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Menu de ações
+                  PopupMenuButton(
+                    icon: const Icon(Icons.more_vert),
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, size: 20),
+                            SizedBox(width: 8),
+                            Text('Editar'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, size: 20, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Excluir', style: TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        _showEditMaterialDialog(material);
+                      } else if (value == 'delete') {
+                        _confirmDeleteMaterial(material);
+                      }
+                    },
+                  ),
+                ],
+              ),
+
+              // Descrição
+              if (material.descricao != null && material.descricao!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    material.descricao!,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+
+              // Tags
+              if (material.tags.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: material.tags.map((tag) {
+                      return Chip(
+                        label: Text(
+                          tag,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+              // Informações dos arquivos
+              if (material.temArquivos)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.attach_file,
+                          size: 16,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${material.arquivos.length} ${material.arquivos.length == 1 ? 'arquivo' : 'arquivos'}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Link externo
+              if (material.isLinkExterno)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.link,
+                          size: 16,
+                          color: Colors.blue,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            material.linkExterno!,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.blue,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Data de criação
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  'Criado em ${dateFormat.format(material.criadoEm)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  void _showAddMaterialDialog() {
+    // TODO: Implementar dialog de adicionar material
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Funcionalidade em desenvolvimento')),
+    );
+  }
+
+  void _showEditMaterialDialog(models.Material material) {
+    // TODO: Implementar dialog de editar material
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Funcionalidade em desenvolvimento')),
+    );
+  }
+
+  void _showMaterialDetails(models.Material material) {
+    // TODO: Implementar tela de detalhes do material
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Detalhes de: ${material.titulo}')),
+    );
+  }
+
+  void _confirmDeleteMaterial(models.Material material) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar exclusão'),
+        content: Text('Deseja realmente excluir "${material.titulo}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteMaterial(material);
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteMaterial(models.Material material) async {
+    try {
+      await _materiaisService.deletarMaterial(material.id!);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Material excluído com sucesso')),
+        );
+        _loadMateriais(); // Recarrega a lista
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao excluir material: $e')),
+        );
+      }
+    }
   }
 
   void _showAddAtividadeDialog() {
