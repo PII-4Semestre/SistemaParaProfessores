@@ -2097,13 +2097,14 @@ class _DisciplinaCardState extends State<DisciplinaCard> {
     final color = _getDisciplinaColor(widget.index);
     final nome = widget.disciplina['nome'] ?? 'Sem nome';
     final professorNome = widget.disciplina['professorNome'] ?? 'Professor';
+    final disciplinaId = widget.disciplina['id'] as int?;
     
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: GestureDetector(
-        onTap: () {
+        onTap: disciplinaId != null ? () {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -2111,10 +2112,11 @@ class _DisciplinaCardState extends State<DisciplinaCard> {
                 subjectName: nome,
                 subjectColor: color,
                 professorName: professorNome,
+                disciplinaId: disciplinaId,
               ),
             ),
           );
-        },
+        } : null,
         child: AnimatedContainer(
           duration: Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,

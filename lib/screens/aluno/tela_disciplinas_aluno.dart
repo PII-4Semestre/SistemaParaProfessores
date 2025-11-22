@@ -227,6 +227,7 @@ class _TelaDisciplinasAlunoState extends State<TelaDisciplinasAluno> {
     final nome = disciplina['nome'] ?? 'Sem nome';
     final professor = disciplina['professor_nome'] ?? 'Sem professor';
     final descricao = disciplina['descricao'] ?? '';
+    final disciplinaId = disciplina['id'] as int;
 
     // Calcular média da disciplina
     final notasDisciplina = _notas
@@ -254,6 +255,7 @@ class _TelaDisciplinasAlunoState extends State<TelaDisciplinasAluno> {
                 subjectName: nome,
                 subjectColor: cor,
                 professorName: professor,
+                disciplinaId: disciplinaId,
               ),
             ),
           );
