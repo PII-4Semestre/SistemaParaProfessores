@@ -239,16 +239,13 @@ Para documentação detalhada do projeto, incluindo:
 - Testes e validações
 - Apresentações e retrospectivas
 
+Consulte: **[DOCUMENTACAO_PROJETO.md](./DOCUMENTACAO_PROJETO.md)**
+
 ---
 
 ## 📄 Licença
-Este projeto foi desenvolvido com fins **acadêmicos** como parte do **Projeto Integrador Interdisciplinar (PII)** do Instituto Mauá de Tecnologia.
-
-### Uso do Código
-O código-fonte é livre para fins educacionais, permitindo uso e modificação para aprendizado.
-
-### Propriedade Intelectual
-Os **logos, imagens e marca do Colégio Poliedro** são propriedade exclusiva da instituição e **não podem ser utilizados sem autorização prévia**. Qualquer uso comercial ou não autorizado das marcas registradas está sujeito às leis de propriedade intelectual vigentes.
+Este projeto foi desenvolvido com fins **acadêmicos** como parte da disciplina **TTI206 - Desenvolvimento Multiplataformas**.  
+O uso e modificação do código são livres para fins educacionais.
 
 ---
 
