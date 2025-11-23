@@ -13,12 +13,15 @@ class TelaLogin extends StatefulWidget {
 
 class _TelaLoginState extends State<TelaLogin> {
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController senhaController = TextEditingController();
   final ApiService _apiService = ApiService();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
     emailController.dispose();
+    senhaController.dispose();
     super.dispose();
   }
 
@@ -26,11 +29,12 @@ class _TelaLoginState extends State<TelaLogin> {
   void _performLogin() async {
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    
     // Validação básica
-    if (emailController.text.isEmpty) {
+    if (emailController.text.isEmpty || senhaController.text.isEmpty) {
       messenger.showSnackBar(
         const SnackBar(
-          content: Text('Por favor, digite "aluno" ou "professor"'),
+          content: Text('Por favor, preencha email e senha'),
           backgroundColor: Colors.red,
         ),
       );
@@ -42,48 +46,35 @@ class _TelaLoginState extends State<TelaLogin> {
     });
 
     try {
-      final inputText = emailController.text.trim().toLowerCase();
+      final email = emailController.text.trim();
+      final senha = senhaController.text;
 
-      // DEV MODE: Login simplificado para testes
-      if (inputText == 'aluno' || inputText == 'professor') {
-        // Simular mock user data
-        final userData = {
-          'id': inputText == 'professor' ? 1 : 3,
-          'nome': inputText == 'professor' ? 'Carlos Mendes' : 'João Silva',
-          'email': inputText == 'professor'
-              ? 'carlos.mendes@email.com'
-              : 'joao.silva@email.com',
-          'tipo': inputText,
-        };
+      // Fazer login via API
+      final response = await _apiService.login(email, senha);
+      final user = response['user'];
+      final userType = user['tipo'];
 
-        await _apiService.devLogin(inputText, userData);
-
-        if (!mounted) return;
-
-        // Navegar para a tela apropriada
-        if (inputText == 'professor') {
-          navigator.pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => const TelaInicialProfessor(),
-            ),
-          );
-        } else {
-          navigator.pushReplacement(
-            MaterialPageRoute(builder: (context) => const TelaInicialAluno()),
-          );
-        }
-        return;
-      }
-
-      // Se não for "aluno" ou "professor", mostrar erro
       if (!mounted) return;
 
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Digite "aluno" ou "professor" para fazer login'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      // Navegar para a tela apropriada baseado no tipo de usuário
+      if (userType == 'professor') {
+        navigator.pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const TelaInicialProfessor(),
+          ),
+        );
+      } else if (userType == 'aluno') {
+        navigator.pushReplacement(
+          MaterialPageRoute(builder: (context) => const TelaInicialAluno()),
+        );
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Tipo de usuário desconhecido: $userType'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
 
@@ -271,58 +262,66 @@ class _TelaLoginState extends State<TelaLogin> {
                           color: isDark ? Colors.cyan : Colors.orange,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.cyan.withValues(alpha: 0.1)
-                              : Colors.orange.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.cyan.withValues(alpha: 0.3)
-                                : Colors.orange.shade200,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.developer_mode,
-                                  size: 16,
-                                  color: isDark ? Colors.cyan : Colors.orange.shade700,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'MODO DESENVOLVIMENTO',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: isDark ? Colors.cyan : Colors.orange.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Digite "aluno" ou "professor"',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.6)
-                                    : Colors.grey.shade700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                       const SizedBox(height: 24),
-                      // Campo de Login
+                      // Campo de Email
                       TextField(
                         controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          labelStyle: TextStyle(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.7)
+                                : Colors.grey.shade700,
+                          ),
+                          prefixIcon: Icon(
+                            Icons.email_outlined,
+                            color: isDark ? Colors.cyan : Colors.orange,
+                          ),
+                          hintText: 'seu.email@exemplo.com',
+                          hintStyle: TextStyle(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.3)
+                                : Colors.grey.shade400,
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.2)
+                                  : Colors.grey.shade300,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.2)
+                                  : Colors.grey.shade300,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: isDark ? Colors.cyan : Colors.orange,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Campo de Senha
+                      TextField(
+                        controller: senhaController,
+                        obscureText: _obscurePassword,
                         keyboardType: TextInputType.text,
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _performLogin(),
@@ -330,17 +329,32 @@ class _TelaLoginState extends State<TelaLogin> {
                           color: isDark ? Colors.white : Colors.black87,
                         ),
                         decoration: InputDecoration(
-                          labelText: 'Login Rápido',
+                          labelText: 'Senha',
                           labelStyle: TextStyle(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.7)
                                 : Colors.grey.shade700,
                           ),
                           prefixIcon: Icon(
-                            Icons.person_outline,
+                            Icons.lock_outline,
                             color: isDark ? Colors.cyan : Colors.orange,
                           ),
-                          hintText: 'Digite "aluno" ou "professor"',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.5)
+                                  : Colors.grey.shade600,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                          hintText: 'Digite sua senha',
                           hintStyle: TextStyle(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.3)

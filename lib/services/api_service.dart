@@ -48,16 +48,6 @@ class ApiService {
     await prefs.remove('user');
   }
 
-  // DEV MODE: Mock login for development/testing
-  Future<void> devLogin(String tipo, Map<String, dynamic> userData) async {
-    _token = 'dev-token-$tipo';
-    _currentUser = userData;
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('token', _token!);
-    await prefs.setString('user', json.encode(userData));
-  }
-
   // Headers
   Map<String, String> _headers({bool needsAuth = false}) {
     final headers = {'Content-Type': 'application/json'};

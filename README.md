@@ -169,9 +169,21 @@ flutter run -d chrome  # Para web
 flutter run -d windows  # Para Windows
 ```
 
-### Login de Desenvolvimento
-- Digite "professor" ou "aluno" no campo de login
-- Sem senha necessária (modo dev)
+### Login no Sistema
+
+**Usuários disponíveis para teste:**
+
+#### Professores:
+- **Email:** `professor@poliedro.com` | **Senha:** `prof123`
+- **Email:** `silva@escola.com` | **Senha:** qualquer senha
+- **Email:** `maria@escola.com` | **Senha:** qualquer senha
+
+#### Alunos:
+- **Email:** `joao@aluno.com` | **Senha:** qualquer senha
+- **Email:** `ana@aluno.com` | **Senha:** qualquer senha
+- **Email:** `pedro@aluno.com` | **Senha:** qualquer senha
+
+> ⚠️ **Nota:** O sistema está em desenvolvimento e aceita qualquer senha para os usuários antigos. Para o novo usuário `professor@poliedro.com`, use a senha `prof123`.
 
 ---
 
