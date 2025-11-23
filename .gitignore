@@ -54,3 +54,5 @@ server/build/
 server/.dart_tool/
 server/.packages
 server/pubspec.lock
+macos/Flutter/GeneratedPluginRegistrant.swift
+macos/Flutter/GeneratedPluginRegistrant.swift

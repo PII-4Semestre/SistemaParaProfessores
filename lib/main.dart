@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/autenticacao/tela_login.dart';
 import 'services/api_service.dart';
 import 'services/theme_controller.dart';
@@ -52,6 +53,15 @@ class PoliEducaApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'PoliEduca',
           themeMode: themeMode,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('pt', 'BR'),
+            Locale('en', 'US'),
+          ],
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: lightScheme,
