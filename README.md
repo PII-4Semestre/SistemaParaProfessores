@@ -32,7 +32,7 @@ A solução centraliza informações como **disciplinas, notas, atividades e avi
 - ✅ Buscar alunos por nome, RA ou email
 - ✅ Gerenciar materiais didáticos (MongoDB + GridFS)
 - ✅ Upload e download de arquivos
-- 🚧 Enviar e receber mensagens (em desenvolvimento)
+- ✅ **Sistema de mensagens completo com MongoDB**
 
 ### 👨‍🎓 Alunos
 - ✅ Visualizar todas as disciplinas matriculadas
@@ -42,8 +42,8 @@ A solução centraliza informações como **disciplinas, notas, atividades e avi
 - ✅ Visualizar detalhes de cada disciplina
 - ✅ Visualizar materiais didáticos das disciplinas
 - ✅ Download de arquivos anexos
-- 🚧 Ler posts e avisos das disciplinas (em desenvolvimento)
-- 🚧 Mensagens com professores (em desenvolvimento)  
+- ✅ **Chat com professores em tempo real**
+- 🚧 Ler posts e avisos das disciplinas (planejado Sprint 5)  
 
 ---
 
@@ -63,7 +63,8 @@ A solução centraliza informações como **disciplinas, notas, atividades e avi
 - **Backend RESTful** com Dart Shelf
 - **Banco de dados híbrido:**
   - PostgreSQL para dados estruturados (usuários, disciplinas, notas, atividades)
-  - MongoDB Atlas + GridFS para materiais didáticos e arquivos binários
+  - MongoDB Atlas + GridFS para materiais didáticos, arquivos e **mensagens em tempo real**
+- **Sistema de Chat:** 8 endpoints REST para mensagens, edição, exclusão e reações
 - **Autenticação** com email/senha (bcrypt em desenvolvimento)
 - **API endpoints** completos para CRUD de todas as entidades
 - **Upload/Download de arquivos** via GridFS
@@ -248,12 +249,26 @@ SistemaParaProfessores/
 
 ## 📚 Documentação Completa
 
-Para documentação detalhada do projeto, incluindo:
+Para documentação detalhada do projeto, consulte:
+
+### Geral
+- [`README.md`](README.md) - Visão geral do projeto
+- [`server/README.md`](server/README.md) - Documentação completa do backend
 - Modelo de banco de dados completo
 - Especificação de requisitos
-- Documentação das Sprints 1 e 2
-- Testes e validações
-- Apresentações e retrospectivas
+- Documentação das Sprints 1 a 4
+
+### Sistema de Chat (Sprint 4)
+- 💬 [`CHAT_SISTEMA_COMPLETO.md`](CHAT_SISTEMA_COMPLETO.md) - Documentação completa do sistema de mensagens
+- 🚀 [`SETUP_RAPIDO_CHAT.md`](SETUP_RAPIDO_CHAT.md) - Guia de setup em 5 minutos
+- ✅ [`CHECKLIST_TESTES_CHAT.md`](CHECKLIST_TESTES_CHAT.md) - Checklist de testes funcionais
+- ⚙️ [`setup-chat.ps1`](setup-chat.ps1) - Script automatizado de configuração
+
+### Backend
+- [`server/DATABASE_SETUP.md`](server/DATABASE_SETUP.md) - Setup do PostgreSQL
+- [`server/MONGODB_ATLAS_SETUP.md`](server/MONGODB_ATLAS_SETUP.md) - Setup do MongoDB
+- [`server/API_MATERIAIS.md`](server/API_MATERIAIS.md) - Documentação da API de materiais
+- [`server/test/README.md`](server/test/README.md) - Documentação de testes (193 testes)
 
 ---
 

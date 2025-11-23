@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../services/api_service.dart';
 
 // Modelo de mensagem (pronto para MongoDB)
 class Message {
@@ -77,138 +78,45 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _messagesScrollController = ScrollController();
+  final ApiService _apiService = ApiService();
 
   int? _selectedConversationIndex;
   Message? _replyingTo;
   Message? _editingMessage;
   String _conversationFilter = 'all'; // 'all', 'unread'
+  
+  bool _isLoadingMessages = false;
+  bool _isInitializing = true;
+  String? _currentUserId;
 
-  // Mock data - será substituído por dados do MongoDB
-  final List<Conversation> _conversations = [
-    Conversation(
-      id: '1',
-      participantId: 'aluno1',
-      participantName: 'Maria Silva',
-      participantRole: 'RA: 24.00301-2',
-      lastMessage: 'Professor, poderia me ajudar com a questão 5?',
-      lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),
-      unreadCount: 3,
-    ),
-    Conversation(
-      id: '2',
-      participantId: 'aluno2',
-      participantName: 'João Santos',
-      participantRole: 'RA: 24.00302-2',
-      lastMessage: 'Obrigado pela explicação!',
-      lastMessageTime: DateTime.now().subtract(const Duration(hours: 2)),
-      unreadCount: 1,
-      isTyping: true,
-    ),
-    Conversation(
-      id: '3',
-      participantId: 'aluno3',
-      participantName: 'Ana Costa',
-      participantRole: 'RA: 24.00303-2',
-      lastMessage: 'Quando será a prova?',
-      lastMessageTime: DateTime.now().subtract(const Duration(days: 1)),
-      unreadCount: 0,
-    ),
-    Conversation(
-      id: '4',
-      participantId: 'aluno4',
-      participantName: 'Carlos Mendes',
-      participantRole: 'RA: 24.00304-2',
-      lastMessage: 'Consegui resolver o exercício!',
-      lastMessageTime: DateTime.now().subtract(const Duration(days: 2)),
-      unreadCount: 0,
-    ),
-    Conversation(
-      id: '5',
-      participantId: 'aluno5',
-      participantName: 'Beatriz Lima',
-      participantRole: 'RA: 24.00305-2',
-      lastMessage: 'Bom dia, professor!',
-      lastMessageTime: DateTime.now().subtract(const Duration(days: 3)),
-      unreadCount: 0,
-    ),
-  ];
+  List<Conversation> _conversations = [];
 
-  final List<Message> _mockMessages = [
-    Message(
-      id: '1',
-      content: 'Olá professor! Tenho uma dúvida sobre a atividade 3.',
-      senderId: 'me',
-      senderName: 'Eu',
-      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-      isRead: true,
-    ),
-    Message(
-      id: '2',
-      content: 'Claro! Me diga qual é sua dúvida.',
-      senderId: 'prof1',
-      senderName: 'Prof. Silva',
-      timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 55)),
-      isRead: true,
-    ),
-    Message(
-      id: '3',
-      content: 'É sobre a questão 5. Não entendi como resolver.',
-      senderId: 'me',
-      senderName: 'Eu',
-      timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 50)),
-      isRead: true,
-      reactions: ['👍', '😊'],
-    ),
-    Message(
-      id: '4',
-      content: 'Vou te enviar um material que vai ajudar!',
-      senderId: 'prof1',
-      senderName: 'Prof. Silva',
-      timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 45)),
-      isRead: true,
-      attachment: AttachedFile(
-        name: 'exercicios_resolvidos.pdf',
-        type: 'pdf',
-        size: 2456789,
-        url: 'https://example.com/file.pdf',
-      ),
-    ),
-    Message(
-      id: '5',
-      content: 'Muito obrigado! Vou dar uma olhada.',
-      senderId: 'me',
-      senderName: 'Eu',
-      timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 40)),
-      isRead: true,
-      replyToId: '4',
-      replyToContent: 'Vou te enviar um material que vai ajudar!',
-    ),
-    Message(
-      id: '6',
-      content: 'Conseguiu entender? Qualquer dúvida, estou aqui!',
-      senderId: 'prof1',
-      senderName: 'Prof. Silva',
-      timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
-      isRead: true,
-    ),
-    Message(
-      id: '7',
-      content: 'Sim! Agora ficou mais claro. Muito obrigado pela ajuda!',
-      senderId: 'me',
-      senderName: 'Eu',
-      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-      isRead: false,
-      reactions: ['❤️', '👍', '🎉'],
-    ),
-    Message(
-      id: '8',
-      content: 'De nada! Continue assim, você está indo muito bem nas aulas.',
-      senderId: 'prof1',
-      senderName: 'Prof. Silva',
-      timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
-      isRead: false,
-    ),
-  ];
+  List<Message> _messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _inicializar();
+  }
+
+  Future<void> _inicializar() async {
+    print('🚀 Iniciando tela de mensagens do professor...');
+    await _apiService.init();
+    _currentUserId = _apiService.currentUser?['id']?.toString();
+    print('👤 Usuário atual ID: $_currentUserId');
+    print('👤 Usuário dados: ${_apiService.currentUser}');
+    if (_currentUserId != null) {
+      await _carregarConversas();
+    } else {
+      print('⚠️ Nenhum usuário logado encontrado');
+    }
+    if (mounted) {
+      setState(() {
+        _isInitializing = false;
+      });
+      print('✅ Inicialização completa');
+    }
+  }
 
   @override
   void dispose() {
@@ -216,6 +124,158 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
     _messageController.dispose();
     _messagesScrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _carregarConversas() async {
+    try {
+      if (_currentUserId != null) {
+        // Validar se o ID é numérico
+        if (int.tryParse(_currentUserId!) == null) {
+          print('❌ ID do usuário não é numérico: $_currentUserId (não é possível carregar conversas)');
+          if (mounted) {
+            setState(() {
+              _conversations = [];
+            });
+          }
+          return;
+        }
+        
+        print('🔍 Carregando conversas para usuário ID: $_currentUserId');
+        final conversasData = await _apiService.getConversas(int.parse(_currentUserId!));
+        print('✅ Recebidas ${conversasData.length} conversas');
+        
+        final conversasReais = <Conversation>[];
+        
+        for (var data in conversasData) {
+          final participantId = data['participantId']?.toString() ?? '';
+          
+          // Filtrar apenas IDs numéricos (ignorar mock data)
+          if (int.tryParse(participantId) == null) {
+            print('⚠️ Ignorando conversa mock: $participantId');
+            continue;
+          }
+          
+          String participantName = 'Aluno $participantId';
+          
+          // Buscar nome real do usuário
+          try {
+            final usuario = await _apiService.getUsuario(participantId);
+            participantName = usuario['nome'] ?? participantName;
+          } catch (e) {
+            print('⚠️ Erro ao buscar usuário $participantId: $e');
+          }
+          
+          DateTime? lastMessageTime;
+          if (data['dataUltimaMensagem'] != null) {
+            try {
+              lastMessageTime = DateTime.parse(data['dataUltimaMensagem']);
+            } catch (e) {
+              lastMessageTime = null;
+            }
+          }
+          
+          conversasReais.add(Conversation(
+            id: participantId,
+            participantId: participantId,
+            participantName: participantName,
+            participantRole: '',
+            lastMessage: data['ultimaMensagem'],
+            lastMessageTime: lastMessageTime,
+            unreadCount: data['naoLidas'] ?? 0,
+          ));
+        }
+        
+        if (mounted) {
+          setState(() {
+            _conversations = conversasReais;
+          });
+          print('📋 ${conversasReais.length} conversas carregadas na UI');
+        }
+      } else {
+        print('⚠️ currentUserId é null, não é possível carregar conversas');
+      }
+    } catch (e) {
+      print('❌ Erro ao carregar conversas: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar conversas: $e')),
+        );
+      }
+    }
+  }
+
+  // Converter dados da API para Message da UI
+  Message _dadosParaMessage(Map<String, dynamic> data) {
+    return Message(
+      id: data['id']?.toString() ?? '',
+      content: data['conteudo'] ?? '',
+      senderId: data['remetenteId']?.toString() ?? '',
+      senderName: data['remetenteId']?.toString() == _currentUserId ? 'Eu' : 'Aluno',
+      timestamp: data['dataEnvio'] != null ? DateTime.parse(data['dataEnvio']) : DateTime.now(),
+      isRead: data['lida'] ?? false,
+      reactions: (data['reacoes'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      isEdited: data['editada'] ?? false,
+    );
+  }
+
+  Future<void> _carregarMensagens(String outroUsuarioId) async {
+    if (_currentUserId == null) return;
+    
+    // Validar se os IDs são numéricos
+    if (int.tryParse(_currentUserId!) == null || int.tryParse(outroUsuarioId) == null) {
+      print('⚠️ IDs não numéricos: $_currentUserId, $outroUsuarioId (ignorando)');
+      setState(() => _isLoadingMessages = false);
+      return;
+    }
+    
+    setState(() => _isLoadingMessages = true);
+    try {
+      print('📨 Carregando mensagens entre $_currentUserId e $outroUsuarioId');
+      final mensagensData = await _apiService.getMensagens(
+        usuarioId: int.parse(_currentUserId!),
+        outroUsuarioId: int.parse(outroUsuarioId),
+      );
+      print('✅ ${mensagensData.length} mensagens carregadas');
+      
+      final mensagensConvertidas = mensagensData.map((data) => _dadosParaMessage(data)).toList();
+      
+      if (mounted) {
+        setState(() {
+          _messages = mensagensConvertidas;
+          _isLoadingMessages = false;
+        });
+        
+        // Marcar conversa como lida
+        await _apiService.marcarConversaComoLida(
+          usuarioId: int.parse(_currentUserId!),
+          outroUsuarioId: int.parse(outroUsuarioId),
+        );
+        
+        // Atualizar contador de não lidas
+        _carregarConversas();
+        
+        _scrollToBottom();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingMessages = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar mensagens: $e')),
+        );
+      }
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_messagesScrollController.hasClients) {
+        _messagesScrollController.animateTo(
+          _messagesScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   String _formatTimestamp(DateTime timestamp) {
@@ -251,11 +311,12 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
           children: ['👍', '❤️', '😊', '😂', '😮', '😢', '🎉', '🔥']
               .map(
                 (emoji) => InkWell(
-                  onTap: () {
-                    // TODO: Adicionar reação via MongoDB
+                  onTap: () async {
                     Navigator.pop(context);
+                    // TODO: Implementar sistema de reações no backend
+                    // await apiService.adicionarReacao(message.id, emoji);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Reação $emoji adicionada!')),
+                      SnackBar(content: Text('Recurso de reações ainda não disponível')),
                     );
                   },
                   child: Container(
@@ -299,12 +360,23 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
                   'Deletar',
                   style: TextStyle(color: Colors.red),
                 ),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(context);
-                  // TODO: Deletar via MongoDB
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Mensagem deletada')),
-                  );
+                  try {
+                    await _apiService.deletarMensagem(message.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Mensagem deletada')),
+                    );
+                    // Recarregar mensagens
+                    if (_selectedConversationIndex != null) {
+                      final conversation = _conversations[_selectedConversationIndex!];
+                      _carregarMensagens(conversation.participantId);
+                    }
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erro ao deletar mensagem: $e')),
+                    );
+                  }
                 },
               ),
             ],
@@ -337,6 +409,20 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
                 _showReactionPicker(message);
               },
             ),
+            // Opção para marcar como não lida (apenas mensagens recebidas e lidas)
+            if (message.senderId != _currentUserId && message.senderId != 'me' && message.isRead)
+              ListTile(
+                leading: const Icon(Icons.mark_chat_unread),
+                title: const Text('Marcar como não lida'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  // TODO: Implementar endpoint para marcar como não lida no backend
+                  // await apiService.marcarComoNaoLida(message.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Recurso ainda não disponível')),
+                  );
+                },
+              ),
           ],
         ),
       ),
@@ -388,23 +474,193 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
     );
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_messageController.text.trim().isEmpty) return;
+    if (_currentUserId == null || _selectedConversationIndex == null) return;
 
-    // TODO: Enviar via MongoDB
-    setState(() {
-      _messageController.clear();
-      _replyingTo = null;
-      _editingMessage = null;
-    });
+    final content = _messageController.text.trim();
+    final conversation = _conversations[_selectedConversationIndex!];
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Mensagem enviada!')));
+    try {
+      if (_editingMessage != null) {
+        // Editar mensagem existente
+        await _apiService.editarMensagem(
+          mensagemId: _editingMessage!.id,
+          novoConteudo: content,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Mensagem editada!')),
+        );
+      } else {
+        // Enviar nova mensagem
+        await _apiService.enviarMensagem(
+          remetenteId: int.parse(_currentUserId!),
+          destinatarioId: int.parse(conversation.participantId),
+          conteudo: content,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Mensagem enviada!')),
+        );
+      }
+
+      setState(() {
+        _messageController.clear();
+        _replyingTo = null;
+        _editingMessage = null;
+      });
+
+      // Recarregar mensagens e conversas
+      _carregarMensagens(conversation.participantId);
+      _carregarConversas();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao enviar mensagem: $e')),
+      );
+    }
+  }
+
+  void _mostrarDialogoNovaConversa() async {
+    try {
+      // Buscar lista de alunos
+      print('🔍 Buscando lista de alunos...');
+      final response = await _apiService.getUsuarios();
+      final alunos = response.where((user) => user['tipo'] == 'aluno').toList();
+      print('✅ ${alunos.length} alunos encontrados');
+
+      if (!mounted) return;
+
+      if (alunos.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nenhum aluno encontrado no sistema')),
+        );
+        return;
+      }
+
+      // Mostrar diálogo para selecionar aluno
+      final alunoSelecionado = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Nova Conversa'),
+          content: SizedBox(
+            width: 400,
+            height: 400,
+            child: Column(
+              children: [
+                const Text('Selecione um aluno para iniciar a conversa:'),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: alunos.length,
+                    itemBuilder: (context, index) {
+                      final aluno = alunos[index];
+                      final alunoId = aluno['id']?.toString() ?? '';
+                      final alunoNome = aluno['nome'] ?? 'Aluno $alunoId';
+                      final alunoEmail = aluno['email'] ?? '';
+
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.orange,
+                          child: Text(
+                            alunoNome.substring(0, 2).toUpperCase(),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        title: Text(alunoNome),
+                        subtitle: Text(alunoEmail),
+                        onTap: () => Navigator.pop(context, aluno),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+          ],
+        ),
+      );
+
+      if (alunoSelecionado == null || !mounted) return;
+
+      final alunoId = alunoSelecionado['id']?.toString() ?? '';
+      final alunoNome = alunoSelecionado['nome'] ?? 'Aluno $alunoId';
+
+      // Verificar se já existe conversa com esse aluno
+      final conversaExistente = _conversations.indexWhere(
+        (c) => c.participantId == alunoId,
+      );
+
+      if (conversaExistente != -1) {
+        // Conversa já existe, apenas selecionar
+        setState(() {
+          _selectedConversationIndex = conversaExistente;
+        });
+        _carregarMensagens(alunoId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Conversa com $alunoNome já existe')),
+        );
+      } else {
+        // Criar nova conversa (adicionar à lista localmente)
+        setState(() {
+          _conversations.add(Conversation(
+            id: alunoId,
+            participantId: alunoId,
+            participantName: alunoNome,
+            participantRole: 'Aluno',
+            lastMessage: null,
+            lastMessageTime: null,
+            unreadCount: 0,
+          ));
+          _selectedConversationIndex = _conversations.length - 1;
+          _messages = [];
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Nova conversa com $alunoNome iniciada! Digite a primeira mensagem.')),
+        );
+      }
+    } catch (e) {
+      print('❌ Erro ao buscar alunos: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao buscar alunos: $e')),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isInitializing) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_currentUserId == null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Erro: Usuário não autenticado',
+              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Por favor, faça login novamente',
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+
     final filteredConversations = _conversationFilter == 'unread'
         ? _conversations.where((c) => c.unreadCount > 0).toList()
         : _conversations;
@@ -422,12 +678,26 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Mensagens',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        const Text(
+                          'Mensagens',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        ElevatedButton.icon(
+                          onPressed: _mostrarDialogoNovaConversa,
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Nova Conversa'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                     // Filtro de conversas
                     SegmentedButton<String>(
@@ -471,7 +741,36 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
                 const SizedBox(height: 16),
                 Expanded(
                   child: Card(
-                    child: ListView.separated(
+                    child: filteredConversations.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.chat_bubble_outline, 
+                                  size: 64, 
+                                  color: Colors.grey[300]
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Nenhuma conversa encontrada',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'As conversas aparecerão aqui quando houver mensagens',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[500],
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.separated(
                       itemCount: filteredConversations.length,
                       separatorBuilder: (context, index) =>
                           const Divider(height: 1),
@@ -585,6 +884,10 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
                             setState(() {
                               _selectedConversationIndex = index;
                             });
+                            // Carregar mensagens da conversa
+                            final conversation = filteredConversations[index];
+                            _carregarMensagens(conversation.participantId);
+                            _scrollToBottom();
                           },
                         );
                       },
@@ -728,16 +1031,18 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
           ),
           // Mensagens
           Expanded(
-            child: ListView.builder(
-              controller: _messagesScrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _mockMessages.length,
-              itemBuilder: (context, index) {
-                final message = _mockMessages[index];
-                final isMe = message.senderId == 'me';
-                return _buildMessageBubble(message, isMe);
-              },
-            ),
+            child: _isLoadingMessages
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    controller: _messagesScrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
+                      final isMe = message.senderId == _currentUserId || message.senderId == 'me';
+                      return _buildMessageBubble(message, isMe);
+                    },
+                  ),
           ),
           // Reply indicator
           if (_replyingTo != null)
