@@ -117,7 +117,6 @@ Write-Host "   • silva@escola.com (qualquer senha)" -ForegroundColor White
 Write-Host "   • maria@escola.com (qualquer senha)" -ForegroundColor White
 Write-Host ""
 Write-Host "   Alunos:" -ForegroundColor Yellow
-Write-Host "   • aluno@poliedro.com (qualquer senha)" -ForegroundColor White
 Write-Host "   • joao@aluno.com (qualquer senha)" -ForegroundColor White
 Write-Host "   • ana@aluno.com (qualquer senha)" -ForegroundColor White
 Write-Host "   • pedro@aluno.com (qualquer senha)" -ForegroundColor White

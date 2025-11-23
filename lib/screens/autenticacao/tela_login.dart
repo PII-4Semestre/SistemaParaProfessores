@@ -263,76 +263,6 @@ class _TelaLoginState extends State<TelaLogin> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      // Caixa de usuários de exemplo
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.cyan.withValues(alpha: 0.1)
-                              : Colors.orange.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.cyan.withValues(alpha: 0.3)
-                                : Colors.orange.shade200,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  size: 16,
-                                  color: isDark ? Colors.cyan : Colors.orange.shade700,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Usuários de exemplo',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: isDark ? Colors.cyan : Colors.orange.shade700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Professor: professor@poliedro.com',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.7)
-                                    : Colors.grey.shade700,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Aluno: aluno@poliedro.com',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.7)
-                                    : Colors.grey.shade700,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Senha: qualquer senha',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontStyle: FontStyle.italic,
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.5)
-                                    : Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
                       // Campo de Email
                       TextField(
                         controller: emailController,
@@ -352,7 +282,7 @@ class _TelaLoginState extends State<TelaLogin> {
                             Icons.email_outlined,
                             color: isDark ? Colors.cyan : Colors.orange,
                           ),
-                          hintText: 'seu.email@poliedro.com',
+                          hintText: 'professor@poliedro.com',
                           hintStyle: TextStyle(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.3)
@@ -424,7 +354,7 @@ class _TelaLoginState extends State<TelaLogin> {
                               });
                             },
                           ),
-                          hintText: 'Digite sua senha',
+                          hintText: 'prof123',
                           hintStyle: TextStyle(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.3)
