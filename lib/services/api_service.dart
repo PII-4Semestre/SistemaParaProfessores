@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../screens/professor/tela_mensagens_professor.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -358,6 +359,192 @@ class ApiService {
 
     if (response.statusCode != 200) {
       throw Exception('Erro ao remover aluno da disciplina');
+    }
+  }
+
+  // USUÁRIOS ENDPOINTS
+
+  Future<Map<String, dynamic>> getUsuario(String usuarioId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/usuarios/$usuarioId'),
+      headers: _headers(),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Erro ao buscar dados do usuário');
+    }
+  }
+
+  Future<List<dynamic>> getUsuarios() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/usuarios'),
+      headers: _headers(),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Erro ao buscar lista de usuários');
+    }
+  }
+
+  // MENSAGENS ENDPOINTS
+
+  Future<List<dynamic>> getConversas(int usuarioId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/mensagens/conversas/$usuarioId'),
+      headers: _headers(),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Erro ao buscar conversas');
+    }
+  }
+
+  Future<List<dynamic>> getMensagens({
+    required int usuarioId,
+    required int outroUsuarioId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/mensagens/$usuarioId/$outroUsuarioId'),
+      headers: _headers(),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Erro ao buscar mensagens');
+    }
+  }
+
+  Future<Map<String, dynamic>> enviarMensagem({
+    required int remetenteId,
+    required int destinatarioId,
+    required String conteudo,
+    int? disciplinaId,
+    String? respostaParaId,
+    AttachedFile? attachment,
+  }) async {
+    final body = {
+      'remetenteId': remetenteId.toString(),
+      'destinatarioId': destinatarioId.toString(),
+      'conteudo': conteudo,
+      if (disciplinaId != null) 'disciplinaId': disciplinaId.toString(),
+      if (respostaParaId != null) 'respostaParaId': respostaParaId,
+      if (attachment != null)
+        'anexo': {
+          'name': attachment.name,
+          'type': attachment.type,
+          'size': attachment.size,
+          'url': attachment.url,
+        },
+    };
+    final response = await http.post(
+      Uri.parse('$baseUrl/mensagens'),
+      headers: _headers(needsAuth: true),
+      body: json.encode(body),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Erro ao enviar mensagem');
+    }
+  }
+
+  Future<void> marcarMensagemComoLida(String mensagemId) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/mensagens/$mensagemId/lida'),
+      headers: _headers(needsAuth: true),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao marcar mensagem como lida');
+    }
+  }
+
+  // Marcar todas as mensagens de uma conversa como lidas
+  Future<void> marcarConversaComoLida({
+    required int usuarioId,
+    required int outroUsuarioId,
+  }) async {
+    // MongoDB: marcar cada mensagem individualmente (a ser implementado se necessário)
+    // Por enquanto, não faz nada pois o endpoint não existe
+    return;
+  }
+
+  Future<void> deletarMensagem(String mensagemId) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/mensagens/$mensagemId'),
+      headers: _headers(needsAuth: true),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao deletar mensagem');
+    }
+  }
+
+  Future<Map<String, dynamic>> editarMensagem({
+    required String mensagemId,
+    required String novoConteudo,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/mensagens/$mensagemId'),
+      headers: _headers(needsAuth: true),
+      body: json.encode({'conteudo': novoConteudo}),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Erro ao editar mensagem');
+    }
+  }
+
+  Future<int> contarMensagensNaoLidas(int usuarioId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/mensagens/nao-lidas/$usuarioId'),
+      headers: _headers(),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['count'] ?? 0;
+    } else {
+      throw Exception('Erro ao contar mensagens não lidas');
+    }
+  }
+
+  Future<void> adicionarReacao({
+    required String mensagemId,
+    required String emoji,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/mensagens/$mensagemId/reacoes'),
+      headers: _headers(needsAuth: true),
+      body: json.encode({'emoji': emoji}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao adicionar reação');
+    }
+  }
+
+  Future<void> removerReacao({
+    required String mensagemId,
+    required String emoji,
+  }) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/mensagens/$mensagemId/reacoes/$emoji'),
+      headers: _headers(needsAuth: true),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao remover reação');
     }
   }
 }

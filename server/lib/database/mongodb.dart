@@ -65,6 +65,15 @@ class MongoDB {
       final arquivos = _db.collection('arquivos.files');
       await arquivos.createIndex(keys: {'metadata.material_id': 1});
       
+      // Índices para coleção de mensagens
+      final mensagens = _db.collection('mensagens');
+      await mensagens.createIndex(keys: {'remetenteId': 1});
+      await mensagens.createIndex(keys: {'destinatarioId': 1});
+      await mensagens.createIndex(keys: {'dataEnvio': -1});
+      await mensagens.createIndex(keys: {'lida': 1});
+      // Índice composto para buscar conversas
+      await mensagens.createIndex(keys: {'remetenteId': 1, 'destinatarioId': 1});
+      
       print('${_timestamp()} [mongodb] ✅ Índices criados no MongoDB');
     } catch (e) {
       print('${_timestamp()} [mongodb] ⚠️ Aviso ao criar índices: $e');

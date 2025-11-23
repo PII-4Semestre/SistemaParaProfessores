@@ -12,6 +12,8 @@ import 'package:sistema_professores_server/routes/atividades_routes.dart';
 import 'package:sistema_professores_server/routes/notas_routes.dart';
 import 'package:sistema_professores_server/routes/alunos_routes.dart';
 import 'package:sistema_professores_server/routes/materiais_routes.dart';
+import 'package:sistema_professores_server/routes/mensagens_routes.dart';
+import 'package:sistema_professores_server/routes/usuarios_routes.dart';
 
 /// Helper para formatar timestamp nos logs
 String _timestamp() {
@@ -44,7 +46,9 @@ void main() async {
     ..mount('/api/atividades', AtividadesRoutes().router.call)
     ..mount('/api/notas', NotasRoutes().router.call)
     ..mount('/api/alunos', AlunosRoutes().router.call)
-    ..mount('/api/materiais', MateriaisRoutes().router.call);
+    ..mount('/api/materiais', MateriaisRoutes().router.call)
+    ..mount('/api/mensagens', MensagensRoutes().router.call)
+    ..mount('/api/usuarios', UsuariosRoutes().router.call);
 
   // Middleware para CORS
   final handler = Pipeline()
