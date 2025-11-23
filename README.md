@@ -30,8 +30,9 @@ A solução centraliza informações como **disciplinas, notas, atividades e avi
 - ✅ Matricular e desmatricular alunos em disciplinas
 - ✅ Visualizar estatísticas em tempo real (dashboard)
 - ✅ Buscar alunos por nome, RA ou email
+- ✅ Gerenciar materiais didáticos (MongoDB + GridFS)
+- ✅ Upload e download de arquivos
 - 🚧 Enviar e receber mensagens (em desenvolvimento)
-- 🚧 Gerenciar materiais (aguardando MongoDB)
 
 ### 👨‍🎓 Alunos
 - ✅ Visualizar todas as disciplinas matriculadas
@@ -39,9 +40,10 @@ A solução centraliza informações como **disciplinas, notas, atividades e avi
 - ✅ Acompanhar atividades por disciplina
 - ✅ Dashboard com estatísticas pessoais
 - ✅ Visualizar detalhes de cada disciplina
+- ✅ Visualizar materiais didáticos das disciplinas
+- ✅ Download de arquivos anexos
 - 🚧 Ler posts e avisos das disciplinas (em desenvolvimento)
-- 🚧 Mensagens com professores (em desenvolvimento)
-- 🚧 Download de materiais (aguardando MongoDB)  
+- 🚧 Mensagens com professores (em desenvolvimento)  
 
 ---
 
@@ -52,7 +54,7 @@ A solução centraliza informações como **disciplinas, notas, atividades e avi
 | **Frontend / Mobile** | [Flutter](https://flutter.dev) 3.35.6 |
 | **Backend** | [Dart Shelf](https://pub.dev/packages/shelf) 1.4.2 |
 | **Database (Relacional)** | [PostgreSQL](https://www.postgresql.org) 18.0 |
-| **Database (Documentos)** | [MongoDB](https://www.mongodb.com) (em planejamento) |
+| **Database (Documentos)** | [MongoDB Atlas](https://www.mongodb.com) + GridFS |
 | **Controle de versão** | [GitHub](https://github.com) |
 | **Design e prototipagem** | [Figma](https://www.figma.com) |
 | **Gerenciamento ágil** | [Trello](https://trello.com) |
@@ -60,10 +62,11 @@ A solução centraliza informações como **disciplinas, notas, atividades e avi
 ### 🏗 Arquitetura Atual
 - **Backend RESTful** com Dart Shelf
 - **Banco de dados híbrido:**
-  - PostgreSQL para dados estruturados (usuários, disciplinas, notas)
-  - MongoDB (planejado) para materiais didáticos e arquivos
-- **Autenticação** em desenvolvimento (dev mode implementado)
+  - PostgreSQL para dados estruturados (usuários, disciplinas, notas, atividades)
+  - MongoDB Atlas + GridFS para materiais didáticos e arquivos binários
+- **Autenticação** com email/senha (bcrypt em desenvolvimento)
 - **API endpoints** completos para CRUD de todas as entidades
+- **Upload/Download de arquivos** via GridFS
 - **Design responsivo** com suporte a múltiplos tamanhos de tela  
 
 ---
@@ -105,10 +108,10 @@ O projeto segue o framework **SCRUM**, com sprints quinzenais e entregas increme
 |---------|---------|---------------------|--------|
 | **1** | 09-22/10/2025 | Login, navegação e estrutura inicial | ✅ Concluída |
 | **2** | 23/10-05/11/2025 | Backend PostgreSQL, API REST, gestão de disciplinas | ✅ Concluída |
-| **3** | 06-19/11/2025 | Gestão de atividades e notas, cálculo de médias | 🚧 Em andamento |
-| **4** | 20/11-03/12/2025 | Interface completa do aluno, dashboards avançados | 📋 Planejada |
-| **5** | 04-17/12/2025 | Integração MongoDB, upload/download de materiais | 📋 Planejada |
-| **6** | 18-31/12/2025 | Sistema de mensagens, testes finais e documentação | 📋 Planejada |
+| **3** | 06-19/11/2025 | Gestão de atividades e notas, cálculo de médias | ✅ Concluída |
+| **4** | 20/11-03/12/2025 | Integração MongoDB, upload/download de materiais, interface do aluno | 🚧 Em andamento |
+| **5** | 04-17/12/2025 | Sistema de mensagens, notificações em tempo real | 📋 Planejada |
+| **6** | 18-31/12/2025 | Testes finais, documentação e deploy | 📋 Planejada |
 
 ---
 
