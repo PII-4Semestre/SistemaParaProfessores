@@ -200,6 +200,8 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
       timestamp: data['dataEnvio'] != null ? DateTime.parse(data['dataEnvio']) : DateTime.now(),
       isRead: data['lida'] ?? false,
       reactions: (data['reacoes'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      replyToId: data['respostaParaId']?.toString(),
+      replyToContent: data['respostaParaConteudo']?.toString(),
       isEdited: data['editada'] ?? false,
     );
   }
@@ -306,16 +308,49 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
                 (emoji) => InkWell(
                   onTap: () async {
                     Navigator.pop(context);
-                    // TODO: Implementar sistema de reações no backend
-                    // await apiService.adicionarReacao(message.id, emoji);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Recurso de reações ainda não disponível')),
-                    );
+                    try {
+                      if (message.reactions.contains(emoji)) {
+                        // Remover reação se já existe
+                        await _apiService.removerReacao(
+                          mensagemId: message.id,
+                          emoji: emoji,
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Reação removida!')),
+                        );
+                      } else {
+                        // Adicionar nova reação
+                        await _apiService.adicionarReacao(
+                          mensagemId: message.id,
+                          emoji: emoji,
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Reação adicionada!')),
+                        );
+                      }
+                      // Recarregar mensagens para atualizar as reações
+                      if (_selectedConversationIndex != null) {
+                        final conversation = _conversations[_selectedConversationIndex!];
+                        _carregarMensagens(conversation.participantId);
+                      }
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Erro ao reagir: $e')),
+                      );
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
+                      color: message.reactions.contains(emoji) 
+                          ? Colors.orange.withValues(alpha: 0.2)
+                          : null,
+                      border: Border.all(
+                        color: message.reactions.contains(emoji) 
+                            ? Colors.orange
+                            : Colors.grey[300]!,
+                        width: message.reactions.contains(emoji) ? 2 : 1,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(emoji, style: const TextStyle(fontSize: 24)),
@@ -490,6 +525,7 @@ class _TelaMensagensAlunoState extends State<TelaMensagensAluno> {
           remetenteId: int.parse(_currentUserId!),
           destinatarioId: int.parse(conversation.participantId),
           conteudo: content,
+          respostaParaId: _replyingTo?.id,
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Mensagem enviada!')),

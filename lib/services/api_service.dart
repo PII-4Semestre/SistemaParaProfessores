@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../screens/professor/tela_mensagens_professor.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -425,16 +426,27 @@ class ApiService {
     required int destinatarioId,
     required String conteudo,
     int? disciplinaId,
+    String? respostaParaId,
+    AttachedFile? attachment,
   }) async {
+    final body = {
+      'remetenteId': remetenteId.toString(),
+      'destinatarioId': destinatarioId.toString(),
+      'conteudo': conteudo,
+      if (disciplinaId != null) 'disciplinaId': disciplinaId.toString(),
+      if (respostaParaId != null) 'respostaParaId': respostaParaId,
+      if (attachment != null)
+        'anexo': {
+          'name': attachment.name,
+          'type': attachment.type,
+          'size': attachment.size,
+          'url': attachment.url,
+        },
+    };
     final response = await http.post(
       Uri.parse('$baseUrl/mensagens'),
       headers: _headers(needsAuth: true),
-      body: json.encode({
-        'remetenteId': remetenteId.toString(),
-        'destinatarioId': destinatarioId.toString(),
-        'conteudo': conteudo,
-        if (disciplinaId != null) 'disciplinaId': disciplinaId.toString(),
-      }),
+      body: json.encode(body),
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -504,6 +516,35 @@ class ApiService {
       return data['count'] ?? 0;
     } else {
       throw Exception('Erro ao contar mensagens não lidas');
+    }
+  }
+
+  Future<void> adicionarReacao({
+    required String mensagemId,
+    required String emoji,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/mensagens/$mensagemId/reacoes'),
+      headers: _headers(needsAuth: true),
+      body: json.encode({'emoji': emoji}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao adicionar reação');
+    }
+  }
+
+  Future<void> removerReacao({
+    required String mensagemId,
+    required String emoji,
+  }) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/mensagens/$mensagemId/reacoes/$emoji'),
+      headers: _headers(needsAuth: true),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erro ao remover reação');
     }
   }
 }

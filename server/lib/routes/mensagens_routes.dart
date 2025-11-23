@@ -135,6 +135,8 @@ class MensagensRoutes {
       try {
         final body = await request.readAsString();
         final data = json.decode(body) as Map<String, dynamic>;
+        
+        print('📩 Dados recebidos: $data');
 
         // Validar campos obrigatórios
         if (data['remetenteId'] == null || 
@@ -160,9 +162,26 @@ class MensagensRoutes {
         };
 
         // Campos opcionais
-        if (data['replyToId'] != null) {
-          mensagem['replyToId'] = data['replyToId'];
-          mensagem['replyToContent'] = data['replyToContent'];
+        if (data['respostaParaId'] != null) {
+          print('✅ Resposta detectada: ${data['respostaParaId']}');
+          mensagem['respostaParaId'] = data['respostaParaId'];
+          
+          // Buscar o conteúdo da mensagem original
+          try {
+            final mensagemOriginal = await collection.findOne(
+              where.eq('_id', ObjectId.parse(data['respostaParaId']))
+            );
+            if (mensagemOriginal != null) {
+              mensagem['respostaParaConteudo'] = mensagemOriginal['conteudo'];
+              print('✅ Conteúdo original encontrado: ${mensagemOriginal['conteudo']}');
+            } else {
+              print('⚠️ Mensagem original não encontrada');
+            }
+          } catch (e) {
+            print('❌ Erro ao buscar mensagem original: $e');
+          }
+        } else {
+          print('ℹ️ Sem resposta (respostaParaId não fornecido)');
         }
 
         final result = await collection.insertOne(mensagem);
