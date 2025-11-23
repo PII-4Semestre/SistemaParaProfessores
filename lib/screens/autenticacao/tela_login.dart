@@ -282,7 +282,7 @@ class _TelaLoginState extends State<TelaLogin> {
                             Icons.email_outlined,
                             color: isDark ? Colors.cyan : Colors.orange,
                           ),
-                          hintText: 'seu.email@exemplo.com',
+                          hintText: 'professor@poliedro.com',
                           hintStyle: TextStyle(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.3)
@@ -354,7 +354,7 @@ class _TelaLoginState extends State<TelaLogin> {
                               });
                             },
                           ),
-                          hintText: 'Digite sua senha',
+                          hintText: 'prof123',
                           hintStyle: TextStyle(
                             color: isDark
                                 ? Colors.white.withValues(alpha: 0.3)
