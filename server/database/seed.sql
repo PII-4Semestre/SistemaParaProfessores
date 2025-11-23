@@ -2,9 +2,9 @@
 
 -- Inserir professores
 INSERT INTO usuarios (nome, email, senha_hash, tipo) VALUES
-('Prof. Silva', 'silva@escola.com', '$2b$10$abcdefghijklmnopqrstuv', 'professor'),
-('Prof. Maria', 'maria@escola.com', '$2b$10$abcdefghijklmnopqrstuv', 'professor'),
-('Prof. Poliedro', 'professor@poliedro.com', '$2b$10$abcdefghijklmnopqrstuv', 'professor');
+('Prof. Silva', 'silva@escola.com', '$2b$12$iMSgRce8gTLFrabGQdVdp.DbLeKFX0rW8fzdsLThbquaM0e3o2eaq', 'professor'),
+('Prof. Maria', 'maria@escola.com', '$2b$12$iMSgRce8gTLFrabGQdVdp.DbLeKFX0rW8fzdsLThbquaM0e3o2eaq', 'professor'),
+('Prof. Poliedro', 'professor@poliedro.com', '$2b$12$iMSgRce8gTLFrabGQdVdp.DbLeKFX0rW8fzdsLThbquaM0e3o2eaq', 'professor');
 
 -- Inserir alunos
 INSERT INTO usuarios (nome, email, senha_hash, tipo, ra) VALUES
