@@ -1,13 +1,5 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:intl/intl.dart';
-import 'package:mime/mime.dart';
-import 'dart:html' as html show Blob, Url, AnchorElement;
 import '../../services/api_service.dart';
-import '../../services/materiais_service.dart';
-import '../../models/material.dart' as models;
 
 class TelaDetalhesDisciplinaProfessor extends StatefulWidget {
   final String subjectName;
@@ -32,7 +24,6 @@ class _TelaDetalhesDisciplinaProfessorState
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   final ApiService _apiService = ApiService();
-  final MateriaisService _materiaisService = MateriaisService();
 
   List<dynamic> _atividades = [];
   bool _isLoadingAtividades = false;
@@ -42,17 +33,12 @@ class _TelaDetalhesDisciplinaProfessorState
   bool _isLoadingAlunos = false;
   String? _errorAlunos;
 
-  List<models.Material> _materiais = [];
-  bool _isLoadingMateriais = false;
-  String? _errorMateriais;
-
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _loadAtividades();
     _loadAlunos();
-    _loadMateriais();
   }
 
   Future<void> _loadAlunos() async {
@@ -179,41 +165,14 @@ class _TelaDetalhesDisciplinaProfessorState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      'ID: ${widget.disciplinaId}',
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.9),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      widget.subjectName,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                widget.subjectName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              const SizedBox(height: 4),
                               Text(
                                 '${_alunos.length} alunos • ${_atividades.length} atividades',
                                 style: TextStyle(
@@ -758,63 +717,49 @@ class _TelaDetalhesDisciplinaProfessorState
   }
 
   Widget _buildMateriaisTab() {
-    if (_isLoadingMateriais) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_errorMateriais != null) {
-      return Center(
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(48.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: widget.subjectColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.folder_open,
+                size: 80,
+                color: widget.subjectColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Materiais em Desenvolvimento',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
             Text(
-              'Erro ao carregar materiais',
-              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
+              'A funcionalidade de materiais didáticos estará disponível em breve.',
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              _errorMateriais!,
+              'Aqui você poderá fazer upload e gerenciar PDFs, slides, apostilas e outros recursos.',
               style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: _loadMateriais,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Tentar Novamente'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return Column(
-      children: [
-        // Header com botão de adicionar
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  '${_materiais.length} ${_materiais.length == 1 ? 'material' : 'materiais'}',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: widget.subjectColor.withValues(alpha: 0.3),
                 ),
-              ),
-              ElevatedButton.icon(
-                onPressed: _showAddMaterialDialog,
-                icon: const Icon(Icons.add),
-                label: const Text('Novo Material'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.subjectColor,
-                  foregroundColor: Colors.white,
-                ),
+                borderRadius: BorderRadius.circular(8),
               ),
             ],
           ),
@@ -1398,56 +1343,18 @@ class _TelaDetalhesDisciplinaProfessorState
               width: 500,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Título
-                  TextField(
-                    controller: tituloController,
-                    decoration: const InputDecoration(
-                      labelText: 'Título *',
-                      border: OutlineInputBorder(),
-                    ),
+                  Icon(
+                    Icons.info_outline,
+                    color: widget.subjectColor,
+                    size: 20,
                   ),
-                  const SizedBox(height: 16),
-
-                  // Descrição
-                  TextField(
-                    controller: descricaoController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      labelText: 'Descrição',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Tipo de material
-                  DropdownButtonFormField<String>(
-                    value: tipoSelecionado,
-                    decoration: const InputDecoration(
-                      labelText: 'Tipo',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'documento', child: Text('📄 Documento')),
-                      DropdownMenuItem(value: 'video', child: Text('🎥 Vídeo')),
-                      DropdownMenuItem(value: 'apresentacao', child: Text('📊 Apresentação')),
-                      DropdownMenuItem(value: 'imagem', child: Text('🖼️ Imagem')),
-                      DropdownMenuItem(value: 'link', child: Text('🔗 Link')),
-                    ],
-                    onChanged: (value) {
-                      setDialogState(() => tipoSelecionado = value!);
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Link externo
-                  TextField(
-                    controller: linkExternoController,
-                    decoration: const InputDecoration(
-                      labelText: 'Link Externo (opcional)',
-                      border: OutlineInputBorder(),
-                      hintText: 'https://...',
+                  const SizedBox(width: 8),
+                  Text(
+                    'Integração com MongoDB em progresso',
+                    style: TextStyle(
+                      color: widget.subjectColor,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1533,37 +1440,6 @@ class _TelaDetalhesDisciplinaProfessorState
                   ],
                 ],
               ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (tituloController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('O título é obrigatório')),
-                  );
-                  return;
-                }
-
-                Navigator.pop(context);
-                await _updateMaterial(
-                  material: material,
-                  titulo: tituloController.text,
-                  descricao: descricaoController.text.isEmpty ? null : descricaoController.text,
-                  tipo: tipoSelecionado,
-                  tags: tags,
-                  linkExterno: linkExternoController.text.isEmpty ? null : linkExternoController.text,
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: widget.subjectColor,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Salvar'),
             ),
           ],
         ),
