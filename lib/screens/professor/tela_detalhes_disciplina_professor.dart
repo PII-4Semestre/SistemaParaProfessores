@@ -25,7 +25,7 @@ class _TelaDetalhesDisciplinaProfessorState
   final TextEditingController _searchController = TextEditingController();
   final ApiService _apiService = ApiService();
 
-  List<Atividade> _atividades = [];
+  List<dynamic> _atividades = [];
   bool _isLoadingAtividades = false;
   String? _errorAtividades;
 
@@ -73,8 +73,8 @@ class _TelaDetalhesDisciplinaProfessorState
     });
 
     try {
-      final atividades = await _atividadesService.getAtividadesDisciplina(
-        widget.disciplinaId.toString(),
+      final atividades = await _apiService.getAtividadesDisciplina(
+        widget.disciplinaId,
       );
 
       if (mounted) {
@@ -84,11 +84,9 @@ class _TelaDetalhesDisciplinaProfessorState
         });
       }
     } catch (e) {
-      print('[TelaDetalhesDisciplina] Erro ao carregar atividades: $e');
       if (mounted) {
         setState(() {
           _errorAtividades = e.toString();
-          _atividades = [];
           _isLoadingAtividades = false;
         });
       }
@@ -455,7 +453,9 @@ class _TelaDetalhesDisciplinaProfessorState
               ),
               const SizedBox(width: 16),
               ElevatedButton.icon(
-                onPressed: _showAddAtividadeDialog,
+                onPressed: () {
+                  _showAddAtividadeDialog();
+                },
                 icon: const Icon(Icons.add),
                 label: const Text('Nova Atividade'),
                 style: ElevatedButton.styleFrom(
@@ -501,82 +501,143 @@ class _TelaDetalhesDisciplinaProfessorState
                 itemCount: _atividades.length,
                 itemBuilder: (context, index) {
                   final atividade = _atividades[index];
-                  final isExpired = atividade.dataEntrega.isBefore(DateTime.now());
+                  final titulo = atividade['titulo'] ?? 'Sem título';
+                  final descricao = atividade['descricao'] ?? '';
+                  final peso = atividade['peso'];
+                  final dataEntrega = atividade['data_entrega'] != null
+                      ? DateTime.parse(atividade['data_entrega'])
+                      : null;
+
+                  // Convert peso to double safely
+                  double? pesoDouble;
+                  if (peso != null) {
+                    if (peso is num) {
+                      pesoDouble = peso.toDouble();
+                    } else if (peso is String) {
+                      pesoDouble = double.tryParse(peso);
+                    }
+                  }
+
+                  // Check if activity is expired
+                  final isExpired =
+                      dataEntrega != null &&
+                      dataEntrega.isBefore(DateTime.now());
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
                     elevation: 2,
-                    child: InkWell(
-                      onTap: () => _showSubmissoesDialog(atividade),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: widget.subjectColor.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: widget.subjectColor.withValues(
+                                    alpha: 0.1,
                                   ),
-                                  child: Icon(
-                                    Icons.assignment,
-                                    color: widget.subjectColor,
-                                    size: 24,
-                                  ),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        atividade.titulo,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                child: Icon(
+                                  Icons.assignment,
+                                  color: widget.subjectColor,
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      titulo,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      if (atividade.descricao.isNotEmpty) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          atividade.descricao,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[600],
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                    ),
+                                    if (descricao.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        descricao,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[600],
                                         ),
-                                      ],
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ],
-                                  ),
+                                  ],
                                 ),
-                                Row(
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.edit,
+                                      color: Colors.blue,
+                                    ),
+                                    onPressed: () {
+                                      _showEditAtividadeDialog(atividade);
+                                    },
+                                    tooltip: 'Editar',
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
+                                    onPressed: () {
+                                      _confirmDeleteAtividade(atividade);
+                                    },
+                                    tooltip: 'Excluir',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: widget.subjectColor.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.blue),
-                                      onPressed: () => _showEditAtividadeDialog(atividade),
-                                      tooltip: 'Editar',
+                                    Icon(
+                                      Icons.fitness_center,
+                                      size: 14,
+                                      color: widget.subjectColor,
                                     ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () => _confirmDeleteAtividade(atividade),
-                                      tooltip: 'Excluir',
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Peso: ${pesoDouble?.toStringAsFixed(1) ?? '1.0'}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: widget.subjectColor,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
+                              ),
+                              if (dataEntrega != null)
                                 Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 12,
@@ -592,26 +653,31 @@ class _TelaDetalhesDisciplinaProfessorState
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
-                                        isExpired ? Icons.event_busy : Icons.event,
+                                        isExpired
+                                            ? Icons.event_busy
+                                            : Icons.event,
                                         size: 14,
-                                        color: isExpired ? Colors.red : Colors.green,
+                                        color: isExpired
+                                            ? Colors.red
+                                            : Colors.green,
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        DateFormat('dd/MM/yyyy').format(atividade.dataEntrega),
+                                        '${dataEntrega.day.toString().padLeft(2, '0')}/${dataEntrega.month.toString().padLeft(2, '0')}/${dataEntrega.year}',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: isExpired ? Colors.red : Colors.green,
+                                          color: isExpired
+                                              ? Colors.red
+                                              : Colors.green,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -696,6 +762,7 @@ class _TelaDetalhesDisciplinaProfessorState
   void _showAddAtividadeDialog() {
     final tituloController = TextEditingController();
     final descricaoController = TextEditingController();
+    final pesoController = TextEditingController(text: '1.0');
     DateTime selectedDate = DateTime.now().add(const Duration(days: 7));
 
     showDialog(
@@ -724,9 +791,20 @@ class _TelaDetalhesDisciplinaProfessorState
                   ),
                 ),
                 const SizedBox(height: 16),
+                TextField(
+                  controller: pesoController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Peso',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 ListTile(
                   title: const Text('Data de Entrega'),
-                  subtitle: Text(DateFormat('dd/MM/yyyy').format(selectedDate)),
+                  subtitle: Text(
+                    '${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.year}',
+                  ),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () async {
                     final picked = await showDatePicker(
@@ -734,7 +812,6 @@ class _TelaDetalhesDisciplinaProfessorState
                       initialDate: selectedDate,
                       firstDate: DateTime.now(),
                       lastDate: DateTime.now().add(const Duration(days: 365)),
-                      locale: const Locale('pt', 'BR'),
                     );
                     if (picked != null) {
                       setState(() {
@@ -755,27 +832,31 @@ class _TelaDetalhesDisciplinaProfessorState
               onPressed: () async {
                 if (tituloController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor, preencha o título')),
+                    const SnackBar(
+                      content: Text('Por favor, preencha o título'),
+                    ),
                   );
                   return;
                 }
 
                 try {
-                  await _atividadesService.criarAtividade(
+                  await _apiService.createAtividade(
+                    disciplinaId: widget.disciplinaId,
                     titulo: tituloController.text,
                     descricao: descricaoController.text,
-                    disciplinaId: widget.disciplinaId.toString(),
-                    peso: 1.0,
-                    dataEntrega: selectedDate,
+                    peso: double.tryParse(pesoController.text) ?? 1.0,
+                    dataEntrega: selectedDate.toIso8601String(),
                   );
 
                   if (!context.mounted) return;
                   Navigator.pop(context);
                   if (!mounted) return;
                   ScaffoldMessenger.of(this.context).showSnackBar(
-                    const SnackBar(content: Text('Atividade criada com sucesso!')),
+                    const SnackBar(
+                      content: Text('Atividade criada com sucesso!'),
+                    ),
                   );
-                  _loadAtividades();
+                  _loadAtividades(); // Reload activities list
                 } catch (e) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(this.context).showSnackBar(
@@ -795,10 +876,27 @@ class _TelaDetalhesDisciplinaProfessorState
     );
   }
 
-  void _showEditAtividadeDialog(Atividade atividade) {
-    final tituloController = TextEditingController(text: atividade.titulo);
-    final descricaoController = TextEditingController(text: atividade.descricao);
-    DateTime selectedDate = atividade.dataEntrega;
+  void _showEditAtividadeDialog(Map<String, dynamic> atividade) {
+    final tituloController = TextEditingController(
+      text: atividade['titulo'] ?? '',
+    );
+    final descricaoController = TextEditingController(
+      text: atividade['descricao'] ?? '',
+    );
+    final peso = atividade['peso'];
+    double? pesoValue;
+    if (peso is num) {
+      pesoValue = peso.toDouble();
+    } else if (peso is String) {
+      pesoValue = double.tryParse(peso);
+    }
+    final pesoController = TextEditingController(
+      text: pesoValue?.toString() ?? '1.0',
+    );
+
+    DateTime selectedDate = atividade['data_entrega'] != null
+        ? DateTime.parse(atividade['data_entrega'])
+        : DateTime.now().add(const Duration(days: 7));
 
     showDialog(
       context: context,
@@ -819,16 +917,27 @@ class _TelaDetalhesDisciplinaProfessorState
                 const SizedBox(height: 16),
                 TextField(
                   controller: descricaoController,
-                  maxLines: 3,
                   decoration: const InputDecoration(
                     labelText: 'Descrição',
                     border: OutlineInputBorder(),
                   ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: pesoController,
+                  decoration: const InputDecoration(
+                    labelText: 'Peso',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 16),
                 ListTile(
                   title: const Text('Data de Entrega'),
-                  subtitle: Text(DateFormat('dd/MM/yyyy').format(selectedDate)),
+                  subtitle: Text(
+                    '${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.year}',
+                  ),
                   trailing: const Icon(Icons.calendar_today),
                   onTap: () async {
                     final picked = await showDatePicker(
@@ -836,7 +945,6 @@ class _TelaDetalhesDisciplinaProfessorState
                       initialDate: selectedDate,
                       firstDate: DateTime.now(),
                       lastDate: DateTime.now().add(const Duration(days: 365)),
-                      locale: const Locale('pt', 'BR'),
                     );
                     if (picked != null) {
                       setState(() {
@@ -857,27 +965,31 @@ class _TelaDetalhesDisciplinaProfessorState
               onPressed: () async {
                 if (tituloController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Por favor, preencha o título')),
+                    const SnackBar(
+                      content: Text('Por favor, preencha o título'),
+                    ),
                   );
                   return;
                 }
 
                 try {
-                  await _atividadesService.atualizarAtividade(
-                    id: atividade.id,
+                  await _apiService.updateAtividade(
+                    id: atividade['id'],
                     titulo: tituloController.text,
                     descricao: descricaoController.text,
-                    peso: 1.0,
-                    dataEntrega: selectedDate,
+                    peso: double.tryParse(pesoController.text) ?? 1.0,
+                    dataEntrega: selectedDate.toIso8601String(),
                   );
 
                   if (!context.mounted) return;
                   Navigator.pop(context);
                   if (!mounted) return;
                   ScaffoldMessenger.of(this.context).showSnackBar(
-                    const SnackBar(content: Text('Atividade atualizada com sucesso!')),
+                    const SnackBar(
+                      content: Text('Atividade atualizada com sucesso!'),
+                    ),
                   );
-                  _loadAtividades();
+                  _loadAtividades(); // Reload activities list
                 } catch (e) {
                   if (!mounted) return;
                   ScaffoldMessenger.of(this.context).showSnackBar(
@@ -897,13 +1009,13 @@ class _TelaDetalhesDisciplinaProfessorState
     );
   }
 
-  void _confirmDeleteAtividade(Atividade atividade) {
+  void _confirmDeleteAtividade(Map<String, dynamic> atividade) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Excluir Atividade'),
         content: Text(
-          'Deseja realmente excluir a atividade "${atividade.titulo}"? Esta ação não pode ser desfeita.',
+          'Deseja realmente excluir a atividade "${atividade['titulo']}"? Esta ação não pode ser desfeita.',
         ),
         actions: [
           TextButton(
@@ -913,15 +1025,17 @@ class _TelaDetalhesDisciplinaProfessorState
           ElevatedButton(
             onPressed: () async {
               try {
-                await _atividadesService.deletarAtividade(atividade.id);
+                await _apiService.deleteAtividade(atividade['id']);
 
                 if (!context.mounted) return;
                 Navigator.pop(context);
                 if (!mounted) return;
                 ScaffoldMessenger.of(this.context).showSnackBar(
-                  const SnackBar(content: Text('Atividade excluída com sucesso!')),
+                  const SnackBar(
+                    content: Text('Atividade excluída com sucesso!'),
+                  ),
                 );
-                _loadAtividades();
+                _loadAtividades(); // Reload activities list
               } catch (e) {
                 if (!context.mounted) return;
                 Navigator.pop(context);
@@ -936,320 +1050,6 @@ class _TelaDetalhesDisciplinaProfessorState
               foregroundColor: Colors.white,
             ),
             child: const Text('Excluir'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showSubmissoesDialog(Atividade atividade) async {
-    try {
-      final submissoes = await _atividadesService.getSubmissoes(atividade.id);
-      
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (context) => Dialog(
-          child: Container(
-            width: 800,
-            height: 600,
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.assignment_turned_in, color: widget.subjectColor),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            atividade.titulo,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Submissões: ${submissoes.length}',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-                const Divider(height: 32),
-                if (submissoes.isEmpty)
-                  Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.inbox, size: 64, color: Colors.grey[400]),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Nenhuma submissão ainda',
-                            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: submissoes.length,
-                      itemBuilder: (context, index) {
-                        final submissao = submissoes[index];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: ExpansionTile(
-                            leading: CircleAvatar(
-                              backgroundColor: submissao.foiAvaliada
-                                  ? Colors.green
-                                  : Colors.orange,
-                              child: Text(
-                                submissao.alunoNome.substring(0, 1).toUpperCase(),
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                            title: Text(submissao.alunoNome),
-                            subtitle: Text(
-                              'Enviado em: ${DateFormat('dd/MM/yyyy HH:mm').format(submissao.dataSubmissao)}',
-                            ),
-                            trailing: submissao.foiAvaliada
-                                ? Chip(
-                                    label: Text('Nota: ${submissao.nota!.toStringAsFixed(1)}'),
-                                    backgroundColor: Colors.green[100],
-                                  )
-                                : const Chip(
-                                    label: Text('Pendente'),
-                                    backgroundColor: Colors.orange,
-                                  ),
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Arquivos:',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    ...submissao.arquivos.map((arquivo) => ListTile(
-                                      dense: true,
-                                      leading: const Icon(Icons.attach_file),
-                                      title: Text(arquivo.nomeOriginal),
-                                      subtitle: Text(
-                                        '${(arquivo.tamanho / 1024).toStringAsFixed(2)} KB',
-                                      ),
-                                      trailing: IconButton(
-                                        icon: const Icon(Icons.download),
-                                        onPressed: () async {
-                                          try {
-                                            final bytes = await _atividadesService
-                                                .downloadArquivo(arquivo.arquivoId!);
-                                            _downloadFile(bytes, arquivo.nomeOriginal);
-                                          } catch (e) {
-                                            if (!mounted) return;
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(
-                                                content: Text('Erro ao baixar arquivo: $e'),
-                                              ),
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    )),
-                                    const SizedBox(height: 16),
-                                    if (submissao.comentario != null && submissao.comentario!.isNotEmpty) ...[
-                                      const Text(
-                                        'Comentário do Aluno:',
-                                        style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue[50],
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: Colors.blue[200]!),
-                                        ),
-                                        child: Text(
-                                          submissao.comentario!,
-                                          style: TextStyle(color: Colors.grey[800]),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                    ],
-                                    if (submissao.foiAvaliada) ...[
-                                      const Text(
-                                        'Avaliação:',
-                                        style: TextStyle(fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text('Nota: ${submissao.nota!.toStringAsFixed(2)}'),
-                                      if (submissao.feedback != null) ...[
-                                        const SizedBox(height: 4),
-                                        Text('Feedback: ${submissao.feedback}'),
-                                      ],
-                                      const SizedBox(height: 12),
-                                      ElevatedButton.icon(
-                                        onPressed: () => _showAvaliarDialog(submissao, atividade),
-                                        icon: const Icon(Icons.edit),
-                                        label: const Text('Editar Avaliação'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.orange,
-                                          foregroundColor: Colors.white,
-                                        ),
-                                      ),
-                                    ] else ...[
-                                      ElevatedButton.icon(
-                                        onPressed: () => _showAvaliarDialog(submissao, atividade),
-                                        icon: const Icon(Icons.grade),
-                                        label: const Text('Avaliar'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: widget.subjectColor,
-                                          foregroundColor: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao carregar submissões: $e')),
-      );
-    }
-  }
-
-  void _showAvaliarDialog(SubmissaoAtividade submissao, Atividade atividade) {
-    final notaController = TextEditingController(
-      text: submissao.nota?.toString() ?? '',
-    );
-    final feedbackController = TextEditingController(
-      text: submissao.feedback ?? '',
-    );
-    
-    final isEdicao = submissao.foiAvaliada;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('${isEdicao ? 'Editar Avaliação' : 'Avaliar'} - ${submissao.alunoNome}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isEdicao)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Text(
-                  'Avaliado em: ${DateFormat('dd/MM/yyyy HH:mm').format(submissao.dataAvaliacao!)}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            TextField(
-              controller: notaController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Nota (0 - 10)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: feedbackController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Feedback (opcional)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final nota = double.tryParse(notaController.text);
-              if (nota == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Por favor, insira uma nota válida')),
-                );
-                return;
-              }
-
-              if (nota < 0 || nota > 10) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('A nota deve estar entre 0 e 10'),
-                  ),
-                );
-                return;
-              }
-
-              try {
-                await _atividadesService.avaliarSubmissao(
-                  atividadeId: atividade.id,
-                  submissaoId: submissao.id!,
-                  nota: nota,
-                  feedback: feedbackController.text.isNotEmpty
-                      ? feedbackController.text
-                      : null,
-                );
-
-                if (!context.mounted) return;
-                Navigator.pop(context); // Fecha diálogo de avaliar
-                Navigator.pop(context); // Fecha diálogo de submissões
-                if (!mounted) return;
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  SnackBar(
-                    content: Text(isEdicao 
-                        ? 'Avaliação atualizada com sucesso!' 
-                        : 'Avaliação salva com sucesso!'),
-                  ),
-                );
-                _showSubmissoesDialog(atividade); // Reabre para mostrar atualização
-              } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  SnackBar(content: Text('Erro ao avaliar: $e')),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: widget.subjectColor,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(isEdicao ? 'Atualizar Avaliação' : 'Salvar Avaliação'),
           ),
         ],
       ),

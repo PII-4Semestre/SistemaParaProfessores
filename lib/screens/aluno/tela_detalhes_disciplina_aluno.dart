@@ -28,46 +28,6 @@ class _TelaDetalhesDisciplinaAlunoState
     _tabController = TabController(length: 3, vsync: this);
   }
 
-  Future<void> _loadAtividades() async {
-    try {
-      setState(() => _isLoadingAtividades = true);
-      final atividades = await _atividadesService.getAtividadesDisciplina(
-        widget.disciplinaId.toString(),
-      );
-      
-      // Carregar submissões do aluno para cada atividade
-      final submissoes = <String, SubmissaoAtividade?>{};
-      final alunoId = _apiService.currentUser?['id']?.toString();
-      
-      if (alunoId != null) {
-        for (final atividade in atividades) {
-          try {
-            final submissao = await _atividadesService.getSubmissaoAluno(
-              atividadeId: atividade.id,
-              alunoId: alunoId,
-            );
-            submissoes[atividade.id] = submissao;
-          } catch (e) {
-            submissoes[atividade.id] = null;
-          }
-        }
-      }
-
-      setState(() {
-        _atividades = atividades;
-        _submissoes = submissoes;
-        _isLoadingAtividades = false;
-      });
-    } catch (e) {
-      setState(() => _isLoadingAtividades = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar atividades: $e')),
-        );
-      }
-    }
-  }
-
   @override
   void dispose() {
     _tabController.dispose();
@@ -252,180 +212,162 @@ class _TelaDetalhesDisciplinaAlunoState
   }
 
   Widget _buildAtividadesTab() {
-    if (_isLoadingAtividades) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_atividades.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.assignment_outlined, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              'Nenhuma atividade disponível',
-              style: TextStyle(fontSize: 18, color: Colors.grey[700]),
-            ),
-          ],
-        ),
-      );
-    }
-
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: ListView.builder(
-        itemCount: _atividades.length,
+        itemCount: 5,
         itemBuilder: (context, index) {
-          final atividade = _atividades[index];
-          final submissao = _submissoes[atividade.id];
-          final isExpired = atividade.dataEntrega.isBefore(DateTime.now());
-          final hasSubmission = submissao != null;
-          final isGraded = submissao?.foiAvaliada ?? false;
-
+          final isPending = index < 2;
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
             elevation: 2,
-            child: InkWell(
-              onTap: () => _showAtividadeDetailsDialog(atividade, submissao),
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: widget.subjectColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.assignment,
-                            color: widget.subjectColor,
-                            size: 24,
-                          ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: widget.subjectColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                atividade.titulo,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              if (atividade.descricao.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  atividade.descricao,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ],
-                          ),
+                        child: Icon(
+                          Icons.assignment,
+                          color: widget.subjectColor,
+                          size: 24,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isExpired
-                                ? Colors.red.withValues(alpha: 0.1)
-                                : Colors.green.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isExpired ? Icons.event_busy : Icons.event,
-                                size: 14,
-                                color: isExpired ? Colors.red : Colors.green,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Atividade ${index + 1}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                DateFormat('dd/MM/yyyy').format(atividade.dataEntrega),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isExpired ? Colors.red : Colors.green,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Lista de exercícios sobre conceitos avançados da disciplina.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
                               ),
-                            ],
-                          ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isGraded
-                                ? Colors.blue.withValues(alpha: 0.1)
-                                : hasSubmission
-                                    ? Colors.orange.withValues(alpha: 0.1)
-                                    : Colors.grey.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isGraded
-                                    ? Icons.grade
-                                    : hasSubmission
-                                        ? Icons.check_circle
-                                        : Icons.hourglass_empty,
-                                size: 14,
-                                color: isGraded
-                                    ? Colors.blue
-                                    : hasSubmission
-                                        ? Colors.orange
-                                        : Colors.grey,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                isGraded
-                                    ? 'Nota: ${submissao!.nota!.toStringAsFixed(1)}'
-                                    : hasSubmission
-                                        ? 'Aguardando correção'
-                                        : 'Não entregue',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isGraded
-                                      ? Colors.blue
-                                      : hasSubmission
-                                          ? Colors.orange
-                                          : Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                        decoration: BoxDecoration(
+                          color: widget.subjectColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.fitness_center,
+                              size: 14,
+                              color: widget.subjectColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Peso: ${(index + 1).toDouble()}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: widget.subjectColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isPending
+                              ? Colors.orange.withValues(alpha: 0.1)
+                              : Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isPending ? Icons.event_busy : Icons.event,
+                              size: 14,
+                              color: isPending ? Colors.orange : Colors.green,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Entrega: 2025-10-${15 + index}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isPending ? Colors.orange : Colors.green,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isPending
+                              ? Colors.orange.withValues(alpha: 0.1)
+                              : Colors.green.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isPending
+                                  ? Icons.hourglass_empty
+                                  : Icons.check_circle,
+                              size: 14,
+                              color: isPending ? Colors.orange : Colors.green,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isPending ? 'Pendente' : 'Entregue',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isPending ? Colors.orange : Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           );
@@ -519,440 +461,5 @@ class _TelaDetalhesDisciplinaAlunoState
         ],
       ),
     );
-  }
-
-  void _showAtividadeDetailsDialog(Atividade atividade, SubmissaoAtividade? submissao) {
-    final isExpired = atividade.dataEntrega.isBefore(DateTime.now());
-    final hasSubmission = submissao != null;
-    final isGraded = submissao?.foiAvaliada ?? false;
-
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: Container(
-          width: 700,
-          height: 600,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.assignment, color: widget.subjectColor, size: 32),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          atividade.titulo,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Entrega: ${DateFormat('dd/MM/yyyy HH:mm').format(atividade.dataEntrega)}',
-                          style: TextStyle(
-                            color: isExpired ? Colors.red : Colors.grey[600],
-                            fontWeight: isExpired ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const Divider(height: 24),
-              if (atividade.descricao.isNotEmpty) ...[
-                const Text(
-                  'Descrição:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  atividade.descricao,
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                ),
-                const SizedBox(height: 16),
-              ],
-              Row(
-                children: [
-                  if (isGraded)
-                    Chip(
-                      avatar: const Icon(Icons.grade, size: 18),
-                      label: Text('Nota: ${submissao!.nota!.toStringAsFixed(2)}'),
-                      backgroundColor: Colors.blue.withValues(alpha: 0.1),
-                    ),
-                ],
-              ),
-              const Divider(height: 24),
-              if (isGraded) ...[
-                const Text(
-                  'Avaliação:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Card(
-                  color: Colors.blue.withValues(alpha: 0.1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.grade, color: Colors.blue),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Nota: ${submissao!.nota!.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (submissao.feedback != null) ...[
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Feedback do Professor:',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(submissao.feedback!),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              if (hasSubmission) ...[
-                const Text(
-                  'Arquivos Enviados:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: submissao.arquivos.length,
-                    itemBuilder: (context, index) {
-                      final arquivo = submissao.arquivos[index];
-                      return ListTile(
-                        leading: const Icon(Icons.attach_file),
-                        title: Text(arquivo.nomeOriginal),
-                        subtitle: Text(
-                          '${(arquivo.tamanho / 1024).toStringAsFixed(2)} KB',
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.download),
-                          onPressed: () async {
-                            try {
-                              final bytes = await _atividadesService
-                                  .downloadArquivo(arquivo.arquivoId!);
-                              _downloadFile(bytes, arquivo.nomeOriginal);
-                            } catch (e) {
-                              if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Erro ao baixar arquivo: $e'),
-                                ),
-                              );
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-                if (submissao.comentario != null && submissao.comentario!.isNotEmpty) ...[
-                  const Text(
-                    'Seu Comentário:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[200]!),
-                    ),
-                    child: Text(
-                      submissao.comentario!,
-                      style: TextStyle(color: Colors.grey[800]),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                if (!isGraded) ...[
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _showSubmitDialog(atividade, isEdit: true);
-                    },
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Editar Submissão'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                ],
-              ] else ...[
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.cloud_upload,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          isExpired
-                              ? 'Prazo de entrega expirado'
-                              : 'Nenhum arquivo enviado ainda',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: isExpired ? Colors.red : Colors.grey[600],
-                            fontWeight: isExpired ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                        if (!isExpired) ...[
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: () => _showSubmitDialog(atividade),
-                            icon: const Icon(Icons.upload_file),
-                            label: const Text('Enviar Arquivos'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: widget.subjectColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 16,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showSubmitDialog(Atividade atividade, {bool isEdit = false}) async {
-    List<PlatformFile> selectedFiles = [];
-    final comentarioController = TextEditingController();
-
-    final result = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-      type: FileType.any,
-    );
-
-    if (result == null) return;
-
-    selectedFiles = result.files;
-
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Enviar Atividade'),
-          content: SizedBox(
-            width: 500,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Arquivos selecionados: ${selectedFiles.length}'),
-                  const SizedBox(height: 16),
-                  if (selectedFiles.isNotEmpty)
-                    SizedBox(
-                      height: 150,
-                      child: ListView.builder(
-                        itemCount: selectedFiles.length,
-                        itemBuilder: (context, index) {
-                          final file = selectedFiles[index];
-                          return ListTile(
-                            dense: true,
-                            leading: const Icon(Icons.attach_file),
-                            title: Text(file.name),
-                            subtitle: Text(
-                              '${(file.size / 1024).toStringAsFixed(2)} KB',
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.close, size: 18),
-                              onPressed: () {
-                                setState(() {
-                                  selectedFiles.removeAt(index);
-                                });
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: () async {
-                      final newResult = await FilePicker.platform.pickFiles(
-                        allowMultiple: true,
-                        type: FileType.any,
-                      );
-                      if (newResult != null) {
-                        setState(() {
-                          selectedFiles.addAll(newResult.files);
-                        });
-                      }
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Adicionar mais arquivos'),
-                  ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Comentário (opcional)',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: comentarioController,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      hintText: 'Adicione um comentário sobre sua entrega...',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: selectedFiles.isEmpty
-                  ? null
-                  : () async {
-                      try {
-                        final usuario = _apiService.currentUser;
-                        if (usuario == null) {
-                          throw Exception('Usuário não autenticado');
-                        }
-
-                        final arquivosBytes = selectedFiles
-                            .map((f) => f.bytes!)
-                            .toList();
-                        final arquivosNomes = selectedFiles
-                            .map((f) => f.name)
-                            .toList();
-
-                        await _atividadesService.submeterAtividade(
-                          atividadeId: atividade.id,
-                          alunoId: usuario['id'].toString(),
-                          alunoNome: usuario['nome'],
-                          arquivosBytes: arquivosBytes,
-                          arquivosNomes: arquivosNomes,
-                          comentario: comentarioController.text.isNotEmpty 
-                              ? comentarioController.text 
-                              : null,
-                        );
-
-                        if (!mounted) return;
-                        Navigator.pop(context); // Fecha dialog de submit
-                        if (!isEdit) {
-                          Navigator.pop(context); // Fecha dialog de detalhes (apenas se não for edição)
-                        }
-                        ScaffoldMessenger.of(this.context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Atividade enviada com sucesso!'),
-                          ),
-                        );
-                        _loadAtividades(); // Recarrega para mostrar submissão
-                      } catch (e) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(this.context).showSnackBar(
-                          SnackBar(
-                            content: Text('Erro ao enviar atividade: $e'),
-                          ),
-                        );
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: widget.subjectColor,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Enviar'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _downloadFile(List<int> bytes, String nomeArquivo) async {
-    try {
-      if (kIsWeb) {
-        final blob = html.Blob([bytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        html.AnchorElement(href: url)
-          ..setAttribute('download', nomeArquivo)
-          ..click();
-        html.Url.revokeObjectUrl(url);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Arquivo baixado com sucesso!')),
-          );
-        }
-      } else {
-        final result = await FilePicker.platform.saveFile(
-          dialogTitle: 'Salvar arquivo',
-          fileName: nomeArquivo,
-        );
-
-        if (result != null) {
-          final file = File(result);
-          await file.writeAsBytes(bytes);
-          
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Arquivo salvo com sucesso!')),
-            );
-          }
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar arquivo: $e')),
-        );
-      }
-    }
   }
 }
