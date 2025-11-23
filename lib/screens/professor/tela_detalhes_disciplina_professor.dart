@@ -114,11 +114,9 @@ class _TelaDetalhesDisciplinaProfessorState
     });
 
     try {
-      print('[DEBUG] Carregando materiais da disciplina ID: ${widget.disciplinaId}');
       final materiais = await _materiaisService.getMateriaisPorDisciplina(
         widget.disciplinaId.toString(),
       );
-      print('[DEBUG] Materiais carregados: ${materiais.length} encontrado(s)');
 
       if (mounted) {
         setState(() {
@@ -127,7 +125,6 @@ class _TelaDetalhesDisciplinaProfessorState
         });
       }
     } catch (e) {
-      print('[DEBUG] Erro ao carregar materiais: $e');
       if (mounted) {
         setState(() {
           _errorMateriais = e.toString();
@@ -1329,12 +1326,6 @@ class _TelaDetalhesDisciplinaProfessorState
       final currentUser = _apiService.currentUser;
       final professorId = currentUser?['id']?.toString() ?? '1';
 
-      print('[DEBUG] Criando material:');
-      print('  - disciplinaId: ${widget.disciplinaId} (tipo: ${widget.disciplinaId.runtimeType})');
-      print('  - professorId: $professorId');
-      print('  - titulo: $titulo');
-      print('  - tipo: $tipo');
-
       // Criar material
       final material = await _materiaisService.criarMaterial(
         disciplinaId: widget.disciplinaId.toString(),
@@ -1530,7 +1521,7 @@ class _TelaDetalhesDisciplinaProfessorState
                         dense: true,
                         leading: Text(arquivo.icone, style: const TextStyle(fontSize: 20)),
                         title: Text(
-                          arquivo.nomeOriginal,
+                          arquivo.nomeOriginal.isEmpty ? 'arquivo_sem_nome' : arquivo.nomeOriginal,
                           style: const TextStyle(fontSize: 14),
                         ),
                         subtitle: Text(
@@ -1735,11 +1726,13 @@ class _TelaDetalhesDisciplinaProfessorState
                 ),
                 const SizedBox(height: 8),
                 InkWell(
-                  onTap: () {
-                    // TODO: Abrir link no navegador
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Abrir: ${material.linkExterno}')),
-                    );
+                  onTap: () async {
+                    final url = material.linkExterno;
+                    if (url != null && url.isNotEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Abrindo: $url')),
+                      );
+                    }
                   },
                   child: Container(
                     padding: const EdgeInsets.all(12),
@@ -1794,9 +1787,9 @@ class _TelaDetalhesDisciplinaProfessorState
                             arquivo.icone,
                             style: const TextStyle(fontSize: 24),
                           ),
-                          title: Text(arquivo.nomeOriginal),
+                          title: Text(arquivo.nomeOriginal.isEmpty ? 'arquivo_sem_nome' : arquivo.nomeOriginal),
                           subtitle: Text(
-                            '${arquivo.tamanhoFormatado} • ${arquivo.extensao}',
+                            '${arquivo.tamanhoFormatado}${arquivo.extensao.isNotEmpty ? ' • ${arquivo.extensao}' : ''}',
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,

@@ -498,9 +498,9 @@ class _TelaDetalhesDisciplinaAlunoState
                             arquivo.icone,
                             style: const TextStyle(fontSize: 24),
                           ),
-                          title: Text(arquivo.nomeOriginal),
+                          title: Text(arquivo.nomeOriginal.isEmpty ? 'arquivo_sem_nome' : arquivo.nomeOriginal),
                           subtitle: Text(
-                            '${arquivo.tamanhoFormatado} • ${arquivo.extensao}',
+                            '${arquivo.tamanhoFormatado}${arquivo.extensao.isNotEmpty ? ' • ${arquivo.extensao}' : ''}',
                           ),
                           trailing: IconButton(
                             icon: const Icon(Icons.download),

@@ -174,16 +174,17 @@ flutter run -d windows  # Para Windows
 **Usuários disponíveis para teste:**
 
 #### Professores:
-- **Email:** `professor@poliedro.com` | **Senha:** `prof123`
+- **Email:** `professor@poliedro.com` | **Senha:** qualquer senha
 - **Email:** `silva@escola.com` | **Senha:** qualquer senha
 - **Email:** `maria@escola.com` | **Senha:** qualquer senha
 
 #### Alunos:
+- **Email:** `aluno@poliedro.com` | **Senha:** qualquer senha
 - **Email:** `joao@aluno.com` | **Senha:** qualquer senha
 - **Email:** `ana@aluno.com` | **Senha:** qualquer senha
 - **Email:** `pedro@aluno.com` | **Senha:** qualquer senha
 
-> ⚠️ **Nota:** O sistema está em desenvolvimento e aceita qualquer senha para os usuários antigos. Para o novo usuário `professor@poliedro.com`, use a senha `prof123`.
+> ⚠️ **Nota:** O sistema está em desenvolvimento e aceita qualquer senha para os usuários. O importante é que o email esteja cadastrado no banco de dados.
 
 ---
 
