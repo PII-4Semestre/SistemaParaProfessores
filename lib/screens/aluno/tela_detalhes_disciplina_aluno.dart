@@ -817,6 +817,19 @@ class _TelaDetalhesDisciplinaAlunoState
   }
 
   Widget _buildNotasTab() {
+    // Calcular média real das atividades avaliadas
+    final atividadesAvaliadas = _atividades.where((a) {
+      final s = _submissoes[a.id];
+      return s != null && s.foiAvaliada && s.nota != null;
+    }).toList();
+    double media = 0.0;
+    if (atividadesAvaliadas.isNotEmpty) {
+      media = atividadesAvaliadas
+          .map((a) => _submissoes[a.id]!.nota!)
+          .reduce((a, b) => a + b) /
+          atividadesAvaliadas.length;
+    }
+
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -840,7 +853,7 @@ class _TelaDetalhesDisciplinaAlunoState
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '7.5',
+                        atividadesAvaliadas.isNotEmpty ? media.toStringAsFixed(2) : '-',
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -855,48 +868,59 @@ class _TelaDetalhesDisciplinaAlunoState
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                final nota = 7.0 + index * 0.5;
-                final Color notaColor = nota < 6
-                    ? Colors.red
-                    : nota < 7
-                    ? Colors.orange
-                    : Colors.green;
-
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  elevation: 2,
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: notaColor.withValues(alpha: 0.2),
-                      child: Icon(Icons.assignment_turned_in, color: notaColor),
+            child: atividadesAvaliadas.isEmpty
+                ? Center(
+                    child: Text(
+                      'Nenhuma nota disponível ainda.',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
-                    title: Text('Atividade ${index + 1}'),
-                    subtitle: Text('Peso: ${(index + 1).toDouble()}'),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: notaColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        nota.toStringAsFixed(1),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: notaColor,
+                  )
+                : ListView.builder(
+                    itemCount: atividadesAvaliadas.length,
+                    itemBuilder: (context, index) {
+                      final atividade = atividadesAvaliadas[index];
+                      final submissao = _submissoes[atividade.id]!;
+                      final nota = submissao.nota!;
+                      Color notaColor;
+                      if (nota >= 7.0) {
+                        notaColor = Colors.green;
+                      } else if (nota >= 5.0) {
+                        notaColor = Colors.orange;
+                      } else {
+                        notaColor = Colors.red;
+                      }
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        elevation: 2,
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: notaColor.withOpacity(0.2),
+                            child: Icon(Icons.assignment_turned_in, color: notaColor),
+                          ),
+                          title: Text(atividade.titulo),
+                          // subtitle removido: Peso não será exibido
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: notaColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              nota.toStringAsFixed(1),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: notaColor,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

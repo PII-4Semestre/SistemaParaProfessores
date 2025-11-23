@@ -2311,7 +2311,10 @@ class _TelaDetalhesDisciplinaProfessorState
                             ),
                             trailing: submissao.foiAvaliada
                                 ? Chip(
-                                    label: Text('Nota: ${submissao.nota!.toStringAsFixed(1)}'),
+                                    label: Text(
+                                      'Nota: ${submissao.nota!.toStringAsFixed(1)}',
+                                      style: const TextStyle(color: Colors.black87),
+                                    ),
                                     backgroundColor: Colors.green[100],
                                   )
                                 : const Chip(
