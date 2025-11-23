@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/api_service.dart';
 
 class TelaDetalhesDisciplinaProfessor extends StatefulWidget {
@@ -112,7 +113,7 @@ class _TelaDetalhesDisciplinaProfessorState
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  widget.subjectColor.withValues(alpha: 0.8),
+                  widget.subjectColor.withOpacity(0.8),
                   widget.subjectColor,
                 ],
               ),
@@ -149,7 +150,7 @@ class _TelaDetalhesDisciplinaProfessorState
                               Text(
                                 '${_alunos.length} alunos • ${_atividades.length} atividades',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.9),
+                                  color: Colors.white.withOpacity(0.9),
                                   fontSize: 14,
                                 ),
                               ),
@@ -165,7 +166,7 @@ class _TelaDetalhesDisciplinaProfessorState
                     indicatorColor: Colors.white,
                     indicatorWeight: 3,
                     labelColor: Colors.white,
-                    unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
+                    unselectedLabelColor: Colors.white.withOpacity(0.7),
                     labelStyle: const TextStyle(fontWeight: FontWeight.bold),
                     tabs: const [
                       Tab(icon: Icon(Icons.people), text: 'Alunos'),
@@ -307,8 +308,8 @@ class _TelaDetalhesDisciplinaProfessorState
                         children: [
                           CircleAvatar(
                             radius: 28,
-                            backgroundColor: widget.subjectColor.withValues(
-                              alpha: 0.2,
+                            backgroundColor: widget.subjectColor.withOpacity(
+                              0.2,
                             ),
                             child: Text(
                               nome.isNotEmpty ? nome[0].toUpperCase() : '?',
@@ -340,8 +341,8 @@ class _TelaDetalhesDisciplinaProfessorState
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: widget.subjectColor.withValues(
-                                          alpha: 0.1,
+                                        color: widget.subjectColor.withOpacity(
+                                          0.1,
                                         ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
@@ -382,15 +383,35 @@ class _TelaDetalhesDisciplinaProfessorState
                               ],
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.remove_circle_outline,
-                              color: Colors.red,
-                            ),
-                            onPressed: () {
-                              _confirmRemoveAluno(aluno);
+                          PopupMenuButton<String>(
+                            onSelected: (value) async {
+                              if (value == 'add_thumbnail') {
+                                final picker = ImagePicker();
+                                final pickedFile = await picker.pickImage(
+                                    source: ImageSource.gallery);
+                                if (pickedFile != null) {
+                                  // Atualize o estado da disciplina com a imagem selecionada
+                                  setState(() {
+                                    _alunos[index]['thumbnail'] =
+                                        pickedFile.path;
+                                  });
+                                }
+                              }
                             },
-                            tooltip: 'Remover da disciplina',
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'add_thumbnail',
+                                child: Text('Adicionar Thumbnail'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Text('Editar'),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Text('Excluir'),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -536,8 +557,8 @@ class _TelaDetalhesDisciplinaProfessorState
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: widget.subjectColor.withValues(
-                                    alpha: 0.1,
+                                  color: widget.subjectColor.withOpacity(
+                                    0.1,
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -612,8 +633,8 @@ class _TelaDetalhesDisciplinaProfessorState
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: widget.subjectColor.withValues(
-                                    alpha: 0.1,
+                                  color: widget.subjectColor.withOpacity(
+                                    0.1,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -645,8 +666,8 @@ class _TelaDetalhesDisciplinaProfessorState
                                   ),
                                   decoration: BoxDecoration(
                                     color: isExpired
-                                        ? Colors.red.withValues(alpha: 0.1)
-                                        : Colors.green.withValues(alpha: 0.1),
+                                        ? Colors.red.withOpacity(0.1)
+                                        : Colors.green.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Row(
@@ -699,7 +720,7 @@ class _TelaDetalhesDisciplinaProfessorState
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: widget.subjectColor.withValues(alpha: 0.1),
+                color: widget.subjectColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -730,7 +751,7 @@ class _TelaDetalhesDisciplinaProfessorState
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: widget.subjectColor.withValues(alpha: 0.3),
+                  color: widget.subjectColor.withOpacity(0.3),
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
