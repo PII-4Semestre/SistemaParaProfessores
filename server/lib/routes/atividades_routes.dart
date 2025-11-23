@@ -438,6 +438,7 @@ class AtividadesRoutes {
                 'data_upload': (a['data_upload'] as DateTime).toIso8601String(),
               }).toList(),
               'data_submissao': DateTime.now().toIso8601String(),
+              'comentario': comentario,
             }),
             headers: {'Content-Type': 'application/json'},
           );
@@ -474,6 +475,7 @@ class AtividadesRoutes {
                 'data_upload': (a['data_upload'] as DateTime).toIso8601String(),
               }).toList(),
               'data_submissao': DateTime.now().toIso8601String(),
+              'comentario': comentario,
             }),
             headers: {'Content-Type': 'application/json'},
           );

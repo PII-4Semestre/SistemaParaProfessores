@@ -654,35 +654,6 @@ class _TelaDetalhesDisciplinaProfessorState
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: widget.subjectColor.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.fitness_center,
-                                        size: 14,
-                                        color: widget.subjectColor,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'Peso: ${atividade.peso.toStringAsFixed(1)}',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: widget.subjectColor,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
                                     color: isExpired
                                         ? Colors.red.withValues(alpha: 0.1)
                                         : Colors.green.withValues(alpha: 0.1),
@@ -2009,7 +1980,6 @@ class _TelaDetalhesDisciplinaProfessorState
   void _showAddAtividadeDialog() {
     final tituloController = TextEditingController();
     final descricaoController = TextEditingController();
-    final pesoController = TextEditingController(text: '1.0');
     DateTime selectedDate = DateTime.now().add(const Duration(days: 7));
 
     showDialog(
@@ -2038,15 +2008,6 @@ class _TelaDetalhesDisciplinaProfessorState
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: pesoController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Peso',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 ListTile(
                   title: const Text('Data de Entrega'),
                   subtitle: Text(DateFormat('dd/MM/yyyy').format(selectedDate)),
@@ -2057,6 +2018,7 @@ class _TelaDetalhesDisciplinaProfessorState
                       initialDate: selectedDate,
                       firstDate: DateTime.now(),
                       lastDate: DateTime.now().add(const Duration(days: 365)),
+                      locale: const Locale('pt', 'BR'),
                     );
                     if (picked != null) {
                       setState(() {
@@ -2087,7 +2049,7 @@ class _TelaDetalhesDisciplinaProfessorState
                     titulo: tituloController.text,
                     descricao: descricaoController.text,
                     disciplinaId: widget.disciplinaId.toString(),
-                    peso: double.tryParse(pesoController.text) ?? 1.0,
+                    peso: 1.0,
                     dataEntrega: selectedDate,
                   );
 
@@ -2120,7 +2082,6 @@ class _TelaDetalhesDisciplinaProfessorState
   void _showEditAtividadeDialog(Atividade atividade) {
     final tituloController = TextEditingController(text: atividade.titulo);
     final descricaoController = TextEditingController(text: atividade.descricao);
-    final pesoController = TextEditingController(text: atividade.peso.toString());
     DateTime selectedDate = atividade.dataEntrega;
 
     showDialog(
@@ -2149,15 +2110,6 @@ class _TelaDetalhesDisciplinaProfessorState
                   ),
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: pesoController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Peso',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 ListTile(
                   title: const Text('Data de Entrega'),
                   subtitle: Text(DateFormat('dd/MM/yyyy').format(selectedDate)),
@@ -2168,6 +2120,7 @@ class _TelaDetalhesDisciplinaProfessorState
                       initialDate: selectedDate,
                       firstDate: DateTime.now(),
                       lastDate: DateTime.now().add(const Duration(days: 365)),
+                      locale: const Locale('pt', 'BR'),
                     );
                     if (picked != null) {
                       setState(() {
@@ -2198,7 +2151,7 @@ class _TelaDetalhesDisciplinaProfessorState
                     id: atividade.id,
                     titulo: tituloController.text,
                     descricao: descricaoController.text,
-                    peso: double.tryParse(pesoController.text) ?? 1.0,
+                    peso: 1.0,
                     dataEntrega: selectedDate,
                   );
 
@@ -2507,9 +2460,9 @@ class _TelaDetalhesDisciplinaProfessorState
             TextField(
               controller: notaController,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Nota (0 - ${atividade.peso * 10})',
-                border: const OutlineInputBorder(),
+              decoration: const InputDecoration(
+                labelText: 'Nota (0 - 10)',
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
@@ -2534,6 +2487,15 @@ class _TelaDetalhesDisciplinaProfessorState
               if (nota == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Por favor, insira uma nota válida')),
+                );
+                return;
+              }
+
+              if (nota < 0 || nota > 10) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('A nota deve estar entre 0 e 10'),
+                  ),
                 );
                 return;
               }

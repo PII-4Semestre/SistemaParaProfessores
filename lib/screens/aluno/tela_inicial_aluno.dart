@@ -4,6 +4,8 @@ import 'tela_disciplinas_aluno.dart';
 import 'tela_mensagens_aluno.dart';
 import '../autenticacao/tela_login.dart';
 import '../../services/api_service.dart';
+import '../../services/atividades_service.dart';
+import '../../models/atividade.dart';
 import '../../widgets/side_menu.dart';
 
 class TelaInicialAluno extends StatefulWidget {
@@ -16,8 +18,11 @@ class TelaInicialAluno extends StatefulWidget {
 class _TelaInicialAlunoState extends State<TelaInicialAluno> {
   int _selectedIndex = 0;
   final ApiService _apiService = ApiService();
+  final AtividadesService _atividadesService = AtividadesService();
 
-  List<dynamic> _notas = [];
+  List<SubmissaoAtividade> _submissoesAvaliadas = [];
+  Map<String, String> _disciplinasNomes = {};
+  Map<String, Atividade> _atividadesPorId = {};
   bool _isLoadingNotas = false;
   String? _errorNotas;
 
@@ -39,11 +44,46 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
         throw Exception('Aluno ID não encontrado');
       }
 
-      final notas = await _apiService.getNotasAluno(alunoId);
+      // Buscar todas as disciplinas do aluno
+      final disciplinas = await _apiService.getDisciplinasAluno(alunoId);
+      
+      // Armazenar nomes das disciplinas
+      _disciplinasNomes = {};
+      for (var disciplina in disciplinas) {
+        _disciplinasNomes[disciplina['id'].toString()] = disciplina['nome'];
+      }
+
+      // Buscar submissões avaliadas de todas as disciplinas
+      List<SubmissaoAtividade> todasSubmissoes = [];
+      for (var disciplina in disciplinas) {
+        try {
+          final atividades = await _atividadesService.getAtividadesDisciplina(
+            disciplina['id'].toString(),
+          );
+          
+          for (var atividade in atividades) {
+            try {
+              final submissao = await _atividadesService.getSubmissaoAluno(
+                atividadeId: atividade.id,
+                alunoId: alunoId.toString(),
+              );
+              
+              if (submissao != null && submissao.foiAvaliada) {
+                todasSubmissoes.add(submissao);
+                _atividadesPorId[atividade.id] = atividade;
+              }
+            } catch (e) {
+              // Submissão não encontrada para esta atividade, continua
+            }
+          }
+        } catch (e) {
+          // Erro ao buscar atividades desta disciplina, continua
+        }
+      }
 
       if (mounted) {
         setState(() {
-          _notas = notas;
+          _submissoesAvaliadas = todasSubmissoes;
           _isLoadingNotas = false;
         });
       }
@@ -129,25 +169,17 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
 
     // Calcular média geral
     double mediaGeral = 0.0;
-    if (_notas.isNotEmpty) {
+    if (_submissoesAvaliadas.isNotEmpty) {
       double soma = 0.0;
-      for (var nota in _notas) {
-        soma += (nota['nota'] is String)
-            ? double.tryParse(nota['nota']) ?? 0.0
-            : (nota['nota'] as num).toDouble();
+      for (var submissao in _submissoesAvaliadas) {
+        soma += submissao.nota ?? 0.0;
       }
-      mediaGeral = soma / _notas.length;
+      mediaGeral = soma / _submissoesAvaliadas.length;
     }
 
-    // Agrupar notas por disciplina
-    Map<String, List<dynamic>> notasPorDisciplina = {};
-    for (var nota in _notas) {
-      String disciplina = nota['disciplina_nome'] ?? 'Sem disciplina';
-      if (!notasPorDisciplina.containsKey(disciplina)) {
-        notasPorDisciplina[disciplina] = [];
-      }
-      notasPorDisciplina[disciplina]!.add(nota);
-    }
+    // Agrupar submissões por disciplina (usando IDs das atividades)
+    // Nota: Como não temos disciplinaId nas submissões, vamos mostrar todas juntas
+    // ou precisaríamos buscar as atividades para pegar seus disciplinaIds
 
     return Padding(
       padding: const EdgeInsets.all(24.0),
@@ -160,7 +192,7 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Veja suas notas em todas as disciplinas',
+            'Veja suas notas em todas as atividades',
             style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
@@ -184,7 +216,9 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _notas.isEmpty ? '-' : mediaGeral.toStringAsFixed(1),
+                        _submissoesAvaliadas.isEmpty
+                            ? '-'
+                            : mediaGeral.toStringAsFixed(1),
                         style: const TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.bold,
@@ -199,11 +233,11 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
           ),
           const SizedBox(height: 24),
           const Text(
-            'Média por Disciplina',
+            'Todas as Notas',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-          if (_notas.isEmpty)
+          if (_submissoesAvaliadas.isEmpty)
             Expanded(
               child: Center(
                 child: Column(
@@ -216,7 +250,7 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Nenhuma nota cadastrada',
+                      'Nenhuma atividade avaliada ainda',
                       style: TextStyle(fontSize: 18, color: Colors.grey[700]),
                     ),
                   ],
@@ -226,134 +260,73 @@ class _TelaInicialAlunoState extends State<TelaInicialAluno> {
           else
             Expanded(
               child: ListView.builder(
-                itemCount: notasPorDisciplina.length,
+                itemCount: _submissoesAvaliadas.length,
                 itemBuilder: (context, index) {
-                  final disciplina = notasPorDisciplina.keys.elementAt(index);
-                  final notasDisciplina = notasPorDisciplina[disciplina]!;
-
-                  // Calcular média da disciplina
-                  double mediaDisciplina = 0.0;
-                  if (notasDisciplina.isNotEmpty) {
-                    double soma = 0.0;
-                    for (var nota in notasDisciplina) {
-                      soma += (nota['nota'] is String)
-                          ? double.tryParse(nota['nota']) ?? 0.0
-                          : (nota['nota'] as num).toDouble();
-                    }
-                    mediaDisciplina = soma / notasDisciplina.length;
+                  final submissao = _submissoesAvaliadas[index];
+                  final nota = submissao.nota ?? 0.0;
+                  final atividade = _atividadesPorId[submissao.atividadeId.toString()];
+                  
+                  // Cor baseada na nota (0-10)
+                  Color notaColor;
+                  if (nota >= 7.0) {
+                    notaColor = Colors.green;
+                  } else if (nota >= 5.0) {
+                    notaColor = Colors.orange;
+                  } else {
+                    notaColor = Colors.red;
                   }
-
-                  final colors = [
-                    Colors.blue,
-                    Colors.green,
-                    Colors.orange,
-                    Colors.purple,
-                    Colors.teal,
-                    Colors.pink,
-                  ];
-                  final color = colors[index % colors.length];
 
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
-                    child: ExpansionTile(
+                    child: ListTile(
                       leading: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.2),
+                          color: notaColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(Icons.book, color: color),
+                        child: Icon(Icons.assignment, color: notaColor),
                       ),
-                      title: Text(disciplina),
-                      subtitle: Text('${notasDisciplina.length} atividade(s)'),
+                      title: Text(
+                        atividade?.titulo ?? 'Atividade',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (submissao.feedback != null &&
+                              submissao.feedback!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Feedback: ${submissao.feedback}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.1),
+                          color: notaColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          mediaDisciplina.toStringAsFixed(1),
+                          nota.toStringAsFixed(1),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: color,
+                            color: notaColor,
                           ),
                         ),
                       ),
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            children: notasDisciplina.map<Widget>((nota) {
-                              final notaValor = (nota['nota'] is String)
-                                  ? double.tryParse(nota['nota']) ?? 0.0
-                                  : (nota['nota'] as num).toDouble();
-
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            nota['atividade_titulo'] ??
-                                                'Sem título',
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: color.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            notaValor.toStringAsFixed(1),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: color,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    if (nota['comentario'] != null &&
-                                        nota['comentario']
-                                            .toString()
-                                            .isNotEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 4),
-                                        child: Text(
-                                          'Comentário: ${nota['comentario']}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                            fontStyle: FontStyle.italic,
-                                          ),
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      ],
                     ),
                   );
                 },

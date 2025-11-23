@@ -730,35 +730,6 @@ class _TelaDetalhesDisciplinaAlunoState
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: widget.subjectColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.fitness_center,
-                                size: 14,
-                                color: widget.subjectColor,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Peso: ${atividade.peso.toStringAsFixed(1)}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: widget.subjectColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
                             color: isExpired
                                 ? Colors.red.withValues(alpha: 0.1)
                                 : Colors.green.withValues(alpha: 0.1),
@@ -993,12 +964,6 @@ class _TelaDetalhesDisciplinaAlunoState
               ],
               Row(
                 children: [
-                  Chip(
-                    avatar: const Icon(Icons.fitness_center, size: 18),
-                    label: Text('Peso: ${atividade.peso.toStringAsFixed(1)}'),
-                    backgroundColor: widget.subjectColor.withValues(alpha: 0.1),
-                  ),
-                  const SizedBox(width: 8),
                   if (isGraded)
                     Chip(
                       avatar: const Icon(Icons.grade, size: 18),
@@ -1088,6 +1053,28 @@ class _TelaDetalhesDisciplinaAlunoState
                     },
                   ),
                 ),
+                const SizedBox(height: 16),
+                if (submissao.comentario != null && submissao.comentario!.isNotEmpty) ...[
+                  const Text(
+                    'Seu Comentário:',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: Text(
+                      submissao.comentario!,
+                      style: TextStyle(color: Colors.grey[800]),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 if (!isGraded) ...[
                   const SizedBox(height: 16),
                   ElevatedButton.icon(

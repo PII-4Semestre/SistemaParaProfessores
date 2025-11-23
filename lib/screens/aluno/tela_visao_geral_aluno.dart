@@ -7,6 +7,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../services/api_service.dart';
+import '../../services/atividades_service.dart';
+import '../../models/atividade.dart';
 import 'tela_detalhes_disciplina_aluno.dart';
 
 class TelaVisaoGeralAluno extends StatefulWidget {
@@ -23,8 +25,12 @@ class TelaVisaoGeralAluno extends StatefulWidget {
 
 class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
   final ApiService _apiService = ApiService();
+  final AtividadesService _atividadesService = AtividadesService();
   List<dynamic> _disciplinas = [];
-  List<dynamic> _notas = [];
+  List<SubmissaoAtividade> _submissoesAvaliadas = [];
+  Map<String, String> _atividadesNomes = {}; // atividadeId -> nome
+  Map<String, String> _disciplinasNomes = {}; // disciplinaId -> nome
+  Map<String, String> _atividadeToDisciplina = {}; // atividadeId -> disciplinaId
   bool _isLoading = true;
   String? _error;
 
@@ -89,15 +95,55 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         throw Exception('Aluno ID não encontrado');
       }
 
-      final results = await Future.wait([
-        _apiService.getDisciplinasAluno(alunoId),
-        _apiService.getNotasAluno(alunoId),
-      ]);
+      // Buscar disciplinas
+      final disciplinas = await _apiService.getDisciplinasAluno(alunoId);
+      
+      // Buscar submissões avaliadas de todas as disciplinas
+      List<SubmissaoAtividade> todasSubmissoes = [];
+      Map<String, String> nomesAtividades = {};
+      Map<String, String> nomesDisciplinas = {};
+      Map<String, String> atividadeToDisciplina = {};
+      
+      for (var disciplina in disciplinas) {
+        try {
+          final disciplinaId = disciplina['id'].toString();
+          final disciplinaNome = disciplina['nome']?.toString() ?? 'Disciplina';
+          nomesDisciplinas[disciplinaId] = disciplinaNome;
+          
+          final atividades = await _atividadesService.getAtividadesDisciplina(
+            disciplinaId,
+          );
+          
+          for (var atividade in atividades) {
+            try {
+              // Armazenar nome da atividade e relação com disciplina
+              nomesAtividades[atividade.id] = atividade.titulo;
+              atividadeToDisciplina[atividade.id] = disciplinaId;
+              
+              final submissao = await _atividadesService.getSubmissaoAluno(
+                atividadeId: atividade.id,
+                alunoId: alunoId.toString(),
+              );
+              
+              if (submissao != null && submissao.foiAvaliada) {
+                todasSubmissoes.add(submissao);
+              }
+            } catch (e) {
+              // Submissão não encontrada, continua
+            }
+          }
+        } catch (e) {
+          // Erro ao buscar atividades, continua
+        }
+      }
 
       if (mounted) {
         setState(() {
-          _disciplinas = results[0];
-          _notas = results[1];
+          _disciplinas = disciplinas;
+          _submissoesAvaliadas = todasSubmissoes;
+          _atividadesNomes = nomesAtividades;
+          _disciplinasNomes = nomesDisciplinas;
+          _atividadeToDisciplina = atividadeToDisciplina;
           _isLoading = false;
         });
       }
@@ -112,20 +158,20 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
   }
 
   double _calcularMedia() {
-    if (_notas.isEmpty) return 0.0;
-    double soma = 0;
-    int count = 0;
-    for (var nota in _notas) {
-      if (nota['nota'] != null) {
-        final notaValue = nota['nota'];
-        final notaDouble = notaValue is String 
-            ? double.tryParse(notaValue) ?? 0.0 
-            : (notaValue as num).toDouble();
-        soma += notaDouble;
-        count++;
-      }
+    if (_submissoesAvaliadas.isEmpty) return 0.0;
+    double soma = 0.0;
+    for (var submissao in _submissoesAvaliadas) {
+      soma += submissao.nota ?? 0.0;
     }
-    return count > 0 ? soma / count : 0.0;
+    return soma / _submissoesAvaliadas.length;
+  }
+
+  String _getDisciplinaNomeFromAtividade(String atividadeId) {
+    final disciplinaId = _atividadeToDisciplina[atividadeId];
+    if (disciplinaId != null) {
+      return _disciplinasNomes[disciplinaId] ?? 'Disciplina';
+    }
+    return 'Disciplina';
   }
 
   int _contarAtividadesPendentes() {
@@ -133,24 +179,20 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
   }
 
   Map<String, dynamic> _calcularTendencia() {
-    if (_notas.length < 4) {
+    if (_submissoesAvaliadas.length < 4) {
       return {'trend': 'stable', 'percentage': 0.0};
     }
 
     // Dividir notas em duas metades
-    int metade = _notas.length ~/ 2;
-    List<double> notasAntigas = _notas
+    int metade = _submissoesAvaliadas.length ~/ 2;
+    List<double> notasAntigas = _submissoesAvaliadas
         .skip(metade)
-        .map((n) => _converterNota(n['nota']))
-        .where((n) => n != null)
-        .cast<double>()
+        .map((s) => s.nota ?? 0.0)
         .toList();
     
-    List<double> notasRecentes = _notas
+    List<double> notasRecentes = _submissoesAvaliadas
         .take(metade)
-        .map((n) => _converterNota(n['nota']))
-        .where((n) => n != null)
-        .cast<double>()
+        .map((s) => s.nota ?? 0.0)
         .toList();
 
     if (notasAntigas.isEmpty || notasRecentes.isEmpty) {
@@ -245,21 +287,6 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         ],
       ),
     );
-  }
-
-  String _formatarNota(dynamic nota) {
-    if (nota == null) return '-';
-    if (nota is String) {
-      final notaDouble = double.tryParse(nota);
-      return notaDouble?.toStringAsFixed(1) ?? '-';
-    }
-    return (nota as num).toDouble().toStringAsFixed(1);
-  }
-
-  double? _converterNota(dynamic nota) {
-    if (nota == null) return null;
-    if (nota is String) return double.tryParse(nota);
-    return (nota as num).toDouble();
   }
 
   @override
@@ -455,7 +482,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                   SizedBox(height: 32),
                   _buildStatsSection(isDesktop, isTablet),
                   SizedBox(height: 32),
-                  if (_notas.isNotEmpty) ...[
+                  if (_submissoesAvaliadas.isNotEmpty) ...[
                     _buildPerformanceChart(),
                     SizedBox(height: 32),
                   ],
@@ -510,7 +537,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                 ],
               ),
             ),
-            if (_notas.isNotEmpty)
+            if (_submissoesAvaliadas.isNotEmpty)
               _buildPerformanceBadge(media)
                   .animate()
                   .fadeIn(delay: 250.ms)
@@ -572,11 +599,11 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
     }
     
     // Conquista: Participação
-    if (_notas.length >= 10) {
+    if (_submissoesAvaliadas.length >= 10) {
       achievements.add({
         'icon': Iconsax.task_square5,
         'title': 'Participativo',
-        'subtitle': '${_notas.length} avaliações',
+        'subtitle': '${_submissoesAvaliadas.length} avaliações',
         'color': Color(0xFFED2152), // Pink - mesma cor da tela professor
       });
     }
@@ -820,26 +847,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
   }
 
   Widget _buildPerformanceChart() {
-    // Agrupar notas por disciplina e calcular evolução
-    Map<String, List<double>> notasPorDisciplina = {};
-    
-    for (var nota in _notas) {
-      String disciplina = nota['disciplina'] ?? 'Outras';
-      double? valor = _converterNota(nota['nota']);
-      if (valor == null) continue;
-      
-      if (!notasPorDisciplina.containsKey(disciplina)) {
-        notasPorDisciplina[disciplina] = [];
-      }
-      notasPorDisciplina[disciplina]!.add(valor);
-    }
-    
     // Pegar últimas 6 notas para mostrar evolução
-    List<double> ultimasNotas = _notas
+    List<double> ultimasNotas = _submissoesAvaliadas
         .take(6)
-        .map((n) => _converterNota(n['nota']))
-        .where((n) => n != null)
-        .cast<double>()
+        .map((s) => s.nota ?? 0.0)
         .toList()
         .reversed
         .toList();
@@ -1088,7 +1099,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
   }
 
   Widget _buildNotasSection() {
-    final notasRecentes = _notas.take(5).toList();
+    final notasRecentes = _submissoesAvaliadas.take(5).toList();
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1104,9 +1115,9 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                 color: _getTextColor(),
               ),
             ),
-            if (_notas.length > 5)
+            if (_submissoesAvaliadas.length > 5)
               TextButton(
-                onPressed: () => widget.onNavigateToTab?.call(1),
+                onPressed: () => widget.onNavigateToTab?.call(3),
                 child: Text(
                   'Ver todas',
                   style: GoogleFonts.poppins(
@@ -1198,7 +1209,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
             child: Column(
               children: notasRecentes.asMap().entries.map((entry) {
                 final index = entry.key;
-                final nota = entry.value;
+                final submissao = entry.value;
                 final isLast = index == notasRecentes.length - 1;
                 
                 final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1217,13 +1228,13 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                             height: 60,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: _getNotaColor(nota['nota']),
+                                colors: _getNotaColor(submissao.nota ?? 0.0),
                               ),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Center(
                               child: Text(
-                                _formatarNota(nota['nota']),
+                                (submissao.nota ?? 0.0).toStringAsFixed(1),
                                 style: GoogleFonts.poppins(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
@@ -1238,7 +1249,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  nota['disciplina_nome'] ?? 'Sem nome',
+                                  _atividadesNomes[submissao.atividadeId] ?? 'Atividade',
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -1249,7 +1260,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  nota['atividade_nome'] ?? 'Atividade',
+                                  _getDisciplinaNomeFromAtividade(submissao.atividadeId),
                                   style: GoogleFonts.poppins(
                                     fontSize: 13,
                                     color: secondaryTextColor,
@@ -1285,8 +1296,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
   }
 
   List<Color> _getNotaColor(dynamic notaValue) {
-    final nota = _converterNota(notaValue);
-    if (nota == null) return [Colors.grey.shade700, Colors.grey.shade800];
+    final nota = notaValue is double ? notaValue : 0.0;
     if (nota >= 7.0) return [Color(0xFF1CB3C2), Color(0xFF0E8A96)]; // Cyan
     if (nota >= 5.0) return [Color(0xFFF9A31F), Color(0xFFD88A15)]; // Orange
     return [Color(0xFFED2152), Color(0xFFB81840)]; // Pink

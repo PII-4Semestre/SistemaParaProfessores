@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../../services/api_service.dart';
 import 'tela_detalhes_disciplina_professor.dart';
 
@@ -69,12 +68,6 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
     return Theme.of(context).brightness == Brightness.dark
         ? Colors.white70
         : Color(0xFF8D6E63); // Marrom médio
-  }
-
-  Color _getTextTertiaryColor() {
-    return Theme.of(context).brightness == Brightness.dark
-        ? Colors.white60
-        : Color(0xFFA1887F); // Marrom claro
   }
 
   @override
@@ -274,10 +267,6 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
                   SizedBox(height: 32),
                   _buildStatsSection(isDesktop, isTablet),
                   SizedBox(height: 32),
-                  if (_disciplinas.isNotEmpty) ...[
-                    _buildDistributionChart(),
-                    SizedBox(height: 32),
-                  ],
                   _buildDisciplinasSection(isDesktop, isTablet),
                   SizedBox(height: 32),
                   _buildAlunosSection(isDesktop, isTablet),
@@ -395,167 +384,6 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
         }).toList(),
       );
     }
-  }
-
-  Widget _buildDistributionChart() {
-    // Cores para o gráfico de pizza
-    final colors = [
-      _getPrimaryColor(),
-      _getSecondaryColor(),
-      _getAccentColor(),
-      Color(0xFF9C27B0),
-      Color(0xFF4CAF50),
-      Color(0xFFFF5722),
-    ];
-
-    List<PieChartSectionData> sections = _disciplinas.asMap().entries.map((entry) {
-      final index = entry.key;
-      final disciplina = entry.value;
-      final totalAlunos = _alunos.where((a) => 
-        a['disciplinas']?.contains(disciplina['id']) ?? false
-      ).length;
-      
-      return PieChartSectionData(
-        color: colors[index % colors.length],
-        value: totalAlunos.toDouble(),
-        title: totalAlunos > 0 ? '$totalAlunos' : '',
-        radius: 100,
-        titleStyle: GoogleFonts.poppins(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: _getTextColor(),
-        ),
-        badgeWidget: totalAlunos > 0 ? null : null,
-      );
-    }).toList();
-
-    final totalAlunos = sections.fold<double>(0, (sum, section) => sum + section.value);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Distribuição de Alunos',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: _getTextColor(),
-          ),
-        ).animate().fadeIn(delay: 350.ms),
-        SizedBox(height: 16),
-        GlassContainer(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: totalAlunos > 0
-                ? Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: SizedBox(
-                          height: 250,
-                          child: PieChart(
-                            PieChartData(
-                              sections: sections,
-                              sectionsSpace: 2,
-                              centerSpaceRadius: 0,
-                              pieTouchData: PieTouchData(
-                                touchCallback: (FlTouchEvent event, pieTouchResponse) {},
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 32),
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Legenda',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: _getTextSecondaryColor(),
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            ..._disciplinas.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final disciplina = entry.value;
-                              final totalAlunosDisciplina = _alunos.where((a) =>
-                                a['disciplinas']?.contains(disciplina['id']) ?? false
-                              ).length;
-                              
-                              return Padding(
-                                padding: EdgeInsets.only(bottom: 12),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 16,
-                                      height: 16,
-                                      decoration: BoxDecoration(
-                                        color: colors[index % colors.length],
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    ),
-                                    SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        disciplina['nome'] ?? 'Sem nome',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 13,
-                                          color: _getTextColor(),
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: colors[index % colors.length].withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        '$totalAlunosDisciplina',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                          color: colors[index % colors.length],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                          ],
-                        ),
-                      ),
-                    ],
-                  )
-                : Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Column(
-                        children: [
-                          Icon(Iconsax.chart_21, size: 48, color: _getTextTertiaryColor().withOpacity(0.6)),
-                          SizedBox(height: 12),
-                          Text(
-                            'Sem dados para exibir',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: _getTextSecondaryColor(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-          ),
-        ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
-      ],
-    );
   }
 
   Widget _buildDisciplinasSection(bool isDesktop, bool isTablet) {
