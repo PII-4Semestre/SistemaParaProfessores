@@ -245,11 +245,17 @@ class _TelaMensagensProfessorState extends State<TelaMensagensProfessor> {
           _isLoadingMessages = false;
         });
         
-        // Marcar conversa como lida
-        await _apiService.marcarConversaComoLida(
-          usuarioId: int.parse(_currentUserId!),
-          outroUsuarioId: int.parse(outroUsuarioId),
-        );
+        // Marcar mensagens recebidas como lidas
+        for (var mensagem in mensagensConvertidas) {
+          if (mensagem.senderId == outroUsuarioId && !mensagem.isRead) {
+            try {
+              await _apiService.marcarMensagemComoLida(mensagem.id);
+              print('✅ Mensagem ${mensagem.id} marcada como lida');
+            } catch (e) {
+              print('⚠️ Erro ao marcar mensagem ${mensagem.id} como lida: $e');
+            }
+          }
+        }
         
         // Atualizar contador de não lidas
         _carregarConversas();
