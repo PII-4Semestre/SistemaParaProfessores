@@ -105,6 +105,7 @@ Após o setup, os seguintes usuários estarão disponíveis:
 - **Email:** `maria@escola.com` | **Senha:** qualquer senha
 
 ### Alunos
+- **Email:** `aluno@poliedro.com` | **Senha:** qualquer senha
 - **Email:** `joao@aluno.com` | **Senha:** qualquer senha
 - **Email:** `ana@aluno.com` | **Senha:** qualquer senha
 - **Email:** `pedro@aluno.com` | **Senha:** qualquer senha
