@@ -309,7 +309,6 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
         SizedBox(height: 8),
         Container(
           height: 4,
-          width: 60,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [_getPrimaryColor(), _getSecondaryColor(), _getAccentColor()],
