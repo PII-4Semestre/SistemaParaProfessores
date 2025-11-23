@@ -547,7 +547,6 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         SizedBox(height: 8),
         Container(
           height: 4,
-          width: 60,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: Theme.of(context).brightness == Brightness.dark
@@ -847,15 +846,18 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
   }
 
   Widget _buildPerformanceChart() {
-    // Pegar últimas 6 notas para mostrar evolução
-    List<double> ultimasNotas = _submissoesAvaliadas
+    // Pegar últimas 6 submissões para mostrar evolução
+    List<SubmissaoAtividade> ultimasSubmissoes = _submissoesAvaliadas
         .take(6)
-        .map((s) => s.nota ?? 0.0)
         .toList()
         .reversed
         .toList();
     
-    if (ultimasNotas.isEmpty) return SizedBox.shrink();
+    if (ultimasSubmissoes.isEmpty) return SizedBox.shrink();
+    
+    List<double> ultimasNotas = ultimasSubmissoes
+        .map((s) => s.nota ?? 0.0)
+        .toList();
     
     // Calcular média móvel
     double mediaAtual = ultimasNotas.reduce((a, b) => a + b) / ultimasNotas.length;
@@ -1048,6 +1050,20 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                           fitInsideVertically: true,
                           getTooltipItems: (touchedSpots) {
                             return touchedSpots.map((spot) {
+                              final index = spot.x.toInt();
+                              if (index >= 0 && index < ultimasSubmissoes.length) {
+                                final submissao = ultimasSubmissoes[index];
+                                final nomeAtividade = _atividadesNomes[submissao.atividadeId] ?? 'Atividade';
+                                return LineTooltipItem(
+                                  '$nomeAtividade\nNota: ${spot.y.toStringAsFixed(1)}',
+                                  GoogleFonts.poppins(
+                                    color: _getTextColor(),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                );
+                              }
                               return LineTooltipItem(
                                 'Nota: ${spot.y.toStringAsFixed(1)}',
                                 GoogleFonts.poppins(
