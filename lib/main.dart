@@ -11,6 +11,7 @@ void main() async {
 
 class PoliEducaApp extends StatelessWidget {
   const PoliEducaApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     // React to theme changes across the app.

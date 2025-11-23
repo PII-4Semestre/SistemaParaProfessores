@@ -118,7 +118,7 @@ class Arquivo {
 
   factory Arquivo.fromJson(Map<String, dynamic> json) {
     return Arquivo(
-      gridFsId: json['grid_fs_id'] as ObjectId?,
+      gridFsId: json['gridfs_id'] as ObjectId?,
       nomeOriginal: json['nome_original'] as String,
       nomeArmazenado: json['nome_armazenado'] as String?,
       mimeType: json['mime_type'] as String,
@@ -129,7 +129,7 @@ class Arquivo {
 
   Map<String, dynamic> toJson() {
     return {
-      if (gridFsId != null) 'grid_fs_id': gridFsId,
+      if (gridFsId != null) 'gridfs_id': gridFsId,
       'nome_original': nomeOriginal,
       if (nomeArmazenado != null) 'nome_armazenado': nomeArmazenado,
       'mime_type': mimeType,

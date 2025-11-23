@@ -1,27 +1,15 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'dart:html' as html show Blob, Url, AnchorElement;
-import 'package:file_picker/file_picker.dart';
-import '../../services/materiais_service.dart';
-import '../../services/atividades_service.dart';
-import '../../services/api_service.dart';
-import '../../models/material.dart' as models;
-import '../../models/atividade.dart';
 
 class TelaDetalhesDisciplinaAluno extends StatefulWidget {
   final String subjectName;
   final Color subjectColor;
   final String professorName;
-  final int disciplinaId;
 
   const TelaDetalhesDisciplinaAluno({
     super.key,
     required this.subjectName,
     required this.subjectColor,
     required this.professorName,
-    required this.disciplinaId,
   });
 
   @override
@@ -33,41 +21,11 @@ class _TelaDetalhesDisciplinaAlunoState
     extends State<TelaDetalhesDisciplinaAluno>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final MateriaisService _materiaisService = MateriaisService();
-  final AtividadesService _atividadesService = AtividadesService();
-  final ApiService _apiService = ApiService();
-  List<models.Material> _materiais = [];
-  bool _isLoadingMateriais = true;
-  List<Atividade> _atividades = [];
-  Map<String, SubmissaoAtividade?> _submissoes = {};
-  bool _isLoadingAtividades = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _loadMateriais();
-    _loadAtividades();
-  }
-
-  Future<void> _loadMateriais() async {
-    try {
-      setState(() => _isLoadingMateriais = true);
-      final materiais = await _materiaisService.getMateriaisPorDisciplina(
-        widget.disciplinaId.toString(),
-      );
-      setState(() {
-        _materiais = materiais;
-        _isLoadingMateriais = false;
-      });
-    } catch (e) {
-      setState(() => _isLoadingMateriais = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar materiais: $e')),
-        );
-      }
-    }
   }
 
   Future<void> _loadAtividades() async {
@@ -224,413 +182,73 @@ class _TelaDetalhesDisciplinaAlunoState
   }
 
   Widget _buildMateriaisTab() {
-    if (_isLoadingMateriais) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (_materiais.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(48.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: widget.subjectColor.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(48.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: widget.subjectColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.folder_open,
+                size: 80,
+                color: widget.subjectColor,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Materiais em Desenvolvimento',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'A funcionalidade de materiais didáticos estará disponível em breve.',
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Aqui você poderá acessar PDFs, slides, apostilas e outros recursos disponibilizados pelo professor.',
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: widget.subjectColor.withValues(alpha: 0.3),
                 ),
-                child: Icon(
-                  Icons.folder_open,
-                  size: 80,
-                  color: widget.subjectColor,
-                ),
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(height: 24),
-              const Text(
-                'Nenhum material disponível',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'O professor ainda não disponibilizou materiais para esta disciplina.',
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadMateriais,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _materiais.length,
-        itemBuilder: (context, index) {
-          final material = _materiais[index];
-          return _buildMaterialCard(material);
-        },
-      ),
-    );
-  }
-
-  Widget _buildMaterialCard(models.Material material) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: () => _showMaterialDetails(material),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: widget.subjectColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      material.icone,
-                      style: const TextStyle(fontSize: 32),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          material.titulo,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          material.tipo.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: widget.subjectColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                   Icon(
-                    Icons.chevron_right,
-                    color: Colors.grey[400],
+                    Icons.info_outline,
+                    color: widget.subjectColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Integração com MongoDB em progresso',
+                    style: TextStyle(
+                      color: widget.subjectColor,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
-              if (material.descricao != null && material.descricao!.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(
-                  material.descricao!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-              if (material.tags.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: material.tags.take(3).map((tag) {
-                    return Chip(
-                      label: Text(tag, style: const TextStyle(fontSize: 12)),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    );
-                  }).toList(),
-                ),
-              ],
-              if (material.temArquivos) ...[
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.attach_file,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${material.arquivos.length} arquivo(s)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  void _showMaterialDetails(models.Material material) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: Container(
-          width: 600,
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: widget.subjectColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      material.icone,
-                      style: const TextStyle(fontSize: 32),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          material.titulo,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          material.tipo.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: widget.subjectColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-              const Divider(height: 32),
-              if (material.descricao != null && material.descricao!.isNotEmpty) ...[
-                const Text(
-                  'Descrição',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  material.descricao!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              if (material.tags.isNotEmpty) ...[
-                const Text(
-                  'Tags',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: material.tags.map((tag) {
-                    return Chip(
-                      label: Text(tag, style: const TextStyle(fontSize: 12)),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-              ],
-              if (material.isLinkExterno) ...[
-                const Text(
-                  'Link Externo',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                InkWell(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Abrir: ${material.linkExterno}')),
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.link, size: 20, color: Colors.blue),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            material.linkExterno!,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.blue,
-                              decoration: TextDecoration.underline,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              if (material.temArquivos) ...[
-                const Text(
-                  'Arquivos',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  constraints: const BoxConstraints(maxHeight: 200),
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: material.arquivos.length,
-                    itemBuilder: (context, index) {
-                      final arquivo = material.arquivos[index];
-                      return Card(
-                        child: ListTile(
-                          leading: Text(
-                            arquivo.icone,
-                            style: const TextStyle(fontSize: 24),
-                          ),
-                          title: Text(arquivo.nomeOriginal.isEmpty ? 'arquivo_sem_nome' : arquivo.nomeOriginal),
-                          subtitle: Text(
-                            '${arquivo.tamanhoFormatado}${arquivo.extensao.isNotEmpty ? ' • ${arquivo.extensao}' : ''}',
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.download),
-                            onPressed: () => _downloadArquivo(arquivo),
-                            tooltip: 'Baixar arquivo',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              Text(
-                'Publicado em ${DateFormat('dd/MM/yyyy \'às\' HH:mm').format(material.criadoEm)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[500],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _downloadArquivo(models.Arquivo arquivo) async {
-    try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-
-      final bytes = await _materiaisService.downloadArquivo(arquivo.gridFsId);
-
-      if (mounted) {
-        Navigator.pop(context);
-
-        if (kIsWeb) {
-          final blob = html.Blob([bytes]);
-          final url = html.Url.createObjectUrlFromBlob(blob);
-          html.AnchorElement(href: url)
-            ..setAttribute('download', arquivo.nomeOriginal)
-            ..click();
-          html.Url.revokeObjectUrl(url);
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Arquivo baixado com sucesso!')),
-            );
-          }
-        } else {
-          final result = await FilePicker.platform.saveFile(
-            dialogTitle: 'Salvar arquivo',
-            fileName: arquivo.nomeOriginal,
-          );
-
-          if (result != null) {
-            final file = File(result);
-            await file.writeAsBytes(bytes);
-            
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Arquivo salvo com sucesso!')),
-              );
-            }
-          }
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao baixar arquivo: $e')),
-        );
-      }
-    }
   }
 
   Widget _buildAtividadesTab() {
