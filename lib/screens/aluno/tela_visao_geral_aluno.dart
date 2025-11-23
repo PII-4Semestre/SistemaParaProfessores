@@ -10,14 +10,12 @@ import '../../services/api_service.dart';
 import '../../services/atividades_service.dart';
 import '../../models/atividade.dart';
 import 'tela_detalhes_disciplina_aluno.dart';
+import 'tela_mensagens_aluno.dart';
 
 class TelaVisaoGeralAluno extends StatefulWidget {
   final Function(int)? onNavigateToTab;
 
-  const TelaVisaoGeralAluno({
-    Key? key,
-    this.onNavigateToTab,
-  }) : super(key: key);
+  const TelaVisaoGeralAluno({Key? key, this.onNavigateToTab}) : super(key: key);
 
   @override
   State<TelaVisaoGeralAluno> createState() => _TelaVisaoGeralAlunoState();
@@ -30,7 +28,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
   List<SubmissaoAtividade> _submissoesAvaliadas = [];
   Map<String, String> _atividadesNomes = {}; // atividadeId -> nome
   Map<String, String> _disciplinasNomes = {}; // disciplinaId -> nome
-  Map<String, String> _atividadeToDisciplina = {}; // atividadeId -> disciplinaId
+  Map<String, String> _atividadeToDisciplina =
+      {}; // atividadeId -> disciplinaId
   bool _isLoading = true;
   String? _error;
 
@@ -97,34 +96,34 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
 
       // Buscar disciplinas
       final disciplinas = await _apiService.getDisciplinasAluno(alunoId);
-      
+
       // Buscar submissões avaliadas de todas as disciplinas
       List<SubmissaoAtividade> todasSubmissoes = [];
       Map<String, String> nomesAtividades = {};
       Map<String, String> nomesDisciplinas = {};
       Map<String, String> atividadeToDisciplina = {};
-      
+
       for (var disciplina in disciplinas) {
         try {
           final disciplinaId = disciplina['id'].toString();
           final disciplinaNome = disciplina['nome']?.toString() ?? 'Disciplina';
           nomesDisciplinas[disciplinaId] = disciplinaNome;
-          
+
           final atividades = await _atividadesService.getAtividadesDisciplina(
             disciplinaId,
           );
-          
+
           for (var atividade in atividades) {
             try {
               // Armazenar nome da atividade e relação com disciplina
               nomesAtividades[atividade.id] = atividade.titulo;
               atividadeToDisciplina[atividade.id] = disciplinaId;
-              
+
               final submissao = await _atividadesService.getSubmissaoAluno(
                 atividadeId: atividade.id,
                 alunoId: alunoId.toString(),
               );
-              
+
               if (submissao != null && submissao.foiAvaliada) {
                 todasSubmissoes.add(submissao);
               }
@@ -189,7 +188,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         .skip(metade)
         .map((s) => s.nota ?? 0.0)
         .toList();
-    
+
     List<double> notasRecentes = _submissoesAvaliadas
         .take(metade)
         .map((s) => s.nota ?? 0.0)
@@ -199,9 +198,11 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
       return {'trend': 'stable', 'percentage': 0.0};
     }
 
-    double mediaAntiga = notasAntigas.reduce((a, b) => a + b) / notasAntigas.length;
-    double mediaRecente = notasRecentes.reduce((a, b) => a + b) / notasRecentes.length;
-    
+    double mediaAntiga =
+        notasAntigas.reduce((a, b) => a + b) / notasAntigas.length;
+    double mediaRecente =
+        notasRecentes.reduce((a, b) => a + b) / notasRecentes.length;
+
     double diferenca = mediaRecente - mediaAntiga;
     double percentual = mediaAntiga > 0 ? (diferenca / mediaAntiga * 100) : 0.0;
 
@@ -221,7 +222,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
     String label;
     Color color;
     IconData icon;
-    
+
     if (media >= 9.0) {
       label = 'EXCELENTE';
       color = Color(0xFF1CB3C2); // Cyan - mesma cor da tela professor
@@ -244,16 +245,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            color.withOpacity(0.3),
-            color.withOpacity(0.1),
-          ],
+          colors: [color.withOpacity(0.3), color.withOpacity(0.1)],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withOpacity(0.5),
-          width: 1.5,
-        ),
+        border: Border.all(color: color.withOpacity(0.5), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -303,8 +298,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         child: _isLoading
             ? _buildLoadingState()
             : _error != null
-                ? _buildErrorState()
-                : _buildContent(),
+            ? _buildErrorState()
+            : _buildContent(),
       ),
     );
   }
@@ -344,45 +339,54 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                   SizedBox(height: 24),
                   // Achievements skeleton
                   Row(
-                    children: List.generate(3, (index) => Padding(
-                      padding: EdgeInsets.only(right: 12),
-                      child: Container(
-                        width: 100,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                    children: List.generate(
+                      3,
+                      (index) => Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: Container(
+                          width: 100,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                       ),
-                    )),
+                    ),
                   ),
                   SizedBox(height: 32),
                   // Quick actions skeleton
                   Row(
-                    children: List.generate(4, (index) => Expanded(
-                      child: Container(
-                        height: 70,
-                        margin: EdgeInsets.symmetric(horizontal: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
+                    children: List.generate(
+                      4,
+                      (index) => Expanded(
+                        child: Container(
+                          height: 70,
+                          margin: EdgeInsets.symmetric(horizontal: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                       ),
-                    )),
+                    ),
                   ),
                   SizedBox(height: 32),
                   // Stats skeleton
                   Row(
-                    children: List.generate(3, (index) => Expanded(
-                      child: Container(
-                        height: 140,
-                        margin: EdgeInsets.symmetric(horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
+                    children: List.generate(
+                      3,
+                      (index) => Expanded(
+                        child: Container(
+                          height: 140,
+                          margin: EdgeInsets.symmetric(horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         ),
                       ),
-                    )),
+                    ),
                   ),
                   SizedBox(height: 32),
                   // Chart skeleton
@@ -466,8 +470,9 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth > 1200;
-            final isTablet = constraints.maxWidth > 600 && constraints.maxWidth <= 1200;
-            
+            final isTablet =
+                constraints.maxWidth > 600 && constraints.maxWidth <= 1200;
+
             return SingleChildScrollView(
               physics: AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.all(isDesktop ? 32 : 20),
@@ -501,10 +506,14 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
 
   Widget _buildHeader() {
     final hour = DateTime.now().hour;
-    String greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+    String greeting = hour < 12
+        ? 'Bom dia'
+        : hour < 18
+        ? 'Boa tarde'
+        : 'Boa noite';
     final nomeAluno = _apiService.currentUser?['nome'] ?? 'Aluno';
     final media = _calcularMedia();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -563,10 +572,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
   Widget _buildAchievements() {
     final media = _calcularMedia();
     final tendencia = _calcularTendencia();
-    
+
     // Definir conquistas baseadas em condições
     List<Map<String, dynamic>> achievements = [];
-    
+
     // Conquista: Média alta
     if (media >= 9.0) {
       achievements.add({
@@ -576,7 +585,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         'color': Color(0xFFFFD700), // Dourado
       });
     }
-    
+
     // Conquista: Evolução positiva
     if (tendencia['trend'] == 'up' && tendencia['percentage'] > 10) {
       achievements.add({
@@ -586,7 +595,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         'color': Color(0xFF4CAF50), // Verde
       });
     }
-    
+
     // Conquista: Muitas disciplinas
     if (_disciplinas.length >= 5) {
       achievements.add({
@@ -596,7 +605,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         'color': Color(0xFF1CB3C2), // Cyan - mesma cor da tela professor
       });
     }
-    
+
     // Conquista: Participação
     if (_submissoesAvaliadas.length >= 10) {
       achievements.add({
@@ -606,9 +615,9 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         'color': Color(0xFFED2152), // Pink - mesma cor da tela professor
       });
     }
-    
+
     if (achievements.isEmpty) return SizedBox.shrink();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -649,7 +658,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
             children: achievements.asMap().entries.map((entry) {
               final index = entry.key;
               final achievement = entry.value;
-              
+
               return Padding(
                 padding: EdgeInsets.only(right: 12),
                 child: _AchievementBadge(
@@ -676,7 +685,6 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         color: Color(0xFF1CB3C2), // Cyan - mesma cor da tela professor
         notificationCount: 3, // TODO: Get from API
         onTap: () {
-          // TODO: Navigate to materials
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Materiais em desenvolvimento'),
@@ -693,13 +701,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         color: Color(0xFFED2152), // Pink - mesma cor da tela professor
         notificationCount: 5, // TODO: Get from API
         onTap: () {
-          // TODO: Navigate to messages
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Mensagens em desenvolvimento'),
-              backgroundColor: Color(0xFFED2152),
-              behavior: SnackBarBehavior.floating,
-            ),
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const TelaMensagensAluno()),
           );
         },
       ),
@@ -709,7 +712,6 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         subtitle: 'Ver agenda',
         color: Color(0xFFF9A31F), // Orange - mesma cor da tela professor
         onTap: () {
-          // TODO: Navigate to calendar
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Calendário em desenvolvimento'),
@@ -725,7 +727,6 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         subtitle: 'Desempenho',
         color: Color(0xFF9C27B0),
         onTap: () {
-          // TODO: Navigate to reports
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Relatórios em desenvolvimento'),
@@ -743,10 +744,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
           return Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 6),
-              child: _QuickActionCard(
-                data: entry.value,
-                index: entry.key,
-              ),
+              child: _QuickActionCard(data: entry.value, index: entry.key),
             ),
           );
         }).toList(),
@@ -758,10 +756,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         children: actions.asMap().entries.map((entry) {
           return SizedBox(
             width: (MediaQuery.of(context).size.width - 64) / 2,
-            child: _QuickActionCard(
-              data: entry.value,
-              index: entry.key,
-            ),
+            child: _QuickActionCard(data: entry.value, index: entry.key),
           );
         }).toList(),
       ).animate().fadeIn(delay: 250.ms).slideY(begin: -0.2, end: 0);
@@ -769,11 +764,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
       return Column(
         children: actions.asMap().entries.map((entry) {
           return Padding(
-            padding: EdgeInsets.only(bottom: entry.key < actions.length - 1 ? 12 : 0),
-            child: _QuickActionCard(
-              data: entry.value,
-              index: entry.key,
+            padding: EdgeInsets.only(
+              bottom: entry.key < actions.length - 1 ? 12 : 0,
             ),
+            child: _QuickActionCard(data: entry.value, index: entry.key),
           );
         }).toList(),
       ).animate().fadeIn(delay: 250.ms).slideY(begin: -0.2, end: 0);
@@ -784,7 +778,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
     final media = _calcularMedia();
     final pendentes = _contarAtividadesPendentes();
     final tendencia = _calcularTendencia();
-    
+
     final stats = [
       StatCardData(
         icon: Iconsax.book_1,
@@ -837,7 +831,9 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
       return Column(
         children: stats.asMap().entries.map((entry) {
           return Padding(
-            padding: EdgeInsets.only(bottom: entry.key < stats.length - 1 ? 16 : 0),
+            padding: EdgeInsets.only(
+              bottom: entry.key < stats.length - 1 ? 16 : 0,
+            ),
             child: StatCard(data: entry.value, index: entry.key),
           );
         }).toList(),
@@ -852,16 +848,17 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         .toList()
         .reversed
         .toList();
-    
+
     if (ultimasSubmissoes.isEmpty) return SizedBox.shrink();
-    
+
     List<double> ultimasNotas = ultimasSubmissoes
         .map((s) => s.nota ?? 0.0)
         .toList();
-    
+
     // Calcular média móvel
-    double mediaAtual = ultimasNotas.reduce((a, b) => a + b) / ultimasNotas.length;
-    
+    double mediaAtual =
+        ultimasNotas.reduce((a, b) => a + b) / ultimasNotas.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -879,7 +876,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: mediaAtual >= 7.0 
+                color: mediaAtual >= 7.0
                     ? Color(0xFF1CB3C2).withOpacity(0.2) // Cyan
                     : Color(0xFFF9A31F).withOpacity(0.2), // Orange
                 borderRadius: BorderRadius.circular(12),
@@ -896,7 +893,9 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                   Icon(
                     Iconsax.chart_215,
                     size: 14,
-                    color: mediaAtual >= 7.0 ? Color(0xFF1CB3C2) : Color(0xFFF9A31F),
+                    color: mediaAtual >= 7.0
+                        ? Color(0xFF1CB3C2)
+                        : Color(0xFFF9A31F),
                   ),
                   SizedBox(width: 6),
                   Text(
@@ -904,7 +903,9 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: mediaAtual >= 7.0 ? Color(0xFF1CB3C2) : Color(0xFFF9A31F),
+                      color: mediaAtual >= 7.0
+                          ? Color(0xFF1CB3C2)
+                          : Color(0xFFF9A31F),
                     ),
                   ),
                 ],
@@ -941,7 +942,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                             interval: 1.0,
                             getTitlesWidget: (value, meta) {
                               // Mostrar todos os valores inteiros de 0 a 10
-                              if (value % 1 != 0 || value > 10) return SizedBox();
+                              if (value % 1 != 0 || value > 10)
+                                return SizedBox();
                               return Padding(
                                 padding: EdgeInsets.only(right: 8),
                                 child: Text(
@@ -968,12 +970,14 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                           ),
                           axisNameSize: 20,
                         ),
-                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        topTitles: AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
                         bottomTitles: AxisTitles(
-                          sideTitles: SideTitles(
-                            showTitles: false,
-                          ),
+                          sideTitles: SideTitles(showTitles: false),
                           axisNameWidget: Padding(
                             padding: EdgeInsets.only(top: 4),
                             child: Text(
@@ -992,7 +996,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                         show: true,
                         border: Border(
                           left: BorderSide(color: _getBorderColor(), width: 1),
-                          bottom: BorderSide(color: _getBorderColor(), width: 1),
+                          bottom: BorderSide(
+                            color: _getBorderColor(),
+                            width: 1,
+                          ),
                         ),
                       ),
                       minX: 0,
@@ -1003,7 +1010,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                         LineChartBarData(
                           spots: List.generate(
                             ultimasNotas.length,
-                            (index) => FlSpot(index.toDouble(), ultimasNotas[index]),
+                            (index) =>
+                                FlSpot(index.toDouble(), ultimasNotas[index]),
                           ),
                           isCurved: true,
                           gradient: LinearGradient(
@@ -1017,10 +1025,14 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                           dotData: FlDotData(
                             show: true,
                             getDotPainter: (spot, percent, barData, index) {
-                              final isDark = Theme.of(context).brightness == Brightness.dark;
+                              final isDark =
+                                  Theme.of(context).brightness ==
+                                  Brightness.dark;
                               return FlDotCirclePainter(
                                 radius: 4,
-                                color: isDark ? Colors.white : Color(0xFF5D4037),
+                                color: isDark
+                                    ? Colors.white
+                                    : Color(0xFF5D4037),
                                 strokeWidth: 2,
                                 strokeColor: Color(0xFF1CB3C2), // Cyan
                               );
@@ -1041,19 +1053,26 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                       ],
                       lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (spot) => Theme.of(context).brightness == Brightness.dark
+                          getTooltipColor: (spot) =>
+                              Theme.of(context).brightness == Brightness.dark
                               ? Color(0xFF24243E)
                               : Color(0xFFFFFFFF),
                           tooltipRoundedRadius: 8,
-                          tooltipPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          tooltipPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           fitInsideHorizontally: true,
                           fitInsideVertically: true,
                           getTooltipItems: (touchedSpots) {
                             return touchedSpots.map((spot) {
                               final index = spot.x.toInt();
-                              if (index >= 0 && index < ultimasSubmissoes.length) {
+                              if (index >= 0 &&
+                                  index < ultimasSubmissoes.length) {
                                 final submissao = ultimasSubmissoes[index];
-                                final nomeAtividade = _atividadesNomes[submissao.atividadeId] ?? 'Atividade';
+                                final nomeAtividade =
+                                    _atividadesNomes[submissao.atividadeId] ??
+                                    'Atividade';
                                 return LineTooltipItem(
                                   '$nomeAtividade\nNota: ${spot.y.toStringAsFixed(1)}',
                                   GoogleFonts.poppins(
@@ -1092,7 +1111,11 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Iconsax.info_circle, size: 16, color: _getPrimaryColor()),
+                      Icon(
+                        Iconsax.info_circle,
+                        size: 16,
+                        color: _getPrimaryColor(),
+                      ),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -1116,7 +1139,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
 
   Widget _buildNotasSection() {
     final notasRecentes = _submissoesAvaliadas.take(5).toList();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1186,7 +1209,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                     ),
                     SizedBox(height: 20),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -1203,7 +1229,11 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Iconsax.info_circle, size: 16, color: Color(0xFF1CB3C2)), // Cyan
+                          Icon(
+                            Iconsax.info_circle,
+                            size: 16,
+                            color: Color(0xFF1CB3C2),
+                          ), // Cyan
                           SizedBox(width: 8),
                           Text(
                             'Continue acompanhando suas disciplinas',
@@ -1227,12 +1257,16 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                 final index = entry.key;
                 final submissao = entry.value;
                 final isLast = index == notasRecentes.length - 1;
-                
+
                 final isDark = Theme.of(context).brightness == Brightness.dark;
                 final textColor = isDark ? Colors.white : Color(0xFF5D4037);
-                final secondaryTextColor = isDark ? Colors.white60 : Color(0xFF8D6E63);
-                final tertiaryTextColor = isDark ? Colors.white38 : Color(0xFFA1887F).withOpacity(0.6);
-                
+                final secondaryTextColor = isDark
+                    ? Colors.white60
+                    : Color(0xFF8D6E63);
+                final tertiaryTextColor = isDark
+                    ? Colors.white38
+                    : Color(0xFFA1887F).withOpacity(0.6);
+
                 return Column(
                   children: [
                     Padding(
@@ -1265,7 +1299,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _atividadesNomes[submissao.atividadeId] ?? 'Atividade',
+                                  _atividadesNomes[submissao.atividadeId] ??
+                                      'Atividade',
                                   style: GoogleFonts.poppins(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -1276,7 +1311,9 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  _getDisciplinaNomeFromAtividade(submissao.atividadeId),
+                                  _getDisciplinaNomeFromAtividade(
+                                    submissao.atividadeId,
+                                  ),
                                   style: GoogleFonts.poppins(
                                     fontSize: 13,
                                     color: secondaryTextColor,
@@ -1297,7 +1334,8 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                     ),
                     if (!isLast)
                       Divider(
-                        color: (isDark ? Colors.white : Color(0xFFFFB88C)).withOpacity(0.2),
+                        color: (isDark ? Colors.white : Color(0xFFFFB88C))
+                            .withOpacity(0.2),
                         height: 1,
                         indent: 16,
                         endIndent: 16,
@@ -1387,7 +1425,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                     ),
                     SizedBox(height: 20),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -1404,7 +1445,11 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Iconsax.warning_2, size: 16, color: Color(0xFFF9A31F)), // Orange
+                          Icon(
+                            Iconsax.warning_2,
+                            size: 16,
+                            color: Color(0xFFF9A31F),
+                          ), // Orange
                           SizedBox(width: 8),
                           Text(
                             'Disciplinas são necessárias para acessar o conteúdo',
@@ -1429,7 +1474,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
 
   Widget _buildDisciplinasGrid(bool isDesktop, bool isTablet) {
     final disciplinasLimitadas = _disciplinas.take(6).toList();
-    
+
     if (isDesktop) {
       return Wrap(
         spacing: 16,
@@ -1437,10 +1482,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         children: disciplinasLimitadas.asMap().entries.map((entry) {
           return SizedBox(
             width: (MediaQuery.of(context).size.width - 128) / 3,
-            child: DisciplinaCard(
-              disciplina: entry.value,
-              index: entry.key,
-            ),
+            child: DisciplinaCard(disciplina: entry.value, index: entry.key),
           );
         }).toList(),
       );
@@ -1451,10 +1493,7 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
         children: disciplinasLimitadas.asMap().entries.map((entry) {
           return SizedBox(
             width: (MediaQuery.of(context).size.width - 72) / 2,
-            child: DisciplinaCard(
-              disciplina: entry.value,
-              index: entry.key,
-            ),
+            child: DisciplinaCard(disciplina: entry.value, index: entry.key),
           );
         }).toList(),
       );
@@ -1462,11 +1501,10 @@ class _TelaVisaoGeralAlunoState extends State<TelaVisaoGeralAluno> {
       return Column(
         children: disciplinasLimitadas.asMap().entries.map((entry) {
           return Padding(
-            padding: EdgeInsets.only(bottom: entry.key < disciplinasLimitadas.length - 1 ? 16 : 0),
-            child: DisciplinaCard(
-              disciplina: entry.value,
-              index: entry.key,
+            padding: EdgeInsets.only(
+              bottom: entry.key < disciplinasLimitadas.length - 1 ? 16 : 0,
             ),
+            child: DisciplinaCard(disciplina: entry.value, index: entry.key),
           );
         }).toList(),
       );
@@ -1504,7 +1542,7 @@ class _AchievementBadgeState extends State<_AchievementBadge> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Color(0xFF5D4037);
     final secondaryTextColor = isDark ? Colors.white70 : Color(0xFF8D6E63);
-    
+
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
@@ -1512,71 +1550,68 @@ class _AchievementBadgeState extends State<_AchievementBadge> {
         scale: _isHovered ? 1.1 : 1.0,
         duration: Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
-        child: Container(
-          padding: EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                widget.color.withOpacity(0.3),
-                widget.color.withOpacity(0.1),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: widget.color.withOpacity(_isHovered ? 0.6 : 0.4),
-              width: 2,
-            ),
-            boxShadow: _isHovered
-                ? [
-                    BoxShadow(
-                      color: widget.color.withOpacity(0.4),
-                      blurRadius: 12,
-                      spreadRadius: 2,
+        child:
+            Container(
+                  padding: EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        widget.color.withOpacity(0.3),
+                        widget.color.withOpacity(0.1),
+                      ],
                     ),
-                  ]
-                : [],
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: widget.color.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  widget.icon,
-                  color: widget.color,
-                  size: 24,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                widget.title,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 2),
-              Text(
-                widget.subtitle,
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  color: secondaryTextColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        )
-            .animate(delay: Duration(milliseconds: 100 * widget.index))
-            .fadeIn(duration: 400.ms)
-            .scale(begin: Offset(0.8, 0.8), end: Offset(1, 1)),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: widget.color.withOpacity(_isHovered ? 0.6 : 0.4),
+                      width: 2,
+                    ),
+                    boxShadow: _isHovered
+                        ? [
+                            BoxShadow(
+                              color: widget.color.withOpacity(0.4),
+                              blurRadius: 12,
+                              spreadRadius: 2,
+                            ),
+                          ]
+                        : [],
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: widget.color.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(widget.icon, color: widget.color, size: 24),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        widget.title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: textColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        widget.subtitle,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: secondaryTextColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+                .animate(delay: Duration(milliseconds: 100 * widget.index))
+                .fadeIn(duration: 400.ms)
+                .scale(begin: Offset(0.8, 0.8), end: Offset(1, 1)),
       ),
     );
   }
@@ -1604,11 +1639,8 @@ class _QuickActionCard extends StatefulWidget {
   final _QuickActionData data;
   final int index;
 
-  const _QuickActionCard({
-    Key? key,
-    required this.data,
-    required this.index,
-  }) : super(key: key);
+  const _QuickActionCard({Key? key, required this.data, required this.index})
+    : super(key: key);
 
   @override
   State<_QuickActionCard> createState() => _QuickActionCardState();
@@ -1623,152 +1655,172 @@ class _QuickActionCardState extends State<_QuickActionCard> {
     final textColor = isDark ? Colors.white : Color(0xFF5D4037);
     final secondaryTextColor = isDark ? Colors.white60 : Color(0xFFA1887F);
     final borderColor = isDark ? Color(0xFF24243E) : Colors.white;
-    
+
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.data.onTap,
-        child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          transform: Matrix4.identity()
-            ..translate(0.0, _isHovered ? -4.0 : 0.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: widget.data.color.withOpacity(_isHovered ? 0.4 : 0.2),
-                blurRadius: _isHovered ? 24 : 16,
-                spreadRadius: 0,
-                offset: Offset(0, _isHovered ? 8 : 4),
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: GestureDetector(
+            onTap: widget.data.onTap,
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              transform: Matrix4.identity()
+                ..translate(0.0, _isHovered ? -4.0 : 0.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: widget.data.color.withOpacity(
+                      _isHovered ? 0.4 : 0.2,
+                    ),
+                    blurRadius: _isHovered ? 24 : 16,
+                    spreadRadius: 0,
+                    offset: Offset(0, _isHovered ? 8 : 4),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: Container(
-                padding: EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      widget.data.color.withOpacity(_isHovered ? 0.25 : 0.15),
-                      widget.data.color.withOpacity(_isHovered ? 0.15 : 0.05),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: widget.data.color.withOpacity(_isHovered ? 0.5 : 0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: widget.data.color.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: Container(
+                    padding: EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          widget.data.color.withOpacity(
+                            _isHovered ? 0.25 : 0.15,
+                          ),
+                          widget.data.color.withOpacity(
+                            _isHovered ? 0.15 : 0.05,
+                          ),
+                        ],
                       ),
-                      child: Icon(
-                        widget.data.icon,
-                        color: widget.data.color,
-                        size: 20,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: widget.data.color.withOpacity(
+                          _isHovered ? 0.5 : 0.3,
+                        ),
+                        width: 1.5,
                       ),
                     ),
-                    if (widget.data.notificationCount != null && widget.data.notificationCount! > 0)
-                      Positioned(
-                        right: -6,
-                        top: -6,
-                        child: Container(
-                          padding: EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Color(0xFFED2152), // Pink
-                                Color(0xFFF9A31F), // Orange
-                              ],
-                            ),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: borderColor,
-                              width: 2,
-                            ),
-                          ),
-                          constraints: BoxConstraints(
-                            minWidth: 20,
-                            minHeight: 20,
-                          ),
-                          child: Center(
-                            child: Text(
-                              widget.data.notificationCount! > 9 
-                                  ? '9+' 
-                                  : widget.data.notificationCount.toString(),
-                              style: GoogleFonts.poppins(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                height: 1,
+                    child: Row(
+                      children: [
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: widget.data.color.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                widget.data.icon,
+                                color: widget.data.color,
+                                size: 20,
                               ),
                             ),
+                            if (widget.data.notificationCount != null &&
+                                widget.data.notificationCount! > 0)
+                              Positioned(
+                                right: -6,
+                                top: -6,
+                                child:
+                                    Container(
+                                          padding: EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                Color(0xFFED2152), // Pink
+                                                Color(0xFFF9A31F), // Orange
+                                              ],
+                                            ),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: borderColor,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          constraints: BoxConstraints(
+                                            minWidth: 20,
+                                            minHeight: 20,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              widget.data.notificationCount! > 9
+                                                  ? '9+'
+                                                  : widget
+                                                        .data
+                                                        .notificationCount
+                                                        .toString(),
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w700,
+                                                color: Colors.white,
+                                                height: 1,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .animate(
+                                          onPlay: (controller) =>
+                                              controller.repeat(),
+                                        )
+                                        .scale(
+                                          duration: 1000.ms,
+                                          begin: Offset(1, 1),
+                                          end: Offset(1.1, 1.1),
+                                        )
+                                        .then()
+                                        .scale(
+                                          duration: 1000.ms,
+                                          begin: Offset(1.1, 1.1),
+                                          end: Offset(1, 1),
+                                        ),
+                              ),
+                          ],
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                widget.data.title,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: textColor,
+                                ),
+                              ),
+                              Text(
+                                widget.data.subtitle,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  color: secondaryTextColor,
+                                ),
+                              ),
+                            ],
                           ),
-                        ).animate(
-                          onPlay: (controller) => controller.repeat(),
-                        ).scale(
-                          duration: 1000.ms,
-                          begin: Offset(1, 1),
-                          end: Offset(1.1, 1.1),
-                        ).then().scale(
-                          duration: 1000.ms,
-                          begin: Offset(1.1, 1.1),
-                          end: Offset(1, 1),
                         ),
-                      ),
-                  ],
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        widget.data.title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: textColor,
-                        ),
-                      ),
-                      Text(
-                        widget.data.subtitle,
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
+                        Icon(
+                          Iconsax.arrow_right_3,
                           color: secondaryTextColor,
+                          size: 18,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-                Icon(
-                  Iconsax.arrow_right_3,
-                  color: secondaryTextColor,
-                  size: 18,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    )))
+        )
         .animate(delay: Duration(milliseconds: 50 * widget.index))
         .fadeIn(duration: 400.ms)
         .slideX(begin: -0.2, end: 0);
@@ -1801,11 +1853,8 @@ class StatCard extends StatefulWidget {
   final StatCardData data;
   final int index;
 
-  const StatCard({
-    Key? key,
-    required this.data,
-    required this.index,
-  }) : super(key: key);
+  const StatCard({Key? key, required this.data, required this.index})
+    : super(key: key);
 
   @override
   State<StatCard> createState() => _StatCardState();
@@ -1818,175 +1867,200 @@ class _StatCardState extends State<StatCard> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Color(0xFF5D4037);
-    final secondaryTextColor = isDark ? Colors.white.withOpacity(0.8) : Color(0xFF8D6E63);
-    final tertiaryTextColor = isDark ? Colors.white.withOpacity(0.6) : Color(0xFFA1887F);
-    
+    final secondaryTextColor = isDark
+        ? Colors.white.withOpacity(0.8)
+        : Color(0xFF8D6E63);
+    final tertiaryTextColor = isDark
+        ? Colors.white.withOpacity(0.6)
+        : Color(0xFFA1887F);
+
     return MouseRegion(
-      cursor: widget.data.onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.data.onTap,
-        child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          transform: Matrix4.identity()
-            ..translate(0.0, _isHovered ? -8.0 : 0.0),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: widget.data.color.withOpacity(_isHovered ? 0.4 : 0.2),
-                  blurRadius: _isHovered ? 30 : 20,
-                  spreadRadius: 0,
-                  offset: Offset(0, _isHovered ? 15 : 10),
+          cursor: widget.data.onTap != null
+              ? SystemMouseCursors.click
+              : MouseCursor.defer,
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: GestureDetector(
+            onTap: widget.data.onTap,
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              transform: Matrix4.identity()
+                ..translate(0.0, _isHovered ? -8.0 : 0.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.data.color.withOpacity(
+                        _isHovered ? 0.4 : 0.2,
+                      ),
+                      blurRadius: _isHovered ? 30 : 20,
+                      spreadRadius: 0,
+                      offset: Offset(0, _isHovered ? 15 : 10),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                child: Container(
-                  padding: EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        widget.data.color.withOpacity(_isHovered ? 0.25 : 0.15),
-                        Colors.white.withOpacity(_isHovered ? 0.12 : 0.08),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      width: 1.5,
-                      color: widget.data.color.withOpacity(_isHovered ? 0.4 : 0.2),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                    child: Container(
+                      padding: EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            widget.data.color.withOpacity(
+                              _isHovered ? 0.25 : 0.15,
+                            ),
+                            Colors.white.withOpacity(_isHovered ? 0.12 : 0.08),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          width: 1.5,
+                          color: widget.data.color.withOpacity(
+                            _isHovered ? 0.4 : 0.2,
+                          ),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            padding: EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  widget.data.color.withOpacity(0.3),
-                                  widget.data.color.withOpacity(0.2),
-                                ],
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      widget.data.color.withOpacity(0.3),
+                                      widget.data.color.withOpacity(0.2),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: widget.data.color.withOpacity(0.3),
+                                      blurRadius: 12,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  widget.data.icon,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: widget.data.color.withOpacity(0.3),
-                                  blurRadius: 12,
-                                  offset: Offset(0, 4),
+                              if (widget.data.trend != null &&
+                                  widget.data.trend != 'stable')
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: widget.data.trend == 'up'
+                                          ? [
+                                              Color(0xFF4CAF50),
+                                              Color(0xFF66BB6A),
+                                            ]
+                                          : [
+                                              Color(0xFFEF5350),
+                                              Color(0xFFE57373),
+                                            ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            (widget.data.trend == 'up'
+                                                    ? Color(0xFF4CAF50)
+                                                    : Color(0xFFEF5350))
+                                                .withOpacity(0.4),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        widget.data.trend == 'up'
+                                            ? Iconsax.arrow_up_2
+                                            : Iconsax.arrow_down_1,
+                                        size: 14,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        '${widget.data.trendPercentage!.toStringAsFixed(1)}%',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                          SizedBox(height: 20),
+                          Text(
+                            widget.data.title,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: secondaryTextColor,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            widget.data.value,
+                            style: GoogleFonts.poppins(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w800,
+                              color: textColor,
+                              height: 1.1,
+                              shadows: [
+                                Shadow(
+                                  color: widget.data.color.withOpacity(0.5),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 8,
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              widget.data.icon,
-                              color: Colors.white,
-                              size: 28,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            widget.data.subtitle,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: tertiaryTextColor,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
-                          if (widget.data.trend != null && widget.data.trend != 'stable')
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: widget.data.trend == 'up'
-                                      ? [Color(0xFF4CAF50), Color(0xFF66BB6A)]
-                                      : [Color(0xFFEF5350), Color(0xFFE57373)],
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: (widget.data.trend == 'up'
-                                            ? Color(0xFF4CAF50)
-                                            : Color(0xFFEF5350))
-                                        .withOpacity(0.4),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    widget.data.trend == 'up'
-                                        ? Iconsax.arrow_up_2
-                                        : Iconsax.arrow_down_1,
-                                    size: 14,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    '${widget.data.trendPercentage!.toStringAsFixed(1)}%',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                         ],
                       ),
-                      SizedBox(height: 20),
-                      Text(
-                        widget.data.title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: secondaryTextColor,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        widget.data.value,
-                        style: GoogleFonts.poppins(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
-                          height: 1.1,
-                          shadows: [
-                            Shadow(
-                              color: widget.data.color.withOpacity(0.5),
-                              offset: Offset(0, 2),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        widget.data.subtitle,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: tertiaryTextColor,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
-    ).animate().fadeIn(delay: Duration(milliseconds: 400 + (widget.index * 100)))
+        )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 400 + (widget.index * 100)))
         .slideY(begin: 0.2, end: 0);
   }
 }
@@ -1995,28 +2069,29 @@ class GlassContainer extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
 
-  const GlassContainer({
-    Key? key,
-    required this.child,
-    this.padding,
-  }) : super(key: key);
+  const GlassContainer({Key? key, required this.child, this.padding})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withOpacity(0.2) : Colors.brown.withOpacity(0.1),
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : Colors.brown.withOpacity(0.1),
             blurRadius: 20,
             spreadRadius: 0,
             offset: Offset(0, 10),
           ),
           BoxShadow(
-            color: isDark ? Colors.white.withOpacity(0.05) : Colors.white.withOpacity(0.3),
+            color: isDark
+                ? Colors.white.withOpacity(0.05)
+                : Colors.white.withOpacity(0.3),
             blurRadius: 0,
             spreadRadius: 0,
             offset: Offset(0, -1),
@@ -2047,7 +2122,9 @@ class GlassContainer extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 width: 1.5,
-                color: isDark ? Colors.white.withOpacity(0.2) : Color(0xFFFFB88C).withOpacity(0.3),
+                color: isDark
+                    ? Colors.white.withOpacity(0.2)
+                    : Color(0xFFFFB88C).withOpacity(0.3),
               ),
             ),
             child: child,
@@ -2062,11 +2139,8 @@ class GlassButton extends StatelessWidget {
   final VoidCallback onPressed;
   final Widget child;
 
-  const GlassButton({
-    Key? key,
-    required this.onPressed,
-    required this.child,
-  }) : super(key: key);
+  const GlassButton({Key? key, required this.onPressed, required this.child})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -2117,187 +2191,198 @@ class _DisciplinaCardState extends State<DisciplinaCard> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Color(0xFF5D4037);
-    final secondaryTextColor = isDark ? Colors.white.withOpacity(0.7) : Color(0xFF8D6E63);
-    final tertiaryTextColor = isDark ? Colors.white.withOpacity(0.6) : Color(0xFFA1887F);
-    
+    final secondaryTextColor = isDark
+        ? Colors.white.withOpacity(0.7)
+        : Color(0xFF8D6E63);
+    final tertiaryTextColor = isDark
+        ? Colors.white.withOpacity(0.6)
+        : Color(0xFFA1887F);
+
     final color = _getDisciplinaColor(widget.index);
     final nome = widget.disciplina['nome'] ?? 'Sem nome';
     final professorNome = widget.disciplina['professorNome'] ?? 'Professor';
     final disciplinaId = widget.disciplina['id'] as int?;
-    
+
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: disciplinaId != null ? () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TelaDetalhesDisciplinaAluno(
-                subjectName: nome,
-                subjectColor: color,
-                professorName: professorNome,
-                disciplinaId: disciplinaId,
-              ),
-            ),
-          );
-        } : null,
-        child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          transform: Matrix4.identity()
-            ..translate(0.0, _isHovered ? -6.0 : 0.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(_isHovered ? 0.5 : 0.3),
-                blurRadius: _isHovered ? 30 : 20,
-                spreadRadius: 0,
-                offset: Offset(0, _isHovered ? 12 : 8),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-              child: Container(
-                padding: EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      color.withOpacity(_isHovered ? 0.25 : 0.15),
-                      Colors.white.withOpacity(_isHovered ? 0.12 : 0.08),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    width: 1.5,
-                    color: color.withOpacity(_isHovered ? 0.4 : 0.2),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [color, color.withOpacity(0.7)],
-                            ),
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: [
-                              BoxShadow(
-                                color: color.withOpacity(0.4),
-                                blurRadius: 12,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Iconsax.book_15,
-                            color: Colors.white,
-                            size: 28,
-                          ),
+          cursor: SystemMouseCursors.click,
+          onEnter: (_) => setState(() => _isHovered = true),
+          onExit: (_) => setState(() => _isHovered = false),
+          child: GestureDetector(
+            onTap: disciplinaId != null
+                ? () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TelaDetalhesDisciplinaAluno(
+                          subjectName: nome,
+                          subjectColor: color,
+                          professorName: professorNome,
+                          disciplinaId: disciplinaId,
                         ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                nome,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  color: textColor,
-                                  height: 1.2,
+                      ),
+                    );
+                  }
+                : null,
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              transform: Matrix4.identity()
+                ..translate(0.0, _isHovered ? -6.0 : 0.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(_isHovered ? 0.5 : 0.3),
+                    blurRadius: _isHovered ? 30 : 20,
+                    spreadRadius: 0,
+                    offset: Offset(0, _isHovered ? 12 : 8),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                  child: Container(
+                    padding: EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          color.withOpacity(_isHovered ? 0.25 : 0.15),
+                          Colors.white.withOpacity(_isHovered ? 0.12 : 0.08),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        width: 1.5,
+                        color: color.withOpacity(_isHovered ? 0.4 : 0.2),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [color, color.withOpacity(0.7)],
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: color.withOpacity(0.4),
+                                    blurRadius: 12,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 6),
-                              Row(
+                              child: Icon(
+                                Iconsax.book_15,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    nome,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      color: textColor,
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Iconsax.teacher,
+                                        size: 14,
+                                        color: tertiaryTextColor,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          professorNome,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
+                                            color: secondaryTextColor,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    color.withOpacity(0.3),
+                                    color.withOpacity(0.2),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Iconsax.teacher,
-                                    size: 14,
-                                    color: tertiaryTextColor,
+                                    Iconsax.arrow_right_34,
+                                    size: 16,
+                                    color: Colors.white,
                                   ),
-                                  SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      professorNome,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 13,
-                                        color: secondaryTextColor,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Ver detalhes',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                color.withOpacity(0.3),
-                                color.withOpacity(0.2),
-                              ],
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Iconsax.arrow_right_34,
-                                size: 16,
-                                color: Colors.white,
-                              ),
-                              SizedBox(width: 6),
-                              Text(
-                                'Ver detalhes',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
-    ).animate().fadeIn(delay: Duration(milliseconds: 700 + (widget.index * 100)))
+        )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 700 + (widget.index * 100)))
         .slideY(begin: 0.2, end: 0);
   }
 }
