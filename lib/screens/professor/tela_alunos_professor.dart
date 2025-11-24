@@ -118,15 +118,54 @@ class _TelaAlunosProfessorState extends State<TelaAlunosProfessor> {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () {
-              // TODO: Implementar criação de aluno no backend
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Funcionalidade em desenvolvimento'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
+            onPressed: () async {
+              final nome = _nomeController.text.trim();
+              final ra = _raController.text.trim();
+              final email = _emailController.text.trim();
+
+              if (nome.isEmpty || email.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Nome e e-mail são obrigatórios'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              // Use RA como senha padrão se fornecido, senão senha padrão temporária
+              final senha = ra.isNotEmpty ? ra : 'senha_123';
+
+              try {
+                // Chamar API para registrar aluno
+                final result = await _apiService.registerUser(
+                  nome: nome,
+                  email: email,
+                  senha: senha,
+                  tipo: 'aluno',
+                  ra: ra.isNotEmpty ? ra : null,
+                );
+
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Aluno ${result['nome']} cadastrado com sucesso',
+                    ),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                // Recarregar lista
+                await _loadAlunos();
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Erro ao cadastrar aluno: ${e.toString()}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,

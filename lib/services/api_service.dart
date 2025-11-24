@@ -78,6 +78,34 @@ class ApiService {
     }
   }
 
+  // Register a new user (aluno or professor)
+  Future<Map<String, dynamic>> registerUser({
+    required String nome,
+    required String email,
+    required String senha,
+    required String tipo, // 'aluno' or 'professor'
+    String? ra,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/register'),
+      headers: _headers(),
+      body: json.encode({
+        'nome': nome,
+        'email': email,
+        'senha': senha,
+        'tipo': tipo,
+        'ra': ra,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      final error = json.decode(response.body);
+      throw Exception(error['error'] ?? 'Erro ao registrar usuário');
+    }
+  }
+
   // DISCIPLINAS ENDPOINTS
 
   Future<List<dynamic>> getDisciplinas() async {
