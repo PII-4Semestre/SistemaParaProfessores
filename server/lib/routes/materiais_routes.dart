@@ -67,9 +67,24 @@ class MateriaisRoutes {
         final mongo = await MongoDB.getInstance();
         final collection = mongo.collection('materiais');
 
+        final disciplinaIdInt = int.parse(id);
+        print('[${DateTime.now().toIso8601String()}] GET /api/materiais/disciplina/$id -> query disciplina_id=$disciplinaIdInt');
+
         final materiais = await collection.find(
-          where.eq('disciplina_id', int.parse(id)).eq('ativo', true),
+          where.eq('disciplina_id', disciplinaIdInt).eq('ativo', true),
         ).toList();
+
+        print('[${DateTime.now().toIso8601String()}] Materiais encontrados: ${materiais.length}');
+        for (final m in materiais) {
+          try {
+            final mm = Map<String, dynamic>.from(m);
+            final mid = mm['_id'] is ObjectId ? (mm['_id'] as ObjectId).toHexString() : mm['_id']?.toString();
+            final criado = mm['criado_em']?.toString();
+            print('[${DateTime.now().toIso8601String()}]  - material id=$mid criado_em=$criado');
+          } catch (e) {
+            print('[${DateTime.now().toIso8601String()}]  - erro ao logar material: $e');
+          }
+        }
 
         // Converter DateTime para String em cada material
         final materiaisFormatados = materiais.map((m) {

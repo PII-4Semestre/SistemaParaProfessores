@@ -15,19 +15,30 @@ class DisciplinasRoutes {
           'SELECT id, nome, descricao, professor_id, cor, criado_em, atualizado_em FROM disciplinas ORDER BY nome',
         );
 
-        final disciplinas = result
-            .map(
-              (row) => {
-                'id': row[0],
-                'nome': row[1],
-                'descricao': row[2],
-                'professor_id': row[3],
-                'cor': row[4],
-                'criado_em': row[5]?.toString(),
-                'atualizado_em': row[6]?.toString(),
-              },
-            )
-            .toList();
+        // Mapear disciplinas e anexar lista de alunos (ids) para cada disciplina
+        final disciplinas = <Map<String, dynamic>>[];
+        for (final row in result) {
+          final discId = row[0] as int;
+
+          // Buscar alunos matriculados nesta disciplina
+          final alunosResult = await db.connection.execute(
+            'SELECT aluno_id FROM aluno_disciplina WHERE disciplina_id = \$1',
+            parameters: [discId],
+          );
+
+          final alunoIds = alunosResult.map((r) => r[0].toString()).toList();
+
+          disciplinas.add({
+            'id': discId,
+            'nome': row[1],
+            'descricao': row[2],
+            'professor_id': row[3],
+            'cor': row[4],
+            'criado_em': row[5]?.toString(),
+            'atualizado_em': row[6]?.toString(),
+            'alunoIds': alunoIds,
+          });
+        }
 
         return Response.ok(
           json.encode(disciplinas),
@@ -49,19 +60,30 @@ class DisciplinasRoutes {
           parameters: [int.parse(id)],
         );
 
-        final disciplinas = result
-            .map(
-              (row) => {
-                'id': row[0],
-                'nome': row[1],
-                'descricao': row[2],
-                'professor_id': row[3],
-                'cor': row[4],
-                'criado_em': row[5]?.toString(),
-                'atualizado_em': row[6]?.toString(),
-              },
-            )
-            .toList();
+        // Mapear disciplinas e anexar lista de alunos (ids) para cada disciplina
+        final disciplinas = <Map<String, dynamic>>[];
+        for (final row in result) {
+          final discId = row[0] as int;
+
+          // Buscar alunos matriculados nesta disciplina
+          final alunosResult = await db.connection.execute(
+            'SELECT aluno_id FROM aluno_disciplina WHERE disciplina_id = \$1',
+            parameters: [discId],
+          );
+
+          final alunoIds = alunosResult.map((r) => r[0].toString()).toList();
+
+          disciplinas.add({
+            'id': discId,
+            'nome': row[1],
+            'descricao': row[2],
+            'professor_id': row[3],
+            'cor': row[4],
+            'criado_em': row[5]?.toString(),
+            'atualizado_em': row[6]?.toString(),
+            'alunoIds': alunoIds,
+          });
+        }
 
         return Response.ok(
           json.encode(disciplinas),

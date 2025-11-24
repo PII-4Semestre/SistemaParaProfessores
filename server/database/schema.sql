@@ -1,8 +1,7 @@
 -- Database: sistema_professores
 -- Criação das tabelas para o Sistema Para Professores
 
--- Enum para tipo de usuário
-CREATE TYPE tipo_usuario AS ENUM ('professor', 'aluno');
+CREATE TYPE tipo_usuario AS ENUM ('professor', 'aluno', 'admin');
 
 -- Tabela de Usuários
 CREATE TABLE usuarios (

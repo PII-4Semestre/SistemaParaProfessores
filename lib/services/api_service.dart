@@ -1,8 +1,7 @@
 import 'dart:convert';
-import '../screens/professor/tela_mensagens_professor.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+// imports cleaned: moved model imports to callers to avoid circular/unused imports
 class ApiService {
   static const String baseUrl = 'http://localhost:8080/api';
 
@@ -390,6 +389,110 @@ class ApiService {
     }
   }
 
+  // Criar usuário (admin usa endpoint protegido)
+  Future<Map<String, dynamic>> createUsuario({
+    required String nome,
+    required String email,
+    String? senha,
+    required String tipo, // 'aluno' or 'professor'
+  }) async {
+    final body = <String, dynamic>{
+      'nome': nome,
+      'email': email,
+      'tipo': tipo,
+    };
+    if (senha != null && senha.isNotEmpty) {
+      body['senha'] = senha;
+    }
+
+    final uri = Uri.parse('$baseUrl/usuarios');
+    final requestBody = json.encode(body);
+    try {
+      print('CLIENT: POST $uri');
+      print('CLIENT: Headers: ${_headers(needsAuth: true)}');
+      print('CLIENT: Body: $requestBody');
+    } catch (_) {}
+
+    final response = await http.post(
+      uri,
+      headers: _headers(needsAuth: true),
+      body: requestBody,
+    );
+
+    try {
+      print('CLIENT: Response status=${response.statusCode} body=${response.body}');
+    } catch (_) {}
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    }
+
+    // If the admin-protected endpoint is not available (404), fall back to the public
+    // register endpoint so the front can create users while admin route is missing.
+    if (response.statusCode == 404) {
+      try {
+        final registerUri = Uri.parse('$baseUrl/auth/register');
+        print('CLIENT: Falling back to $registerUri');
+        // Ensure senha is present for the public register endpoint (schema requires senha_hash NOT NULL)
+        final regBodyMap = json.decode(requestBody) as Map<String, dynamic>;
+        if (regBodyMap['senha'] == null) regBodyMap['senha'] = '';
+        final regRequestBody = json.encode(regBodyMap);
+        final regResp = await http.post(
+          registerUri,
+          headers: {'Content-Type': 'application/json'},
+          body: regRequestBody,
+        );
+        print('CLIENT: Fallback response status=${regResp.statusCode} body=${regResp.body}');
+        if (regResp.statusCode == 200 || regResp.statusCode == 201) {
+          return json.decode(regResp.body);
+        }
+        try {
+          final err = json.decode(regResp.body);
+          throw Exception(err['error'] ?? 'Erro ao criar usuário (register)');
+        } catch (_) {
+          throw Exception('Erro ao criar usuário (register): ${regResp.statusCode} - ${regResp.body}');
+        }
+      } catch (e) {
+        throw Exception('Erro ao criar usuário (fallback): $e');
+      }
+    }
+
+    // Try to decode error safely; some endpoints may return plain text
+    try {
+      final error = json.decode(response.body);
+      throw Exception(error['error'] ?? 'Erro ao criar usuário');
+    } catch (_) {
+      throw Exception('Erro ao criar usuário: ${response.statusCode} - ${response.body}');
+    }
+  }
+
+  Future<void> deleteUsuario(String usuarioId) async {
+    final uri = Uri.parse('$baseUrl/usuarios/$usuarioId');
+    try {
+      print('CLIENT: DELETE $uri');
+    } catch (_) {}
+
+    final response = await http.delete(
+      uri,
+      headers: _headers(needsAuth: true),
+    );
+
+    try {
+      print('CLIENT: DELETE response status=${response.statusCode} body=${response.body}');
+    } catch (_) {}
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return;
+    }
+
+    try {
+      final err = json.decode(response.body);
+      throw Exception(err['error'] ?? 'Erro ao deletar usuário');
+    } catch (_) {
+      throw Exception('Erro ao deletar usuário: ${response.statusCode} - ${response.body}');
+    }
+  }
+
   // MENSAGENS ENDPOINTS
 
   Future<List<dynamic>> getConversas(int usuarioId) async {
@@ -427,22 +530,27 @@ class ApiService {
     required String conteudo,
     int? disciplinaId,
     String? respostaParaId,
-    AttachedFile? attachment,
+    dynamic attachment,
   }) async {
-    final body = {
+    final Map<String, dynamic> body = {
       'remetenteId': remetenteId.toString(),
       'destinatarioId': destinatarioId.toString(),
       'conteudo': conteudo,
-      if (disciplinaId != null) 'disciplinaId': disciplinaId.toString(),
-      if (respostaParaId != null) 'respostaParaId': respostaParaId,
-      if (attachment != null)
-        'anexo': {
-          'name': attachment.name,
-          'type': attachment.type,
-          'size': attachment.size,
-          'url': attachment.url,
-        },
     };
+    if (disciplinaId != null) body['disciplinaId'] = disciplinaId.toString();
+    if (respostaParaId != null) body['respostaParaId'] = respostaParaId;
+    if (attachment != null) {
+      // support both AttachedFile objects and plain maps
+      final anexo = (attachment is Map)
+          ? attachment
+          : {
+              'name': attachment.name,
+              'type': attachment.type,
+              'size': attachment.size,
+              'url': attachment.url,
+            };
+      body['anexo'] = anexo;
+    }
     final response = await http.post(
       Uri.parse('$baseUrl/mensagens'),
       headers: _headers(needsAuth: true),
