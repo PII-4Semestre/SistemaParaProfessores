@@ -26,6 +26,7 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
   List<dynamic> _alunos = [];
   bool _isLoading = true;
   String? _error;
+  int _mensagensPendentes = 0;
 
   // Helper para cores adaptáveis ao tema
   Color _getPrimaryColor() {
@@ -92,13 +93,27 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
         _apiService.getDisciplinasProfessor(professorId),
         _apiService.getTodosAlunos(),
       ]);
-
       if (mounted) {
         setState(() {
           _disciplinas = results[0];
           _alunos = results[1];
           _isLoading = false;
         });
+      }
+
+      // Debug logs to help diagnose zero counts
+      try {
+        // ignore: avoid_print
+        print('DEBUG: professorId=$professorId disciplinas=${_disciplinas.length} alunos=${_alunos.length}');
+        // ignore: avoid_print
+        print('DEBUG: disciplinas raw= ${_disciplinas}');
+      } catch (_) {}
+      // Buscar contagem de mensagens não lidas (não bloqueia carregamento inicial)
+      try {
+        final count = await _apiService.contarMensagensNaoLidas(professorId);
+        if (mounted) setState(() => _mensagensPendentes = count);
+      } catch (_) {
+        // Endpoint pode não existir no backend; deixar como 0
       }
     } catch (e) {
       if (mounted) {
@@ -112,17 +127,23 @@ class _TelaVisaoGeralProfessorState extends State<TelaVisaoGeralProfessor> {
 
   int _contarAlunosTotal() {
     // Conta alunos únicos em todas as disciplinas
-    Set<String> alunosUnicos = {};
+    final Set<String> alunosUnicos = {};
     for (var disciplina in _disciplinas) {
-      if (disciplina['alunoIds'] != null) {
-        alunosUnicos.addAll(List<String>.from(disciplina['alunoIds']));
+      final raw = disciplina['alunoIds'];
+      if (raw != null) {
+        try {
+          final ids = List<dynamic>.from(raw).map((e) => e.toString());
+          alunosUnicos.addAll(ids);
+        } catch (e) {
+          // ignore malformed alunoIds
+        }
       }
     }
     return alunosUnicos.length;
   }
 
   int _contarMensagensPendentes() {
-    return 0; // TODO: Implement when mensagens API is ready
+    return _mensagensPendentes;
   }
 
   @override
