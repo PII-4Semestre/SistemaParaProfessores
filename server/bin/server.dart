@@ -51,7 +51,19 @@ void main() async {
     ..mount('/api/usuarios', UsuariosRoutes().router.call);
 
   // Middleware para CORS
+  Middleware requestLogger() {
+    return (Handler handler) {
+      return (Request request) async {
+        try {
+          print('${_timestamp()} [server] ⤴️ ${request.method} ${request.requestedUri}');
+        } catch (_) {}
+        return await handler(request);
+      };
+    };
+  }
+
   final handler = Pipeline()
+      .addMiddleware(requestLogger())
       .addMiddleware(corsHeaders())
       .addMiddleware(logRequests())
       .addMiddleware(handleErrors())

@@ -73,8 +73,14 @@ if ($LASTEXITCODE -ne 0) {
 }
 Write-Host "Banco criado com sucesso!" -ForegroundColor Green
 
+
+# Atualizar enum tipo_usuario se já existir (PostgreSQL >= 9.1)
+Write-Host "\nAtualizando enum tipo_usuario (adicionando 'admin' se necessário)..." -ForegroundColor Yellow
+$alterEnum = "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tipo_usuario') THEN CREATE TYPE tipo_usuario AS ENUM ('professor', 'aluno', 'admin'); ELSE BEGIN BEGIN ALTER TYPE tipo_usuario ADD VALUE IF NOT EXISTS 'admin'; EXCEPTION WHEN duplicate_object THEN NULL; END; END; END IF; END $$;"
+& $psql -U $username -d $dbName -c $alterEnum
+
 # Executar schema.sql
-Write-Host ""
+Write-Host "" 
 Write-Host "Criando tabelas (schema.sql)..." -ForegroundColor Yellow
 & $psql -U $username -d $dbName -f "database\schema.sql"
 
@@ -111,6 +117,9 @@ Write-Host "   Host: localhost" -ForegroundColor White
 Write-Host "   Porta: 5432" -ForegroundColor White
 Write-Host ""
 Write-Host "Usuarios de teste disponiveis:" -ForegroundColor Cyan
+Write-Host "   Admin:" -ForegroundColor Yellow
+Write-Host "   - admin@escola.com (qualquer senha)" -ForegroundColor White
+Write-Host ""
 Write-Host "   Professores:" -ForegroundColor Yellow
 Write-Host "   - professor@poliedro.com (qualquer senha)" -ForegroundColor White
 Write-Host "   - silva@escola.com (qualquer senha)" -ForegroundColor White

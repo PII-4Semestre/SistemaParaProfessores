@@ -67,6 +67,12 @@ if [ $? -ne 0 ]; then
 fi
 echo "✅ Banco criado com sucesso!"
 
+
+# Atualizar enum tipo_usuario se já existir (PostgreSQL >= 9.1)
+echo ""
+echo "Atualizando enum tipo_usuario (adicionando 'admin' se necessário)..."
+psql -U $username -d $dbName -c "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tipo_usuario') THEN CREATE TYPE tipo_usuario AS ENUM ('professor', 'aluno', 'admin'); ELSE BEGIN BEGIN ALTER TYPE tipo_usuario ADD VALUE IF NOT EXISTS 'admin'; EXCEPTION WHEN duplicate_object THEN NULL; END; END; END IF; END $$;"
+
 # Executar schema.sql
 echo ""
 echo "Criando tabelas (schema.sql)..."
@@ -105,6 +111,9 @@ echo "   • Host: localhost"
 echo "   • Porta: 5432"
 echo ""
 echo "👤 Usuários de teste disponíveis:"
+echo "   Admin:"
+echo "   • admin@escola.com (qualquer senha)"
+echo ""
 echo "   Professores:"
 echo "   • professor@poliedro.com (qualquer senha)"
 echo "   • silva@escola.com (qualquer senha)"

@@ -17,12 +17,15 @@ class Usuario {
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
     return Usuario(
-      id: json['id'],
+      id: json['id'].toString(),
       nome: json['nome'],
       email: json['email'],
-      tipo: TipoUsuario.values.firstWhere((e) => e.toString() == json['tipo']),
+      tipo: TipoUsuario.values.firstWhere(
+        (e) => e.name == json['tipo'],
+        orElse: () => TipoUsuario.aluno,
+      ),
     );
   }
 }
 
-enum TipoUsuario { professor, aluno }
+enum TipoUsuario { professor, aluno, admin }

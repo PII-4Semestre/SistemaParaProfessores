@@ -1,5 +1,10 @@
 -- Dados de exemplo para testes
 
+
+-- Inserir admin
+INSERT INTO usuarios (nome, email, senha_hash, tipo) VALUES
+('Administrador', 'admin@escola.com', '$2b$10$abcdefghijklmnopqrstuv', 'admin');
+
 -- Inserir professores
 INSERT INTO usuarios (nome, email, senha_hash, tipo) VALUES
 ('Prof. Exemplo', 'professor@poliedro.com', '$2b$10$abcdefghijklmnopqrstuv', 'professor'),

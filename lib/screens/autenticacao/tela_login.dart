@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../professor/tela_inicial_professor.dart';
 import '../aluno/tela_inicial_aluno.dart';
+import '../admin/tela_admin.dart';
 import '../../services/api_service.dart';
 import '../../services/theme_controller.dart';
 
@@ -57,7 +58,11 @@ class _TelaLoginState extends State<TelaLogin> {
       if (!mounted) return;
 
       // Navegar para a tela apropriada baseado no tipo de usuário
-      if (userType == 'professor') {
+      if (userType == 'admin') {
+        navigator.pushReplacement(
+          MaterialPageRoute(builder: (context) => const TelaAdmin()),
+        );
+      } else if (userType == 'professor') {
         navigator.pushReplacement(
           MaterialPageRoute(
             builder: (context) => const TelaInicialProfessor(),
